@@ -14,11 +14,11 @@ class Karyawan extends Model
     protected $fillable = [
         'user_id',
         'nik',
-        'jenis_kelamin',
+        'posisi_karyawan',
         'tgl_masuk',
         'status_kontrak',
         'no_hp',
-        'lokasi_tugas',
+        'bidang_tugas',
     ];
 
     public function user()
