@@ -21,18 +21,19 @@ class DatabaseSeeder extends Seeder
 
     /**
      * Seed the application's database.
-     * 
+     *
      * Contoh akun untuk login:
      * - Admin: admin@example.com / password
      * - Supervisor: supervisor@example.com / password
      * - Karyawan: karyawan@example.com / password
+    * - Karyawan: ekoaryo@example.com / password
      * - Contoh lama: dela@example.com / password
      */
     public function run(): void
     {
         // ========== USER DATA ==========
         // Akun Admin
-        $adminUser = User::firstOrCreate(
+        $adminUser = User::updateOrCreate(
             ['email' => 'admin@example.com'],
             [
                 'nama' => 'Admin Sistem',
@@ -42,7 +43,7 @@ class DatabaseSeeder extends Seeder
         );
 
         // Akun Supervisor
-        $supervisorUser = User::firstOrCreate(
+        $supervisorUser = User::updateOrCreate(
             ['email' => 'supervisor@example.com'],
             [
                 'nama' => 'Supervisor Tim',
@@ -52,7 +53,7 @@ class DatabaseSeeder extends Seeder
         );
 
         // Akun Karyawan
-        $karyawanUser = User::firstOrCreate(
+        $karyawanUser = User::updateOrCreate(
             ['email' => 'karyawan@example.com'],
             [
                 'nama' => 'Karyawan Contoh',
@@ -61,8 +62,18 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        // Akun Karyawan Ekoaryo (tanpa data presensi)
+        $ekoaryoUser = User::updateOrCreate(
+            ['email' => 'ekoaryo@example.com'],
+            [
+                'nama' => 'Ekoaryo',
+                'password' => 'password',
+                'role' => 'karyawan',
+            ]
+        );
+
         // Akun Contoh Lama
-        User::firstOrCreate([
+        User::updateOrCreate([
             'email' => 'dela@example.com',
         ], [
             'nama' => 'Dela',
@@ -99,6 +110,18 @@ class DatabaseSeeder extends Seeder
                 'status_kontrak' => 'tetap',
                 'no_hp' => '081234567890',
                 'bidang_tugas' => 'Administrasi dan Pelaporan',
+            ]
+        );
+
+        Karyawan::updateOrCreate(
+            ['user_id' => $ekoaryoUser->id],
+            [
+                'nik' => 'KRY-002',
+                'posisi_karyawan' => 'Staff Operasional',
+                'tgl_masuk' => '2025-02-10',
+                'status_kontrak' => 'kontrak',
+                'no_hp' => '081298765432',
+                'bidang_tugas' => 'Operasional Lapangan',
             ]
         );
 

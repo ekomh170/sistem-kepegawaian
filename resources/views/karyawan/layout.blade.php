@@ -12,7 +12,7 @@
             --card: #ffffff;
             --border: #d9e0ef;
             --brand-a: #0f766e;
-            --brand-b: #0ea5e9;
+            --brand-b: #f59e0b;
             --success: #15803d;
             --warning: #c2410c;
             --danger: #b91c1c;
@@ -25,7 +25,7 @@
         body {
             margin: 0;
             font-family: "Plus Jakarta Sans", "Poppins", "Segoe UI", sans-serif;
-            background: radial-gradient(circle at top right, #d6f0ff 0%, #f7fafc 42%, #f5f7fb 100%);
+            background: radial-gradient(circle at top right, #fff8dd 0%, #fffdf3 42%, #fefce8 100%);
             color: var(--text);
             min-height: 100vh;
         }
@@ -42,7 +42,7 @@
             color: #fff;
             border-radius: 20px;
             padding: 16px 16px 14px;
-            box-shadow: 0 14px 30px rgba(14, 165, 233, 0.25);
+            box-shadow: 0 14px 30px rgba(245, 158, 11, 0.25);
             margin-bottom: 14px;
         }
 
@@ -118,7 +118,7 @@
         .pill-success { background: #dcfce7; color: #166534; }
         .pill-warning { background: #ffedd5; color: #9a3412; }
         .pill-danger { background: #fee2e2; color: #991b1b; }
-        .pill-info { background: #dbeafe; color: #1d4ed8; }
+        .pill-info { background: #fef3c7; color: #92400e; }
 
         .text-muted {
             color: var(--muted);
@@ -162,7 +162,7 @@
         }
 
         .btn-primary { background: #0f766e; color: #fff; }
-        .btn-secondary { background: #0ea5e9; color: #fff; }
+        .btn-secondary { background: #f59e0b; color: #fff; }
         .btn-muted { background: #e2e8f0; color: #0f172a; }
 
         .btn-logout {
@@ -221,9 +221,9 @@
         }
 
         .bottom-nav a.active {
-            background: #e0f2fe;
-            color: #0c4a6e;
-            border-color: #bae6fd;
+            background: #fef3c7;
+            color: #92400e;
+            border-color: #fcd34d;
         }
     </style>
 </head>

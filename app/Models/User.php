@@ -88,6 +88,12 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return in_array($this->role, ['admin', 'supervisor', 'karyawan'], true);
+        return match ($panel->getId()) {
+            // The admin panel hosts the shared /login page for all roles.
+            // Route-level role middleware still protects admin-only pages.
+            'admin' => in_array($this->role, ['admin', 'supervisor', 'karyawan'], true),
+            'supervisor' => $this->role === 'supervisor',
+            default => false,
+        };
     }
 }
