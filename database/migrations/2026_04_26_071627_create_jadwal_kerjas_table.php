@@ -11,9 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('jadwal_kerjas', function (Blueprint $table) {
+        Schema::create('tb_jadwal_kerja', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->foreignId('karyawan_id')->constrained('tb_karyawan')->cascadeOnDelete();
+            $table->date('tanggal');
+            $table->enum('hari', ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']);
+            $table->time('jam_masuk');
+            $table->time('jam_keluar');
+            $table->string('lokasi_kerja');
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 
@@ -22,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('jadwal_kerjas');
+        Schema::dropIfExists('tb_jadwal_kerja');
     }
 };

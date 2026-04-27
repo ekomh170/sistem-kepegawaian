@@ -11,9 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('notifikasis', function (Blueprint $table) {
+        Schema::create('tb_notifikasi', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->foreignId('user_id')->constrained('tb_user')->cascadeOnDelete();
+            $table->enum('tipe', ['info', 'peringatan', 'urgent'])->default('info');
+            $table->text('pesan');
+            $table->boolean('terbaca')->default(false);
+            $table->dateTime('tgl_kirim');
+            $table->string('channel');
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 
@@ -22,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('notifikasis');
+        Schema::dropIfExists('tb_notifikasi');
     }
 };

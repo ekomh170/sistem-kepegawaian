@@ -11,9 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('laporans', function (Blueprint $table) {
+        Schema::create('tb_laporan', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->foreignId('karyawan_id')->constrained('tb_karyawan')->cascadeOnDelete();
+            $table->foreignId('admin_id')->constrained('tb_admin')->cascadeOnDelete();
+            $table->string('periode');
+            $table->unsignedInteger('total_hadir')->default(0);
+            $table->unsignedInteger('total_terlambat')->default(0);
+            $table->unsignedInteger('total_tidak_hadir')->default(0);
+            $table->decimal('estimasi_gaji', 12, 2)->default(0);
+            $table->dateTime('tgl_generate');
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 
@@ -22,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('laporans');
+        Schema::dropIfExists('tb_laporan');
     }
 };
