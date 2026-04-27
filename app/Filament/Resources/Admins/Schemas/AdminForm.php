@@ -1,20 +1,19 @@
 <?php
 
-namespace App\Filament\Resources\Karyawans\Schemas;
+namespace App\Filament\Resources\Admins\Schemas;
 
-use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
-class KaryawanForm
+class AdminForm
 {
     public static function configure(Schema $schema): Schema
     {
         return $schema
             ->components([
-                Section::make('Data Karyawan')
+                Section::make('Data Admin')
                     ->columns(2)
                     ->schema([
                         Select::make('user_id')
@@ -24,27 +23,20 @@ class KaryawanForm
                             ->preload()
                             ->required()
                             ->unique(ignoreRecord: true),
-                        TextInput::make('nik')
+                        TextInput::make('nip')
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true),
-                        TextInput::make('posisi_karyawan')
+                        TextInput::make('divisi')
                             ->required()
                             ->maxLength(255),
-                        DatePicker::make('tgl_masuk')
-                            ->required(),
-                        Select::make('status_kontrak')
+                        Select::make('level_akses')
                             ->options([
-                                'kontrak' => 'Kontrak',
-                                'tetap' => 'Tetap',
+                                'dasar' => 'Dasar',
+                                'menengah' => 'Menengah',
+                                'penuh' => 'Penuh',
                             ])
                             ->required(),
-                        TextInput::make('no_hp')
-                            ->required()
-                            ->maxLength(30),
-                        TextInput::make('bidang_tugas')
-                            ->required()
-                            ->maxLength(255),
                     ]),
             ]);
     }
