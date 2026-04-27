@@ -1,33 +1,26 @@
 <?php
 
-namespace App\Filament\Resources\Karyawans\Schemas;
+namespace App\Filament\Resources\Admins\Schemas;
 
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
-class KaryawanInfolist
+class AdminInfolist
 {
     public static function configure(Schema $schema): Schema
     {
         return $schema
             ->components([
-                Section::make('Detail Karyawan')
+                Section::make('Detail Admin')
                     ->columns(2)
                     ->schema([
                         TextEntry::make('user.nama')
                             ->label('User'),
-                        TextEntry::make('nik'),
-                        TextEntry::make('posisi_karyawan')
-                            ->label('Posisi Karyawan'),
-                        TextEntry::make('tgl_masuk')
-                            ->date(),
-                        TextEntry::make('status_kontrak')
+                        TextEntry::make('nip'),
+                        TextEntry::make('divisi'),
+                        TextEntry::make('level_akses')
                             ->badge(),
-                        TextEntry::make('no_hp')
-                            ->label('No HP'),
-                        TextEntry::make('bidang_tugas')
-                            ->label('Bidang Tugas'),
                         TextEntry::make('created_at')
                             ->dateTime('d M Y H:i')
                             ->label('Dibuat Pada'),
