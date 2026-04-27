@@ -12,23 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tb_karyawan', function (Blueprint $table) {
-            // id, user_id, nik, jenis_kelamin, tgl_masuk, status_kontrak, no_hp, lokasi_tugas
             $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->string('nik');
-            $table->enum('jenis_kelamin', ['Laki-laki', 'Perempuan']);
+            $table->foreignId('user_id')->constrained('tb_user')->cascadeOnDelete();
+            $table->string('nik')->unique();
+            $table->string('posisi_karyawan');
             $table->date('tgl_masuk');
-            $table->enum('status_kontrak', ['Kontrak', 'Tetap']);
+            $table->enum('status_kontrak', ['kontrak', 'tetap']);
             $table->string('no_hp');
-            $table->string('lokasi_tugas');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->softDeletes();
-            $table->index(['deleted_at']);
-            $table->unique(['user_id']);
-            $table->unique(['nik']);
-            
-
-            $table->timestamps();
+            $table->string('bidang_tugas');
+            $table->unique('user_id');
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 

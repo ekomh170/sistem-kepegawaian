@@ -11,9 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('lokasi_gps', function (Blueprint $table) {
+        Schema::create('tb_lokasi_gps', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->decimal('latitude', 10, 7);
+            $table->decimal('longitude', 10, 7);
+            $table->unsignedInteger('radius_meter');
+            $table->string('nama_lokasi');
+            $table->timestamp('timestamp')->useCurrent();
+            $table->float('akurasi');
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 
@@ -22,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('lokasi_gps');
+        Schema::dropIfExists('tb_lokasi_gps');
     }
 };

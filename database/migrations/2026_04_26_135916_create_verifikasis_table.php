@@ -11,9 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('verifikasis', function (Blueprint $table) {
+        Schema::create('tb_verifikasi', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->foreignId('presensi_id')->constrained('tb_presensi')->cascadeOnDelete();
+            $table->foreignId('supervisor_id')->constrained('tb_supervisor')->cascadeOnDelete();
+            $table->enum('status', ['pending', 'disetujui', 'ditolak'])->default('pending');
+            $table->text('catatan')->nullable();
+            $table->dateTime('tgl_verifikasi')->nullable();
+            $table->string('alasan_tolak')->nullable();
+            $table->unique('presensi_id');
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 
@@ -22,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('verifikasis');
+        Schema::dropIfExists('tb_verifikasi');
     }
 };

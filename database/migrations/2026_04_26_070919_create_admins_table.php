@@ -11,9 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('admins', function (Blueprint $table) {
+        Schema::create('tb_admin', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->foreignId('user_id')->constrained('tb_user')->cascadeOnDelete();
+            $table->string('nip')->unique();
+            $table->string('divisi');
+            $table->enum('level_akses', ['dasar', 'menengah', 'penuh'])->default('dasar');
+            $table->unique('user_id');
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 
@@ -22,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('admins');
+        Schema::dropIfExists('tb_admin');
     }
 };
