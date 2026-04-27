@@ -3,24 +3,33 @@
 use App\Http\Controllers\KaryawanMobileController;
 use App\Http\Controllers\LaporanExportController;
 use App\Http\Controllers\PresensiController;
+use Filament\Auth\Pages\Login as FilamentLogin;
+use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     if (!Auth::check()) {
-        return redirect('/admin/login');
+        return redirect('/login');
     }
 
     return match (Auth::user()?->role) {
         'karyawan' => redirect()->route('karyawan.beranda'),
-        'admin', 'supervisor' => redirect('/admin'),
-        default => redirect('/admin/login'),
+        'admin' => redirect('/admin'),
+        'supervisor' => redirect('/supervisor'),
+        default => redirect('/login'),
     };
 });
 
-Route::get('/login', function () {
-    return redirect('/admin/login');
-});
+$adminPanel = Filament::getPanel('admin', isStrict: false);
+
+if ($adminPanel) {
+    Route::get('/login', FilamentLogin::class)
+        ->middleware($adminPanel->getMiddleware())
+        ->name('login');
+} else {
+    Route::get('/login', fn () => abort(503, 'Admin panel is not available.'))->name('login');
+}
 
 /**
  * Employee Attendance Routes
@@ -38,7 +47,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('karyawan.')
         ->middleware('role:karyawan')
         ->group(function () {
-            Route::get('/beranda', [KaryawanMobileController::class, 'beranda'])->name('beranda');
+            Route::get('/', [KaryawanMobileController::class, 'beranda'])->name('beranda');
             Route::get('/presensi/masuk', [KaryawanMobileController::class, 'formPresensiMasuk'])->name('presensi.masuk');
             Route::post('/presensi/masuk', [KaryawanMobileController::class, 'submitPresensiMasuk'])->name('presensi.masuk.submit');
             Route::get('/presensi/pulang', [KaryawanMobileController::class, 'formPresensiPulang'])->name('presensi.pulang');

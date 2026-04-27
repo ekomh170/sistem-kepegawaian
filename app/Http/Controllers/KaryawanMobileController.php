@@ -170,7 +170,7 @@ class KaryawanMobileController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/admin/login');
+        return redirect('/login');
     }
 
     private function resolveKaryawan(): Karyawan
