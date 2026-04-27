@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Lokasi_gps extends Model
 {
     protected $table = 'tb_lokasi_gps';
+
+    public const UPDATED_AT = null;
 
     protected $fillable = [
         'latitude',
@@ -17,8 +20,19 @@ class Lokasi_gps extends Model
         'akurasi',
     ];
 
-    public function karyawan()
+    protected function casts(): array
     {
-        return $this->belongsTo(Karyawan::class);
+        return [
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
+            'radius_meter' => 'integer',
+            'timestamp' => 'datetime',
+            'akurasi' => 'float',
+        ];
+    }
+
+    public function presensis(): HasMany
+    {
+        return $this->hasMany(Presensi::class, 'lokasi_gps_id');
     }
 }
