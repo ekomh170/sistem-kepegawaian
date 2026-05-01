@@ -32,7 +32,7 @@ class LokasiGpsResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return false;
+        return Auth::user()?->role === 'admin';
     }
 
     public static function canViewAny(): bool
