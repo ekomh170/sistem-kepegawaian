@@ -1,59 +1,103 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sistem Informasi Kepegawaian
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistem informasi kepegawaian untuk CV Boss Muda Mandiri yang dibangun dengan Laravel 12, Filament v5, dan MySQL. Aplikasi ini dipakai untuk mengelola data karyawan, presensi harian, penugasan, bukti pekerjaan, rekap potongan, laporan, dan pengaturan lokasi kantor.
 
-## About Laravel
+Dokumentasi utama ada di [docs/v2](docs/v2), sedangkan referensi dokumentasi lama tetap disimpan di [docs/v1](docs/v1).
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Gambaran Singkat
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Admin bekerja lewat panel Filament untuk CRUD penuh modul operasional.
+- Supervisor memakai panel Filament dengan akses view only pada modul operasional dan akses laporan.
+- Karyawan memakai portal mobile berbasis Blade untuk presensi masuk/pulang, daftar tugas, upload bukti pekerjaan, riwayat, dan logout.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Fitur Utama
 
-## Learning Laravel
+- Manajemen akun, karyawan, presensi, detail pekerjaan, bukti pekerjaan, rekap potongan, laporan, verifikasi, dan setting.
+- Presensi harian dengan validasi lokasi dan dukungan capture kamera/base64.
+- Portal mobile karyawan untuk beranda, tugas, jadwal, riwayat, dan upload bukti.
+- Export laporan ke CSV, Excel, dan PDF.
+- Pengaturan lokasi kantor berbasis map picker dan geofence radius.
+- Struktur dokumentasi yang sudah dirapikan untuk handoff dev-to-dev.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Teknologi
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- PHP 8.2+
+- Laravel 12
+- Filament v5
+- MySQL
+- maatwebsite/excel untuk export Excel/CSV
+- barryvdh/laravel-dompdf untuk export PDF
+- dotswan/filament-map-picker untuk pengaturan lokasi kantor
 
-## Laravel Sponsors
+## Kebutuhan Awal
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- PHP 8.2 atau lebih baru
+- Composer
+- Node.js dan npm
+- Database MySQL
 
-### Premium Partners
+## Instalasi
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```bash
+git clone <url-repository>
+cd sistem-kepegawaian
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+```
 
-## Contributing
+Sesuaikan konfigurasi database di file `.env`, lalu jalankan migrasi dan seeder:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+php artisan migrate --seed
+```
 
-## Code of Conduct
+Untuk build asset produksi:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+npm run build
+```
 
-## Security Vulnerabilities
+## Menjalankan Aplikasi
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Mode development paling praktis:
 
-## License
+```bash
+composer run dev
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Atau jalankan manual:
+
+```bash
+php artisan serve
+npm run dev
+```
+
+## Perintah Berguna
+
+- `composer run setup` untuk instalasi awal yang lengkap.
+- `composer test` untuk menjalankan test suite Laravel.
+- `php artisan filament:upgrade` bila ada penyesuaian Filament setelah update dependensi.
+
+## Rujukan Dokumentasi
+
+- [docs/progress_report.md](docs/progress_report.md)
+- [docs/v1/FILAMENT_DEVELOPER_PLAYBOOK.md](docs/v1/FILAMENT_DEVELOPER_PLAYBOOK.md)
+- [docs/v2/01-ringkasan-sistem.md](docs/v2/01-ringkasan-sistem.md)
+- [docs/v2/02-database-schema.md](docs/v2/02-database-schema.md)
+- [docs/v2/03-hak-akses-rbac.md](docs/v2/03-hak-akses-rbac.md)
+
+## Struktur Ringkas
+
+```text
+app/
+database/
+docs/
+resources/views/
+routes/
+```
+
+## Lisensi
+
+Proyek ini mengikuti lisensi MIT.
