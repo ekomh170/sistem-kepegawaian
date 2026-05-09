@@ -11,15 +11,18 @@ class Karyawan extends Model
     protected $table = 'tb_karyawan';
 
     public const UPDATED_AT = null;
-
     protected $fillable = [
         'user_id',
         'nik',
         'posisi_karyawan',
+        'no_ktp',
+        'no_hp',
+        'alamat',
+        'foto',
         'tgl_masuk',
         'status_kontrak',
-        'no_hp',
         'bidang_tugas',
+        'gaji_pokok',
     ];
 
     protected function casts(): array
@@ -34,9 +37,9 @@ class Karyawan extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function jadwalKerjas(): HasMany
+    public function detailPekerjaans(): HasMany
     {
-        return $this->hasMany(Jadwal_kerja::class, 'karyawan_id');
+        return $this->hasMany(DetailPekerjaan::class, 'karyawan_id');
     }
 
     public function presensis(): HasMany
@@ -44,8 +47,13 @@ class Karyawan extends Model
         return $this->hasMany(Presensi::class, 'karyawan_id');
     }
 
-    public function laporans(): HasMany
+    public function rekapPotongans(): HasMany
     {
-        return $this->hasMany(Laporan::class, 'karyawan_id');
+        return $this->hasMany(RekapPotongan::class, 'karyawan_id');
+    }
+
+    public function buktiPekerjaans(): HasMany
+    {
+        return $this->hasMany(BuktiPekerjaan::class, 'karyawan_id');
     }
 }

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->enum('role', ['karyawan', 'admin', 'supervisor'])->default('karyawan');
+            $table->boolean('is_active')->default(true);
             $table->rememberToken();
             $table->timestamp('created_at')->useCurrent();
         });

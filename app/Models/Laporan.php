@@ -12,34 +12,24 @@ class Laporan extends Model
     public const UPDATED_AT = null;
 
     protected $fillable = [
-        'karyawan_id',
-        'admin_id',
+        'judul',
+        'jenis',
         'periode',
-        'total_hadir',
-        'total_terlambat',
-        'total_tidak_hadir',
-        'estimasi_gaji',
+        'filter',
+        'file_path',
+        'generated_by',
         'tgl_generate',
     ];
 
     protected function casts(): array
     {
         return [
-            'total_hadir' => 'integer',
-            'total_terlambat' => 'integer',
-            'total_tidak_hadir' => 'integer',
-            'estimasi_gaji' => 'decimal:2',
-            'tgl_generate' => 'datetime',
+            'filter' => 'array',
         ];
     }
 
-    public function karyawan(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Karyawan::class, 'karyawan_id');
-    }
-
-    public function admin(): BelongsTo
-    {
-        return $this->belongsTo(Admin::class, 'admin_id');
+        return $this->belongsTo(User::class, 'generated_by');
     }
 }

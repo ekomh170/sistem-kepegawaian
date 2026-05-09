@@ -13,14 +13,13 @@ return new class extends Migration
     {
         Schema::create('tb_laporan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('karyawan_id')->constrained('tb_karyawan')->cascadeOnDelete();
-            $table->foreignId('admin_id')->constrained('tb_admin')->cascadeOnDelete();
-            $table->string('periode');
-            $table->unsignedInteger('total_hadir')->default(0);
-            $table->unsignedInteger('total_terlambat')->default(0);
-            $table->unsignedInteger('total_tidak_hadir')->default(0);
-            $table->decimal('estimasi_gaji', 12, 2)->default(0);
-            $table->dateTime('tgl_generate');
+            $table->string('judul')->nullable();
+            $table->string('jenis')->nullable();
+            $table->string('periode')->nullable();
+            $table->text('filter')->nullable();
+            $table->string('file_path')->nullable();
+            $table->foreignId('generated_by')->constrained('tb_user')->cascadeOnDelete();
+            $table->dateTime('tgl_generate')->useCurrent();
             $table->timestamp('created_at')->useCurrent();
         });
     }

@@ -23,9 +23,4 @@ class Admin extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
-
-    public function laporans(): HasMany
-    {
-        return $this->hasMany(Laporan::class, 'admin_id');
-    }
 }
