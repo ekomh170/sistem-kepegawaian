@@ -24,6 +24,12 @@ class KaryawanResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static ?string $navigationLabel = 'Karyawan';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Manajemen Akun';
+
+    protected static ?int $navigationSort = 2;
+
     protected static ?string $recordTitleAttribute = 'nik';
 
     public static function canViewAny(): bool

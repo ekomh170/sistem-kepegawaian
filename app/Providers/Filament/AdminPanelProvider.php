@@ -52,7 +52,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                'role:admin',
+                'role:admin,supervisor',
             ]);
     }
 }

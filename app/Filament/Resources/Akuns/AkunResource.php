@@ -23,6 +23,10 @@ class AkunResource extends Resource
 
     protected static ?string $navigationLabel = 'Akun';
 
+    protected static string|\UnitEnum|null $navigationGroup = 'Manajemen Akun';
+
+    protected static ?int $navigationSort = 1;
+
     protected static ?string $recordTitleAttribute = 'nama';
 
     public static function shouldRegisterNavigation(): bool
@@ -75,6 +79,7 @@ class AkunResource extends Resource
         return [
             'index' => ListAkuns::route('/'),
             'create' => CreateAkun::route('/create'),
+            'edit' => Pages\EditAkun::route('/{record}/edit'),
         ];
     }
 }

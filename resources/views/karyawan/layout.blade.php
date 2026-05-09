@@ -262,7 +262,7 @@
     <nav class="bottom-nav">
         <a href="{{ route('karyawan.beranda') }}" class="{{ request()->routeIs('karyawan.beranda') ? 'active' : '' }}">Beranda</a>
         <a href="{{ route('karyawan.presensi.masuk') }}" class="{{ request()->routeIs('karyawan.presensi.masuk') ? 'active' : '' }}">Masuk</a>
-        <a href="{{ route('karyawan.presensi.pulang') }}" class="{{ request()->routeIs('karyawan.presensi.pulang') ? 'active' : '' }}">Pulang</a>
+        <a href="{{ route('karyawan.tugas') }}" class="{{ request()->routeIs('karyawan.tugas*') ? 'active' : '' }}">Tugas</a>
         <a href="{{ route('karyawan.jadwal') }}" class="{{ request()->routeIs('karyawan.jadwal') ? 'active' : '' }}">Jadwal</a>
         <a href="{{ route('karyawan.riwayat') }}" class="{{ request()->routeIs('karyawan.riwayat') ? 'active' : '' }}">Riwayat</a>
     </nav>

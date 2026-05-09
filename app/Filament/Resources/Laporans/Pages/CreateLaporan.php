@@ -8,4 +8,30 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateLaporan extends CreateRecord
 {
     protected static string $resource = LaporanResource::class;
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        if (empty($data['judul'])) {
+            $data['judul'] = self::buildJudul($data);
+        }
+
+        if (empty($data['file_path'])) {
+            $data['file_path'] = 'laporan/' . ($data['periode'] ?? 'unknown') . '.pdf';
+        }
+
+        return $data;
+    }
+
+    private static function buildJudul(array $data): string
+    {
+        $tipe = $data['tipe_laporan'] ?? 'presensi';
+        $tipeName = match ($tipe) {
+            'rekap_potongan' => 'Laporan Rekap Potongan',
+            default => 'Laporan Presensi',
+        };
+        $jenis = $data['jenis'] ?? '';
+        $periode = $data['periode'] ?? '';
+
+        return "{$tipeName} {$jenis} {$periode}";
+    }
 }

@@ -32,10 +32,9 @@ class VerifikasiResource extends Resource
 
     protected static ?string $navigationLabel = 'Verifikasi';
 
-    public static function shouldRegisterNavigation(): bool
-    {
-        return Auth::user()?->role === 'supervisor';
-    }
+    protected static string|\UnitEnum|null $navigationGroup = 'Operasional';
+
+    protected static ?int $navigationSort = 6;
 
     public static function canViewAny(): bool
     {
@@ -44,12 +43,12 @@ class VerifikasiResource extends Resource
 
     public static function canCreate(): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return Auth::user()?->role === 'admin';
     }
 
     public static function canEdit(Model $record): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return Auth::user()?->role === 'admin';
     }
 
     public static function canDelete(Model $record): bool
@@ -72,13 +71,15 @@ class VerifikasiResource extends Resource
                         Select::make('presensi_id')
                             ->label('Presensi')
                             ->relationship('presensi', 'id')
+                            ->getOptionLabelFromRecordUsing(fn ($record) => "Presensi " . ($record->tgl_presensi?->format('d M Y') ?? '') . " - " . ($record->karyawan?->user?->nama ?? 'Unknown'))
                             ->searchable()
                             ->preload()
                             ->required()
                             ->unique(ignoreRecord: true),
                         Select::make('supervisor_id')
                             ->label('Supervisor')
-                            ->relationship('supervisor', 'jabatan')
+                            ->relationship('supervisor', 'id')
+                            ->getOptionLabelFromRecordUsing(fn ($record) => ($record->user?->nama ?? 'Unknown') . " ({$record->jabatan})")
                             ->searchable()
                             ->preload()
                             ->required(),
@@ -104,10 +105,11 @@ class VerifikasiResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('presensi.id')
-                    ->label('ID Presensi')
+                TextColumn::make('presensi.karyawan.user.nama')
+                    ->label('Karyawan')
+                    ->searchable()
                     ->sortable(),
-                TextColumn::make('supervisor.jabatan')
+                TextColumn::make('supervisor.user.nama')
                     ->label('Supervisor')
                     ->searchable(),
                 TextColumn::make('status')
@@ -120,13 +122,15 @@ class VerifikasiResource extends Resource
             ])
             ->filters([])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    ->visible(fn () => Auth::user()?->role === 'admin'),
+                DeleteAction::make()
+                    ->visible(fn () => Auth::user()?->role === 'admin'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                ]),
+                ])->visible(fn () => Auth::user()?->role === 'admin'),
             ]);
     }
 

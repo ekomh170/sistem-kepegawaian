@@ -16,4 +16,26 @@ class EditLaporan extends EditRecord
             DeleteAction::make(),
         ];
     }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        if (empty($data['judul'])) {
+            $data['judul'] = self::buildJudul($data);
+        }
+
+        return $data;
+    }
+
+    private static function buildJudul(array $data): string
+    {
+        $tipe = $data['tipe_laporan'] ?? 'presensi';
+        $tipeName = match ($tipe) {
+            'rekap_potongan' => 'Laporan Rekap Potongan',
+            default => 'Laporan Presensi',
+        };
+        $jenis = $data['jenis'] ?? '';
+        $periode = $data['periode'] ?? '';
+
+        return "{$tipeName} {$jenis} {$periode}";
+    }
 }

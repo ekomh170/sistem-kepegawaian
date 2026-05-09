@@ -40,11 +40,14 @@ class CreateAkun extends CreateRecord
                 'karyawan' => Karyawan::create([
                     'user_id' => $user->id,
                     'nik' => $data['karyawan_nik'],
+                    'no_ktp' => $data['karyawan_no_ktp'] ?? null,
                     'posisi_karyawan' => $data['karyawan_posisi_karyawan'],
                     'tgl_masuk' => $data['karyawan_tgl_masuk'],
                     'status_kontrak' => $data['karyawan_status_kontrak'],
                     'no_hp' => $data['karyawan_no_hp'],
                     'bidang_tugas' => $data['karyawan_bidang_tugas'],
+                    'alamat' => $data['karyawan_alamat'] ?? null,
+                    'gaji_pokok' => $data['karyawan_gaji_pokok'] ?? 0,
                 ]),
                 default => throw new \InvalidArgumentException('Role akun tidak valid.'),
             };

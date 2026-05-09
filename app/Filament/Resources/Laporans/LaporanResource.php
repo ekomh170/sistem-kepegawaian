@@ -14,6 +14,7 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -31,6 +32,10 @@ class LaporanResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
     protected static ?string $navigationLabel = 'Laporan';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Keuangan & Laporan';
+
+    protected static ?int $navigationSort = 8;
 
     public static function canViewAny(): bool
     {
@@ -61,75 +66,158 @@ class LaporanResource extends Resource
     {
         return $schema
             ->components([
-                Section::make('Data Laporan')
+                Section::make('Informasi Laporan')
                     ->columns(2)
+                    ->columnSpanFull()
                     ->schema([
-                        Select::make('karyawan_id')
-                            ->label('Karyawan')
-                            ->relationship('karyawan', 'nik')
-                            ->searchable()
-                            ->preload()
-                            ->required(),
-                        Select::make('admin_id')
-                            ->label('Admin')
-                            ->relationship('admin', 'nip')
-                            ->searchable()
-                            ->preload()
-                            ->required(),
-                        TextInput::make('periode')
+                        Select::make('tipe_laporan')
+                            ->label('Tipe Laporan')
+                            ->options([
+                                'presensi' => '📋 Laporan Presensi (Detail Harian)',
+                                'rekap_potongan' => '💰 Laporan Rekap Potongan',
+                            ])
                             ->required()
-                            ->maxLength(255),
-                        TextInput::make('total_hadir')
-                            ->numeric()
-                            ->default(0)
-                            ->required(),
-                        TextInput::make('total_terlambat')
-                            ->numeric()
-                            ->default(0)
-                            ->required(),
-                        TextInput::make('total_tidak_hadir')
-                            ->numeric()
-                            ->default(0)
-                            ->required(),
-                        TextInput::make('estimasi_gaji')
-                            ->numeric()
-                            ->prefix('Rp')
-                            ->required(),
+                            ->default('presensi')
+                            ->live()
+                            ->afterStateHydrated(function ($set, $record) {
+                                if ($record && $record->judul) {
+                                    $judul = strtolower($record->judul);
+                                    if (str_contains($judul, 'rekap') || str_contains($judul, 'potongan')) {
+                                        $set('tipe_laporan', 'rekap_potongan');
+                                    } else {
+                                        $set('tipe_laporan', 'presensi');
+                                    }
+                                }
+                            })
+                            ->afterStateUpdated(function ($set, $get) {
+                                self::generateJudul($set, $get);
+                            })
+                            ->dehydrated(false)
+                            ->columnSpanFull(),
+
+                        Select::make('jenis')
+                            ->label('Jenis Laporan')
+                            ->options([
+                                'Harian' => '📅 Harian',
+                                'Mingguan' => '📆 Mingguan',
+                                'Bulanan' => '📊 Bulanan',
+                                'Tahunan' => '📈 Tahunan',
+                            ])
+                            ->required()
+                            ->default('Bulanan')
+                            ->live()
+                            ->afterStateUpdated(function ($set, $get) {
+                                self::generateJudul($set, $get);
+                            }),
+
+                        // Periode - format berubah sesuai jenis
+                        TextInput::make('periode')
+                            ->label(fn ($get) => match ($get('jenis')) {
+                                'Harian' => 'Periode (Tanggal)',
+                                'Tahunan' => 'Periode (Tahun)',
+                                default => 'Periode (Bulan)',
+                            })
+                            ->required()
+                            ->maxLength(20)
+                            ->placeholder(fn ($get) => match ($get('jenis')) {
+                                'Harian' => '2026-05-09',
+                                'Tahunan' => '2026',
+                                default => '2026-04',
+                            })
+                            ->helperText(fn ($get) => match ($get('jenis')) {
+                                'Harian' => 'Format: YYYY-MM-DD (contoh: 2026-05-09)',
+                                'Tahunan' => 'Format: YYYY (contoh: 2026)',
+                                default => 'Format: YYYY-MM (contoh: 2026-04)',
+                            })
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function ($set, $get) {
+                                self::generateJudul($set, $get);
+                            }),
+
+                        \Filament\Forms\Components\Hidden::make('judul')
+                            ->dehydrated(),
+
+                        Select::make('generated_by')
+                            ->label('Dibuat Oleh')
+                            ->relationship('user', 'nama')
+                            ->default(fn () => Auth::id())
+                            ->required()
+                            ->disabled()
+                            ->dehydrated(),
+
                         DateTimePicker::make('tgl_generate')
                             ->label('Tanggal Generate')
-                            ->seconds(false)
+                            ->default(now())
                             ->required(),
+
+                        Textarea::make('filter')
+                            ->label('Catatan')
+                            ->columnSpanFull()
+                            ->rows(2)
+                            ->placeholder('Catatan tambahan tentang laporan ini')
+                            ->default(null),
                     ]),
             ]);
+    }
+
+    private static function generateJudul($set, $get): void
+    {
+        $tipe = $get('tipe_laporan');
+        $jenis = $get('jenis');
+        $periode = $get('periode');
+
+        if (!$tipe || !$periode) {
+            return;
+        }
+
+        $tipeName = match ($tipe) {
+            'presensi' => 'Laporan Presensi',
+            'rekap_potongan' => 'Laporan Rekap Potongan',
+            default => 'Laporan',
+        };
+
+        $jenisName = $jenis ? " {$jenis}" : '';
+        $set('judul', "{$tipeName}{$jenisName} {$periode}");
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
+                TextColumn::make('judul')
+                    ->label('Judul')
+                    ->searchable()
+                    ->weight('bold')
+                    ->limit(40),
+                TextColumn::make('jenis')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Harian' => 'info',
+                        'Mingguan' => 'primary',
+                        'Bulanan' => 'success',
+                        'Tahunan' => 'warning',
+                        default => 'gray',
+                    }),
                 TextColumn::make('periode')
                     ->label('Periode')
-                    ->searchable(),
-                TextColumn::make('karyawan.nik')
-                    ->label('Karyawan')
-                    ->searchable(),
-                TextColumn::make('admin.nip')
-                    ->label('Admin')
-                    ->searchable(),
-                TextColumn::make('total_hadir')
+                    ->searchable()
                     ->sortable(),
-                TextColumn::make('total_terlambat')
-                    ->sortable(),
-                TextColumn::make('total_tidak_hadir')
-                    ->sortable(),
-                TextColumn::make('estimasi_gaji')
-                    ->money('IDR')
-                    ->sortable(),
+                TextColumn::make('user.nama')
+                    ->label('Dibuat Oleh'),
                 TextColumn::make('tgl_generate')
+                    ->label('Tanggal Generate')
                     ->dateTime('d M Y H:i')
                     ->sortable(),
             ])
+            ->defaultSort('tgl_generate', 'desc')
             ->filters([
+                SelectFilter::make('jenis')
+                    ->options([
+                        'Harian' => 'Harian',
+                        'Mingguan' => 'Mingguan',
+                        'Bulanan' => 'Bulanan',
+                        'Tahunan' => 'Tahunan',
+                    ]),
                 SelectFilter::make('periode')
                     ->label('Periode')
                     ->options(fn (): array => Laporan::query()
@@ -138,11 +226,32 @@ class LaporanResource extends Resource
                         ->orderByDesc('periode')
                         ->pluck('periode', 'periode')
                         ->all()),
-                SelectFilter::make('karyawan_id')
-                    ->label('Karyawan')
-                    ->relationship('karyawan', 'nik'),
             ])
             ->recordActions([
+                \Filament\Actions\Action::make('export_csv')
+                    ->label('CSV')
+                    ->icon('heroicon-o-document-text')
+                    ->color('success')
+                    ->url(fn (Laporan $record): string => str_contains(strtolower($record->judul), 'presensi')
+                        ? route('laporan.export-presensi.csv', ['periode' => $record->periode])
+                        : route('laporan.export.csv', ['periode' => $record->periode]),
+                        shouldOpenInNewTab: true),
+                \Filament\Actions\Action::make('export_excel')
+                    ->label('Excel')
+                    ->icon('heroicon-o-table-cells')
+                    ->color('primary')
+                    ->url(fn (Laporan $record): string => str_contains(strtolower($record->judul), 'presensi')
+                        ? route('laporan.export-presensi.excel', ['periode' => $record->periode])
+                        : route('laporan.export.excel', ['periode' => $record->periode]),
+                        shouldOpenInNewTab: true),
+                \Filament\Actions\Action::make('export_pdf')
+                    ->label('PDF')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('danger')
+                    ->url(fn (Laporan $record): string => str_contains(strtolower($record->judul), 'presensi')
+                        ? route('laporan.export-presensi.pdf', ['periode' => $record->periode])
+                        : route('laporan.export.pdf', ['periode' => $record->periode]),
+                        shouldOpenInNewTab: true),
                 EditAction::make(),
                 DeleteAction::make(),
             ])

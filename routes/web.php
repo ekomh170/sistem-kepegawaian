@@ -37,10 +37,27 @@ if ($adminPanel) {
  * Requires authentication
  */
 Route::middleware(['auth'])->group(function () {
-    // UC-04: Export laporan presensi (Admin & Supervisor)
-    Route::get('/laporan/export', [LaporanExportController::class, 'exportCsv'])
+    // UC-04: Export laporan rekap potongan (Admin & Supervisor)
+    Route::get('/laporan/export/csv', [LaporanExportController::class, 'exportCsv'])
         ->middleware('role:admin,supervisor')
-        ->name('laporan.export');
+        ->name('laporan.export.csv');
+    Route::get('/laporan/export/excel', [LaporanExportController::class, 'exportExcel'])
+        ->middleware('role:admin,supervisor')
+        ->name('laporan.export.excel');
+    Route::get('/laporan/export/pdf', [LaporanExportController::class, 'exportPdf'])
+        ->middleware('role:admin,supervisor')
+        ->name('laporan.export.pdf');
+
+    // Export laporan presensi harian (Admin & Supervisor)
+    Route::get('/laporan/export-presensi/csv', [LaporanExportController::class, 'exportPresensiCsv'])
+        ->middleware('role:admin,supervisor')
+        ->name('laporan.export-presensi.csv');
+    Route::get('/laporan/export-presensi/excel', [LaporanExportController::class, 'exportPresensiExcel'])
+        ->middleware('role:admin,supervisor')
+        ->name('laporan.export-presensi.excel');
+    Route::get('/laporan/export-presensi/pdf', [LaporanExportController::class, 'exportPresensiPdf'])
+        ->middleware('role:admin,supervisor')
+        ->name('laporan.export-presensi.pdf');
 
     // Halaman mobile Karyawan (UC-07, UC-08, UC-09, UC-10, UC-12)
     Route::prefix('karyawan')
@@ -52,6 +69,11 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/presensi/masuk', [KaryawanMobileController::class, 'submitPresensiMasuk'])->name('presensi.masuk.submit');
             Route::get('/presensi/pulang', [KaryawanMobileController::class, 'formPresensiPulang'])->name('presensi.pulang');
             Route::post('/presensi/pulang', [KaryawanMobileController::class, 'submitPresensiPulang'])->name('presensi.pulang.submit');
+            Route::get('/tugas', [KaryawanMobileController::class, 'daftarTugas'])->name('tugas');
+            Route::get('/tugas/upload', [KaryawanMobileController::class, 'formUploadBukti'])->name('tugas.upload');
+            Route::post('/tugas/upload', [KaryawanMobileController::class, 'submitUploadBukti'])->name('tugas.upload.submit');
+            Route::post('/tugas/terima', [KaryawanMobileController::class, 'terimaTugas'])->name('tugas.terima');
+            Route::post('/tugas/tolak', [KaryawanMobileController::class, 'tolakTugas'])->name('tugas.tolak');
             Route::get('/jadwal', [KaryawanMobileController::class, 'jadwalMingguan'])->name('jadwal');
             Route::get('/riwayat', [KaryawanMobileController::class, 'riwayat'])->name('riwayat');
             Route::post('/logout', [KaryawanMobileController::class, 'logout'])->name('logout');
@@ -71,6 +93,9 @@ Route::middleware(['auth'])->group(function () {
 
     // UC-09: Upload Foto Presensi
     Route::post('/api/presensi/upload-foto', [PresensiController::class, 'uploadFoto'])->name('presensi.upload-foto');
+
+    // UC: Upload Bukti Pekerjaan (foto before-after)
+    Route::post('/api/presensi/bukti-pekerjaan', [PresensiController::class, 'submitBuktiPekerjaan'])->name('presensi.bukti-pekerjaan');
 
     // UC-12: Melihat Riwayat Presensi
     Route::get('/api/presensi/history', [PresensiController::class, 'viewHistory'])->name('presensi.history');

@@ -50,7 +50,7 @@
                         <span class="pill {{ $statusClass }}">{{ strtoupper($item->status) }}</span>
                     </div>
                     <p class="text-muted" style="margin:6px 0 0;">
-                        Masuk: {{ optional($item->jam_masuk)->format('H:i') ?? '-' }} | Pulang: {{ optional($item->jam_keluar)->format('H:i') ?? '-' }}
+                        Masuk: {{ optional($item->jam_masuk)->format('H:i') ?? '-' }} | Pulang: {{ optional($item->jam_pulang)->format('H:i') ?? '-' }}
                         <br>Durasi: {{ $item->durasi_menit ?? 0 }} menit
                     </p>
                 </div>

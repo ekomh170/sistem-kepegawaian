@@ -31,6 +31,7 @@ class User extends Authenticatable implements FilamentUser
         'email',
         'password',
         'role',
+        'is_active',
     ];
 
     /**
@@ -84,6 +85,11 @@ class User extends Authenticatable implements FilamentUser
     public function notifikasis(): HasMany
     {
         return $this->hasMany(Notifikasi::class, 'user_id');
+    }
+
+    public function laporans(): HasMany
+    {
+        return $this->hasMany(Laporan::class, 'generated_by');
     }
 
     public function canAccessPanel(Panel $panel): bool

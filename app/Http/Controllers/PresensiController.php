@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Jadwal_kerja;
 use App\Models\Karyawan;
-use App\Models\Lokasi_gps;
 use App\Models\Presensi;
+use App\Models\Setting;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,114 +13,30 @@ use Illuminate\Support\Facades\Auth;
 class PresensiController extends Controller
 {
     /**
-     * UC-10: Melihat Jadwal Kerja (Karyawan view)
-     */
-    public function viewSchedule(Request $request): JsonResponse
-    {
-        $user = Auth::user();
-        $karyawan = Karyawan::where('user_id', $user->id)->firstOrFail();
-        
-        $schedules = Jadwal_kerja::where('karyawan_id', $karyawan->id)
-            ->where('tanggal', '>=', Carbon::now()->startOfDay())
-            ->orderBy('tanggal', 'asc')
-            ->get();
-
-        return response()->json([
-            'success' => true,
-            'data' => $schedules,
-            'message' => 'Jadwal kerja berhasil diambil',
-        ]);
-    }
-
-    /**
-     * UC-11: Validasi Lokasi GPS
-     * Check apakah lokasi karyawan sesuai dengan lokasi kerja yang diizinkan
-     */
-    public function validateGPS(Request $request): JsonResponse
-    {
-        $request->validate([
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
-        ]);
-
-        $user = Auth::user();
-        $karyawan = Karyawan::where('user_id', $user->id)->firstOrFail();
-
-        $today = Carbon::now()->toDateString();
-        $jadwal = Jadwal_kerja::where('karyawan_id', $karyawan->id)
-            ->where('tanggal', $today)
-            ->first();
-
-        if (!$jadwal) {
-            return response()->json([
-                'success' => false,
-                'valid' => false,
-                'message' => 'Tidak ada jadwal kerja hari ini',
-            ], 400);
-        }
-
-        // Get all allowed GPS locations
-        $allowedLocations = Lokasi_gps::all();
-
-        $userLat = $request->latitude;
-        $userLon = $request->longitude;
-
-        foreach ($allowedLocations as $location) {
-            $distance = $this->calculateDistance(
-                $userLat,
-                $userLon,
-                $location->latitude,
-                $location->longitude
-            );
-
-            if ($distance <= $location->radius_meter) {
-                return response()->json([
-                    'success' => true,
-                    'valid' => true,
-                    'location' => $location->nama_lokasi,
-                    'distance' => round($distance, 2),
-                    'message' => 'Lokasi valid, boleh presensi',
-                ]);
-            }
-        }
-
-        return response()->json([
-            'success' => false,
-            'valid' => false,
-            'message' => 'Lokasi Anda di luar area kerja yang diizinkan',
-        ], 422);
-    }
-
-    /**
-     * UC-07: Melakukan Presensi Masuk (Check-in)
+     * UC-07: Melakukan Presensi Masuk (Check-in) - Hanya di kantor pusat
      */
     public function checkIn(Request $request): JsonResponse
     {
         $request->validate([
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
-            'foto_masuk' => 'nullable|image|max:5120', // max 5MB
+            'foto_masuk' => 'nullable|image|max:5120',
+            'foto_masuk_base64' => 'nullable|string',
         ]);
+
+        if (!$request->hasFile('foto_masuk') && !$request->filled('foto_masuk_base64')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Foto presensi wajib diunggah atau diambil via kamera',
+            ], 422);
+        }
 
         $user = Auth::user();
         $karyawan = Karyawan::where('user_id', $user->id)->firstOrFail();
 
-        // Validate GPS location
-        $gpsValidation = $this->validateGPSInternal(
-            $request->latitude,
-            $request->longitude
-        );
-
-        if (!$gpsValidation['valid']) {
-            return response()->json([
-                'success' => false,
-                'message' => $gpsValidation['message'],
-            ], 422);
-        }
-
         $today = Carbon::now()->toDateString();
-        
-        // Check if already checked in today
+
+        // Cek sudah check-in hari ini
         $existingPresensi = Presensi::where('karyawan_id', $karyawan->id)
             ->where('tgl_presensi', $today)
             ->first();
@@ -133,40 +48,74 @@ class PresensiController extends Controller
             ], 422);
         }
 
-        $jadwal = Jadwal_kerja::where('karyawan_id', $karyawan->id)
-            ->where('tanggal', $today)
-            ->firstOrFail();
+        // Validasi GPS terhadap kantor pusat (Dinamis dari Setting)
+        $userLat = $request->latitude;
+        $userLon = $request->longitude;
+        
+        $kantorLat = Setting::get('kantor_lat', -6.2087634);
+        $kantorLng = Setting::get('kantor_lng', 106.8222568);
+        $radius = Setting::get('kantor_radius', 500);
 
-        $lokasiGps = Lokasi_gps::where('nama_lokasi', $gpsValidation['location'])->first();
+        $distance = $this->calculateDistance($userLat, $userLon, $kantorLat, $kantorLng);
+        if ($distance > $radius) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lokasi di luar area kantor pusat (Jarak: ' . round($distance, 2) . 'm)',
+            ], 422);
+        }
+
+        // Hitung keterlambatan (toleransi dari Setting)
         $now = Carbon::now();
-        $jamMasukJadwal = Carbon::parse($today . ' ' . $jadwal->jam_masuk);
-        $status = $now->greaterThan($jamMasukJadwal) ? 'terlambat' : 'hadir';
+        $jamMasukJadwal = Carbon::parse($today . ' 08:00:00');
+        $toleransi = Setting::get('toleransi_menit', 10);
+
+        $keterlambatan_menit = 0;
+        $potongan = 0;
+
+        if ($now->greaterThan($jamMasukJadwal->copy()->addMinutes($toleransi))) {
+            $status = 'terlambat';
+            $keterlambatan_menit = $jamMasukJadwal->diffInMinutes($now);
+            
+            // Potongan dari Setting
+            $nominalPotongan = Setting::get('potongan_terlambat', 10000);
+            $potongan = floor($keterlambatan_menit / 10) * $nominalPotongan;
+        } else {
+            $status = 'hadir';
+        }
 
         // Handle photo upload
         $fotoMasukPath = null;
         if ($request->hasFile('foto_masuk')) {
             $fotoMasukPath = $request->file('foto_masuk')->store('presensi/masuk', 'public');
+        } elseif ($request->filled('foto_masuk_base64')) {
+            $imageParts = explode(";base64,", $request->foto_masuk_base64);
+            $imageBase64 = base64_decode($imageParts[1] ?? $imageParts[0]);
+            $fileName = 'presensi/masuk/' . uniqid() . '.jpg';
+            \Illuminate\Support\Facades\Storage::disk('public')->put($fileName, $imageBase64);
+            $fotoMasukPath = $fileName;
         }
 
         if ($existingPresensi) {
-            // Update existing record
             $existingPresensi->update([
                 'jam_masuk' => $now,
                 'foto_masuk' => $fotoMasukPath ?? $existingPresensi->foto_masuk,
+                'lat_masuk' => $request->latitude,
+                'long_masuk' => $request->longitude,
                 'status' => $status,
-                'lokasi_gps_id' => $lokasiGps->id,
-                'jadwal_kerja_id' => $jadwal->id,
+                'keterlambatan_menit' => $keterlambatan_menit,
+                'potongan' => $potongan,
             ]);
             $presensi = $existingPresensi;
         } else {
-            // Create new record
             $presensi = Presensi::create([
                 'karyawan_id' => $karyawan->id,
-                'jadwal_kerja_id' => $jadwal->id,
-                'lokasi_gps_id' => $lokasiGps->id,
                 'tgl_presensi' => $today,
                 'jam_masuk' => $now,
+                'lat_masuk' => $request->latitude,
+                'long_masuk' => $request->longitude,
                 'status' => $status,
+                'keterlambatan_menit' => $keterlambatan_menit,
+                'potongan' => $potongan,
                 'foto_masuk' => $fotoMasukPath,
             ]);
         }
@@ -180,31 +129,12 @@ class PresensiController extends Controller
     }
 
     /**
-     * UC-08: Melakukan Presensi Pulang (Check-out)
+     * UC-08: Melakukan Presensi Pulang (Check-out) - Sederhana, tanpa upload bukti
      */
     public function checkOut(Request $request): JsonResponse
     {
-        $request->validate([
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
-            'foto_keluar' => 'nullable|image|max:5120',
-        ]);
-
         $user = Auth::user();
         $karyawan = Karyawan::where('user_id', $user->id)->firstOrFail();
-
-        // Validate GPS
-        $gpsValidation = $this->validateGPSInternal(
-            $request->latitude,
-            $request->longitude
-        );
-
-        if (!$gpsValidation['valid']) {
-            return response()->json([
-                'success' => false,
-                'message' => $gpsValidation['message'],
-            ], 422);
-        }
 
         $today = Carbon::now()->toDateString();
         $presensi = Presensi::where('karyawan_id', $karyawan->id)
@@ -218,17 +148,23 @@ class PresensiController extends Controller
             ], 422);
         }
 
-        if ($presensi->jam_keluar) {
+        if ($presensi->jam_pulang) {
             return response()->json([
                 'success' => false,
                 'message' => 'Anda sudah melakukan presensi pulang hari ini',
             ], 422);
         }
 
-        // Handle photo upload
+        // Handle foto keluar (opsional)
         $fotoKeluarPath = null;
         if ($request->hasFile('foto_keluar')) {
             $fotoKeluarPath = $request->file('foto_keluar')->store('presensi/keluar', 'public');
+        } elseif ($request->filled('foto_keluar_base64')) {
+            $imageParts = explode(";base64,", $request->foto_keluar_base64);
+            $imageBase64 = base64_decode($imageParts[1] ?? $imageParts[0]);
+            $fileName = 'presensi/keluar/' . uniqid() . '.jpg';
+            \Illuminate\Support\Facades\Storage::disk('public')->put($fileName, $imageBase64);
+            $fotoKeluarPath = $fileName;
         }
 
         $now = Carbon::now();
@@ -236,7 +172,7 @@ class PresensiController extends Controller
         $durasiMenit = $jamMasuk->diffInMinutes($now);
 
         $presensi->update([
-            'jam_keluar' => $now,
+            'jam_pulang' => $now,
             'foto_keluar' => $fotoKeluarPath,
             'durasi_menit' => $durasiMenit,
         ]);
@@ -246,6 +182,201 @@ class PresensiController extends Controller
             'data' => $presensi,
             'durasi_menit' => $durasiMenit,
             'message' => 'Presensi pulang berhasil dicatat',
+        ]);
+    }
+
+    /**
+     * UC: Upload Bukti Pekerjaan per Detail Pekerjaan (tugas)
+     */
+    public function submitBuktiPekerjaan(Request $request): JsonResponse
+    {
+        $request->validate([
+            'detail_pekerjaan_id' => 'required|exists:tb_detail_pekerjaan,id',
+            'foto_before' => 'nullable|image|max:5120',
+            'foto_after' => 'nullable|image|max:5120',
+            'foto_before_base64' => 'nullable|string',
+            'foto_after_base64' => 'nullable|string',
+            'keterangan' => 'nullable|string',
+        ]);
+
+        if ((!$request->hasFile('foto_before') && !$request->filled('foto_before_base64')) ||
+            (!$request->hasFile('foto_after') && !$request->filled('foto_after_base64'))) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kedua foto (Before & After) wajib diunggah',
+            ], 422);
+        }
+
+        $user = Auth::user();
+        $karyawan = Karyawan::where('user_id', $user->id)->firstOrFail();
+
+        // Validasi bahwa tugas ini memang milik karyawan ini
+        $detailPekerjaan = \App\Models\DetailPekerjaan::where('id', $request->detail_pekerjaan_id)
+            ->where('karyawan_id', $karyawan->id)
+            ->firstOrFail();
+
+        // Handle foto upload
+        $fotoBeforePath = null;
+        if ($request->hasFile('foto_before')) {
+            $fotoBeforePath = $request->file('foto_before')->store('bukti_pekerjaan/before', 'public');
+        } elseif ($request->filled('foto_before_base64')) {
+            $imageParts = explode(";base64,", $request->foto_before_base64);
+            $imageBase64 = base64_decode($imageParts[1] ?? $imageParts[0]);
+            $fileName = 'bukti_pekerjaan/before/' . uniqid() . '.jpg';
+            \Illuminate\Support\Facades\Storage::disk('public')->put($fileName, $imageBase64);
+            $fotoBeforePath = $fileName;
+        }
+
+        $fotoAfterPath = null;
+        if ($request->hasFile('foto_after')) {
+            $fotoAfterPath = $request->file('foto_after')->store('bukti_pekerjaan/after', 'public');
+        } elseif ($request->filled('foto_after_base64')) {
+            $imageParts = explode(";base64,", $request->foto_after_base64);
+            $imageBase64 = base64_decode($imageParts[1] ?? $imageParts[0]);
+            $fileName = 'bukti_pekerjaan/after/' . uniqid() . '.jpg';
+            \Illuminate\Support\Facades\Storage::disk('public')->put($fileName, $imageBase64);
+            $fotoAfterPath = $fileName;
+        }
+
+        $bukti = \App\Models\BuktiPekerjaan::create([
+            'detail_pekerjaan_id' => $detailPekerjaan->id,
+            'karyawan_id' => $karyawan->id,
+            'foto_before' => $fotoBeforePath,
+            'foto_after' => $fotoAfterPath,
+            'keterangan' => $request->keterangan,
+            'status' => 'pending',
+            'uploaded_at' => Carbon::now(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $bukti,
+            'message' => 'Bukti pekerjaan berhasil diupload',
+        ]);
+    }
+
+    /**
+     * UC-11: Validasi Lokasi GPS (terhadap kantor pusat)
+     */
+    public function validateGPS(Request $request): JsonResponse
+    {
+        $request->validate([
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+        ]);
+
+        $kantorLat = Setting::get('kantor_lat', -6.2087634);
+        $kantorLng = Setting::get('kantor_lng', 106.8222568);
+        $radius = Setting::get('kantor_radius', 500);
+
+        $distance = $this->calculateDistance(
+            $request->latitude,
+            $request->longitude,
+            $kantorLat,
+            $kantorLng
+        );
+
+        if ($distance <= $radius) {
+            return response()->json([
+                'success' => true,
+                'valid' => true,
+                'location' => Setting::get('nama_perusahaan', 'Kantor Pusat'),
+                'distance' => round($distance, 2),
+                'message' => 'Lokasi valid, boleh presensi',
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'valid' => false,
+            'message' => 'Lokasi Anda di luar area kantor pusat (Jarak: ' . round($distance, 2) . 'm)',
+        ], 422);
+    }
+
+    /**
+     * UC-10: Melihat Jadwal Kerja (Karyawan view)
+     */
+    public function viewSchedule(Request $request): JsonResponse
+    {
+        $user = Auth::user();
+        $karyawan = Karyawan::where('user_id', $user->id)->firstOrFail();
+
+        $schedules = \App\Models\DetailPekerjaan::where('karyawan_id', $karyawan->id)
+            ->where('tanggal', '>=', Carbon::now()->startOfDay())
+            ->orderBy('tanggal', 'asc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $schedules,
+            'message' => 'Detail Pekerjaan berhasil diambil',
+        ]);
+    }
+
+    /**
+     * UC-12: Melihat Riwayat Presensi (Karyawan view)
+     */
+    public function viewHistory(Request $request): JsonResponse
+    {
+        $request->validate([
+            'bulan' => 'nullable|date_format:Y-m',
+            'limit' => 'nullable|integer|max:100',
+        ]);
+
+        $user = Auth::user();
+        $karyawan = Karyawan::where('user_id', $user->id)->firstOrFail();
+
+        $query = Presensi::where('karyawan_id', $karyawan->id)
+            ->with(['verifikasi']);
+
+        if ($request->bulan) {
+            $query->whereYear('tgl_presensi', substr($request->bulan, 0, 4))
+                  ->whereMonth('tgl_presensi', substr($request->bulan, 5, 2));
+        }
+
+        $history = $query->orderBy('tgl_presensi', 'desc')
+            ->limit($request->limit ?? 30)
+            ->get();
+
+        $summary = [
+            'total_hadir' => $history->where('status', 'hadir')->count(),
+            'total_terlambat' => $history->where('status', 'terlambat')->count(),
+            'total_tidak_hadir' => $history->where('status', 'tidak_hadir')->count(),
+            'total_izin' => $history->where('status', 'izin')->count(),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $history,
+            'summary' => $summary,
+            'message' => 'Riwayat presensi berhasil diambil',
+        ]);
+    }
+
+    /**
+     * UC-03 & UC-04: Monitoring Kehadiran Real-Time (supervisor & admin)
+     */
+    public function getCurrentAttendance(Request $request): JsonResponse
+    {
+        $today = Carbon::now()->toDateString();
+        $presensis = Presensi::where('tgl_presensi', $today)
+            ->with(['karyawan', 'verifikasi'])
+            ->get();
+
+        $summary = [
+            'hadir' => $presensis->where('status', 'hadir')->count(),
+            'terlambat' => $presensis->where('status', 'terlambat')->count(),
+            'tidak_hadir' => $presensis->where('status', 'tidak_hadir')->count(),
+            'izin' => $presensis->where('status', 'izin')->count(),
+            'menunggu_verifikasi' => $presensis->whereNull('verifikasi')->count(),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'date' => $today,
+            'data' => $presensis,
+            'summary' => $summary,
+            'message' => 'Data kehadiran real-time berhasil diambil',
         ]);
     }
 
@@ -284,122 +415,17 @@ class PresensiController extends Controller
     }
 
     /**
-     * UC-12: Melihat Riwayat Presensi (Karyawan view)
-     */
-    public function viewHistory(Request $request): JsonResponse
-    {
-        $request->validate([
-            'bulan' => 'nullable|date_format:Y-m',
-            'limit' => 'nullable|integer|max:100',
-        ]);
-
-        $user = Auth::user();
-        $karyawan = Karyawan::where('user_id', $user->id)->firstOrFail();
-
-        $query = Presensi::where('karyawan_id', $karyawan->id)
-            ->with(['jadwalKerja', 'lokasiGps', 'verifikasi']);
-
-        // Filter by month if provided
-        if ($request->bulan) {
-            $query->whereYear('tgl_presensi', substr($request->bulan, 0, 4))
-                  ->whereMonth('tgl_presensi', substr($request->bulan, 5, 2));
-        }
-
-        $history = $query->orderBy('tgl_presensi', 'desc')
-            ->limit($request->limit ?? 30)
-            ->get();
-
-        $summary = [
-            'total_hadir' => $history->where('status', 'hadir')->count(),
-            'total_terlambat' => $history->where('status', 'terlambat')->count(),
-            'total_tidak_hadir' => $history->where('status', 'tidak_hadir')->count(),
-            'total_izin' => $history->where('status', 'izin')->count(),
-        ];
-
-        return response()->json([
-            'success' => true,
-            'data' => $history,
-            'summary' => $summary,
-            'message' => 'Riwayat presensi berhasil diambil',
-        ]);
-    }
-
-    /**
-     * UC-03 & UC-04: Monitoring Kehadiran Real-Time & Laporan Presensi
-     * Get current attendance status (untuk supervisor & admin)
-     */
-    public function getCurrentAttendance(Request $request): JsonResponse
-    {
-        $user = Auth::user();
-        
-        $today = Carbon::now()->toDateString();
-        $presensis = Presensi::where('tgl_presensi', $today)
-            ->with(['karyawan', 'jadwalKerja', 'lokasiGps', 'verifikasi'])
-            ->get();
-
-        $summary = [
-            'hadir' => $presensis->where('status', 'hadir')->count(),
-            'terlambat' => $presensis->where('status', 'terlambat')->count(),
-            'tidak_hadir' => $presensis->where('status', 'tidak_hadir')->count(),
-            'izin' => $presensis->where('status', 'izin')->count(),
-            'menunggu_verifikasi' => $presensis->whereNull('verifikasi')->count(),
-        ];
-
-        return response()->json([
-            'success' => true,
-            'date' => $today,
-            'data' => $presensis,
-            'summary' => $summary,
-            'message' => 'Data kehadiran real-time berhasil diambil',
-        ]);
-    }
-
-    /**
-     * Internal helper: Calculate distance between two GPS points using Haversine formula
+     * Internal helper: Calculate distance (Haversine)
      */
     private function calculateDistance(float $lat1, float $lon1, float $lat2, float $lon2): float
     {
-        $earthRadius = 6371000; // meters
-
+        $earthRadius = 6371000;
         $dLat = deg2rad($lat2 - $lat1);
         $dLon = deg2rad($lon2 - $lon1);
-
         $a = sin($dLat / 2) * sin($dLat / 2) +
              cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
              sin($dLon / 2) * sin($dLon / 2);
-
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
-
         return $earthRadius * $c;
-    }
-
-    /**
-     * Internal helper: Validate GPS location
-     */
-    private function validateGPSInternal(float $latitude, float $longitude): array
-    {
-        $allowedLocations = Lokasi_gps::all();
-
-        foreach ($allowedLocations as $location) {
-            $distance = $this->calculateDistance(
-                $latitude,
-                $longitude,
-                $location->latitude,
-                $location->longitude
-            );
-
-            if ($distance <= $location->radius_meter) {
-                return [
-                    'valid' => true,
-                    'location' => $location->nama_lokasi,
-                    'distance' => round($distance, 2),
-                ];
-            }
-        }
-
-        return [
-            'valid' => false,
-            'message' => 'Lokasi di luar area kerja yang diizinkan',
-        ];
     }
 }

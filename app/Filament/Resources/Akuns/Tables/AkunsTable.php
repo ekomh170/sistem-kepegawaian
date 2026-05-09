@@ -22,6 +22,12 @@ class AkunsTable
                     ->sortable(),
                 TextColumn::make('role')
                     ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'admin' => 'danger',
+                        'supervisor' => 'warning',
+                        'karyawan' => 'success',
+                        default => 'gray',
+                    })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'karyawan' => 'Karyawan',
                         'admin' => 'Admin',
@@ -34,6 +40,7 @@ class AkunsTable
             ])
             ->filters([])
             ->recordActions([
+                \Filament\Actions\EditAction::make(),
                 DeleteAction::make(),
             ])
             ->toolbarActions([
