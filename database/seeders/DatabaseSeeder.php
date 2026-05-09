@@ -149,13 +149,13 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        // ========== DETAIL PEKERJAAN & PRESENSI DATA (2 BULAN KEBELAKANG) ==========
+        // ========== DETAIL PEKERJAAN & PRESENSI DATA (3 BULAN TERAKHIR) ==========
         $semuaKaryawan = Karyawan::all();
-        $hariIni = \Carbon\Carbon::today();
+        $tanggalAcuan = \Carbon\Carbon::parse('2026-05-08');
 
-        // Generate presensi 2 bulan kebelakang (tidak termasuk hari ini)
-        $startDate = $hariIni->copy()->subMonths(2)->startOfMonth(); // Awal bulan 2 bulan lalu
-        $endDate = $hariIni->copy()->subDay(); // Kemarin
+        // Generate presensi 3 bulan terakhir sampai 8 Mei 2026
+        $startDate = $tanggalAcuan->copy()->subMonths(2)->startOfMonth(); // Awal bulan 2 bulan lalu
+        $endDate = $tanggalAcuan->copy(); // 8 Mei 2026
 
         foreach ($semuaKaryawan as $kr) {
             // Set gaji pokok random per karyawan jika belum ada
@@ -165,61 +165,7 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
 
-            // Jadwal Hari Ini - Tugas Pagi
-            DetailPekerjaan::updateOrCreate(
-                [
-                    'karyawan_id' => $kr->id,
-                    'tanggal' => $hariIni->toDateString(),
-                    'jam_masuk' => '08:00:00',
-                ],
-                [
-                    'jam_pulang' => '12:00:00',
-                    'nama_lokasi' => 'Kantor Pusat CV Boss Muda',
-                    'alamat_lokasi' => 'Jl. Jend. Sudirman No. 45, Jakarta Pusat',
-                    'latitude' => -6.2087634,
-                    'longitude' => 106.8222568,
-                    'radius_meter' => 500,
-                    'keterangan_pekerjaan' => 'Briefing pagi dan persiapan perlengkapan kerja.',
-                ]
-            );
-
-            // Jadwal Hari Ini - Tugas Siang
-            DetailPekerjaan::updateOrCreate(
-                [
-                    'karyawan_id' => $kr->id,
-                    'tanggal' => $hariIni->toDateString(),
-                    'jam_masuk' => '13:00:00',
-                ],
-                [
-                    'jam_pulang' => '15:00:00',
-                    'nama_lokasi' => 'Proyek Gedung Klien B',
-                    'alamat_lokasi' => 'Jl. MH Thamrin, Jakarta Pusat',
-                    'latitude' => -6.193125,
-                    'longitude' => 106.822987,
-                    'radius_meter' => 500,
-                    'keterangan_pekerjaan' => 'Pemasangan instalasi listrik dan maintenance AC lantai 2.',
-                ]
-            );
-
-            // Jadwal Hari Ini - Tugas Sore
-            DetailPekerjaan::updateOrCreate(
-                [
-                    'karyawan_id' => $kr->id,
-                    'tanggal' => $hariIni->toDateString(),
-                    'jam_masuk' => '15:30:00',
-                ],
-                [
-                    'jam_pulang' => '17:30:00',
-                    'nama_lokasi' => 'Gudang Logistik',
-                    'alamat_lokasi' => 'Kawasan Industri Pulogadung, Jakarta Timur',
-                    'latitude' => -6.196500,
-                    'longitude' => 106.901500,
-                    'radius_meter' => 500,
-                    'keterangan_pekerjaan' => 'Mengembalikan alat kerja dan stock opname material sisa.',
-                ]
-            );
-
-            // Generate presensi per hari kerja selama 2 bulan kebelakang
+            // Generate presensi per hari kerja selama periode seed
             $currentDate = $startDate->copy();
             while ($currentDate->lte($endDate)) {
                 if ($currentDate->isWeekend()) {
@@ -315,81 +261,74 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // ========== AUTO-GENERATE REKAP POTONGAN PER KARYAWAN PER BULAN ==========
-        $periodes = [
-            $hariIni->copy()->subMonths(2)->format('Y-m'), // 2 bulan lalu
-            $hariIni->copy()->subMonth()->format('Y-m'),   // bulan lalu
-        ];
+        // ========== AUTO-GENERATE REKAP POTONGAN PERIODE MARET SAJA ==========
+        $periodeLaporan = $tanggalAcuan->copy()->subMonths(2)->format('Y-m');
 
         foreach ($semuaKaryawan as $kr) {
-            foreach ($periodes as $periode) {
-                $presensis = Presensi::where('karyawan_id', $kr->id)
-                    ->whereRaw("DATE_FORMAT(tgl_presensi, '%Y-%m') = ?", [$periode])
-                    ->get();
+            $presensis = Presensi::where('karyawan_id', $kr->id)
+                ->whereRaw("DATE_FORMAT(tgl_presensi, '%Y-%m') = ?", [$periodeLaporan])
+                ->get();
 
-                $jumlahHadir = $presensis->whereIn('status', ['hadir', 'terlambat'])->count();
-                $jumlahTidakHadir = $presensis->where('status', 'tidak_hadir')->count();
-                $jumlahTerlambat = $presensis->where('status', 'terlambat')->count();
-                $totalPotongan = (float) $presensis->where('status', 'terlambat')->sum('potongan');
-                $gajiPokok = (float) ($kr->gaji_pokok ?? 5000000);
-                $gajiBersih = max(0, $gajiPokok - $totalPotongan);
+            $jumlahHadir = $presensis->whereIn('status', ['hadir', 'terlambat'])->count();
+            $jumlahTidakHadir = $presensis->where('status', 'tidak_hadir')->count();
+            $jumlahTerlambat = $presensis->where('status', 'terlambat')->count();
+            $totalPotongan = (float) $presensis->where('status', 'terlambat')->sum('potongan');
+            $gajiPokok = (float) ($kr->gaji_pokok ?? 5000000);
+            $gajiBersih = max(0, $gajiPokok - $totalPotongan);
 
-                \App\Models\RekapPotongan::updateOrCreate(
-                    [
-                        'karyawan_id' => $kr->id,
-                        'periode' => $periode,
-                    ],
-                    [
-                        'admin_id' => $admin->id,
-                        'jumlah_hadir' => $jumlahHadir,
-                        'jumlah_tidak_hadir' => $jumlahTidakHadir,
-                        'jumlah_terlambat' => $jumlahTerlambat,
-                        'total_potongan_keterlambatan' => $totalPotongan,
-                        'gaji_pokok' => $gajiPokok,
-                        'gaji_bersih' => $gajiBersih,
-                        'catatan' => "Rekap presensi bulan {$periode}",
-                        'status' => 'final',
-                    ]
-                );
-            }
-        }
-
-        // ========== LAPORAN DATA (AUTO-GENERATE PER PERIODE) ==========
-        foreach ($periodes as $periode) {
-            Laporan::updateOrCreate(
+            \App\Models\RekapPotongan::updateOrCreate(
                 [
-                    'judul' => "Laporan Presensi Bulanan {$periode}",
-                    'periode' => $periode,
+                    'karyawan_id' => $kr->id,
+                    'periode' => $periodeLaporan,
                 ],
                 [
-                    'jenis' => 'Bulanan',
-                    'filter' => json_encode(['karyawan_id' => 'all']),
-                    'file_path' => "laporan/{$periode}-presensi.pdf",
-                    'generated_by' => $adminUser->id,
-                    'tgl_generate' => \Carbon\Carbon::parse($periode . '-28 18:00:00'),
-                ]
-            );
-
-            Laporan::updateOrCreate(
-                [
-                    'judul' => "Laporan Rekap Potongan {$periode}",
-                    'periode' => $periode,
-                ],
-                [
-                    'jenis' => 'Bulanan',
-                    'filter' => json_encode(['karyawan_id' => 'all']),
-                    'file_path' => "laporan/{$periode}-rekap-potongan.pdf",
-                    'generated_by' => $adminUser->id,
-                    'tgl_generate' => \Carbon\Carbon::parse($periode . '-28 19:00:00'),
+                    'admin_id' => $admin->id,
+                    'jumlah_hadir' => $jumlahHadir,
+                    'jumlah_tidak_hadir' => $jumlahTidakHadir,
+                    'jumlah_terlambat' => $jumlahTerlambat,
+                    'total_potongan_keterlambatan' => $totalPotongan,
+                    'gaji_pokok' => $gajiPokok,
+                    'gaji_bersih' => $gajiBersih,
+                    'catatan' => "Rekap presensi bulan {$periodeLaporan}",
+                    'status' => 'final',
                 ]
             );
         }
+
+        // ========== LAPORAN DATA (AUTO-GENERATE PERIODE MARET SAJA) ==========
+        Laporan::updateOrCreate(
+            [
+                'judul' => "Laporan Presensi Bulanan {$periodeLaporan}",
+                'periode' => $periodeLaporan,
+            ],
+            [
+                'jenis' => 'Bulanan',
+                'filter' => json_encode(['karyawan_id' => 'all']),
+                'file_path' => "laporan/{$periodeLaporan}-presensi.pdf",
+                'generated_by' => $adminUser->id,
+                'tgl_generate' => \Carbon\Carbon::parse($periodeLaporan . '-28 18:00:00'),
+            ]
+        );
+
+        Laporan::updateOrCreate(
+            [
+                'judul' => "Laporan Rekap Potongan {$periodeLaporan}",
+                'periode' => $periodeLaporan,
+            ],
+            [
+                'jenis' => 'Bulanan',
+                'filter' => json_encode(['karyawan_id' => 'all']),
+                'file_path' => "laporan/{$periodeLaporan}-rekap-potongan.pdf",
+                'generated_by' => $adminUser->id,
+                'tgl_generate' => \Carbon\Carbon::parse($periodeLaporan . '-28 19:00:00'),
+            ]
+        );
 
         // ========== NOTIFIKASI DATA ==========
         Notifikasi::updateOrCreate(
             [
                 'user_id' => $karyawanUser->id,
-                'pesan' => 'Jadwal kerja hari ini dimulai pukul 08:00 di Kantor CV Boss Muda Mandiri.',
+                'pesan' => 'Jadwal kerja reguler dimulai pukul 08:00 di Kantor CV Boss Muda Mandiri.',
             ],
             [
                 'tipe' => 'info',
@@ -415,12 +354,12 @@ class DatabaseSeeder extends Seeder
         Notifikasi::updateOrCreate(
             [
                 'user_id' => $adminUser->id,
-                'pesan' => 'Laporan presensi bulan April sudah siap untuk diekspor.',
+                'pesan' => 'Laporan presensi bulan Maret sudah siap untuk diekspor.',
             ],
             [
                 'tipe' => 'info',
                 'terbaca' => false,
-                'tgl_kirim' => '2026-04-27 18:00:00',
+                'tgl_kirim' => \Carbon\Carbon::parse($periodeLaporan . '-28 18:00:00')->toDateTimeString(),
                 'channel' => 'in_app',
             ]
         );
