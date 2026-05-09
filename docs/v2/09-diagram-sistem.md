@@ -7,33 +7,32 @@ Dokumen ini menyajikan visualisasi arsitektur sistem dalam bentuk Use Case Diagr
 
 ## 1. Use Case Diagram
 
-Diagram ini menggambarkan interaksi antara aktor (Admin, Supervisor, Karyawan) dengan fitur-fitur utama di dalam sistem.
+Diagram ini menggambarkan interaksi antara aktor (Admin, Supervisor, Karyawan) dengan fitur-fitur utama di dalam sistem. Karena renderer Markdown GitHub tidak konsisten mendukung `usecaseDiagram`, visual berikut ditulis sebagai flowchart Mermaid yang setara.
 
 ```mermaid
-useCaseDiagram
-    actor Admin
-    actor Supervisor
-    actor Karyawan
+flowchart LR
+    Admin([Admin])
+    Supervisor([Supervisor])
+    Karyawan([Karyawan])
 
-    package "Panel Admin & Supervisor (Filament)" {
-        usecase UC1 as "Kelola Akun & Data Master"
-        usecase UC2 as "Kelola Penugasan (Detail Pekerjaan)"
-        usecase UC3 as "Monitoring Presensi Real-Time"
-        usecase UC4 as "Verifikasi Presensi Karyawan"
-        usecase UC5 as "Review Bukti Pekerjaan"
-        usecase UC6 as "Kelola Rekap Potongan"
-        usecase UC7 as "Export Laporan (CSV/Excel/PDF)"
-    }
+    subgraph PanelAdminSupervisor["Panel Admin & Supervisor (Filament)"]
+        UC1["Kelola Akun & Data Master"]
+        UC2["Kelola Penugasan (Detail Pekerjaan)"]
+        UC3["Monitoring Presensi Real-Time"]
+        UC4["Verifikasi Presensi Karyawan"]
+        UC5["Review Bukti Pekerjaan"]
+        UC6["Kelola Rekap Potongan"]
+        UC7["Export Laporan (CSV/Excel/PDF)"]
+    end
 
-    package "Portal Mobile Karyawan (Blade)" {
-        usecase UC8 as "Presensi Masuk (GPS + Selfie)"
-        usecase UC9 as "Presensi Pulang"
-        usecase UC10 as "Terima/Tolak Penugasan"
-        usecase UC11 as "Upload Bukti Pekerjaan (Before/After)"
-        usecase UC12 as "Lihat Jadwal & Riwayat"
-    }
+    subgraph PortalKaryawan["Portal Mobile Karyawan (Blade)"]
+        UC8["Presensi Masuk (GPS + Selfie)"]
+        UC9["Presensi Pulang"]
+        UC10["Terima/Tolak Penugasan"]
+        UC11["Upload Bukti Pekerjaan (Before/After)"]
+        UC12["Lihat Jadwal & Riwayat"]
+    end
 
-    %% Relasi Admin
     Admin --> UC1
     Admin --> UC2
     Admin --> UC3
@@ -42,12 +41,10 @@ useCaseDiagram
     Admin --> UC6
     Admin --> UC7
 
-    %% Relasi Supervisor
     Supervisor --> UC3
     Supervisor --> UC5
     Supervisor --> UC7
 
-    %% Relasi Karyawan
     Karyawan --> UC8
     Karyawan --> UC9
     Karyawan --> UC10
