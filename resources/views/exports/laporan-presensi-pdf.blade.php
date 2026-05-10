@@ -33,7 +33,6 @@
                 <th>Masuk</th>
                 <th>Pulang</th>
                 <th>Status</th>
-                <th>Durasi</th>
                 <th>Telat</th>
                 <th>Potongan</th>
             </tr>
@@ -42,22 +41,21 @@
             @foreach($presensis as $i => $p)
             <tr>
                 <td>{{ $i + 1 }}</td>
-                <td>{{ \Carbon\Carbon::parse($p->tgl_presensi)->format('d/m/Y') }}</td>
+                <td>{{ \Carbon\Carbon::parse($p->tanggal)->format('d/m/Y') }}</td>
                 <td>{{ $p->karyawan?->user?->nama ?? '-' }}</td>
                 <td>{{ $p->karyawan?->nik ?? '-' }}</td>
                 <td>{{ $p->jam_masuk ? \Carbon\Carbon::parse($p->jam_masuk)->format('H:i') : '-' }}</td>
-                <td>{{ $p->jam_pulang ? \Carbon\Carbon::parse($p->jam_pulang)->format('H:i') : '-' }}</td>
+                <td>{{ $p->jam_keluar ? \Carbon\Carbon::parse($p->jam_keluar)->format('H:i') : '-' }}</td>
                 <td>
-                    @switch($p->status)
+                    @switch($p->status_presensi)
                         @case('hadir') <span class="badge badge-hadir">Hadir</span> @break
                         @case('terlambat') <span class="badge badge-terlambat">Terlambat</span> @break
                         @case('tidak_hadir') <span class="badge badge-alpa">Alpa</span> @break
                         @case('izin') <span class="badge badge-izin">Izin</span> @break
                     @endswitch
                 </td>
-                <td>{{ $p->durasi_menit ?? 0 }} mnt</td>
-                <td>{{ $p->keterlambatan_menit ?? 0 }} mnt</td>
-                <td>Rp {{ number_format($p->potongan ?? 0, 0, ',', '.') }}</td>
+                <td>{{ $p->menit_terlambat ?? 0 }} mnt</td>
+                <td>Rp {{ number_format($p->potongan_terlambat ?? 0, 0, ',', '.') }}</td>
             </tr>
             @endforeach
         </tbody>

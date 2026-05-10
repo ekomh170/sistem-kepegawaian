@@ -13,8 +13,7 @@ class ListDetailPekerjaans extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()
-                ->visible(fn () => \Illuminate\Support\Facades\Auth::user()?->role === 'admin'),
+            CreateAction::make(),
         ];
     }
 }

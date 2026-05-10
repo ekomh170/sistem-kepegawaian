@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DetailPekerjaan;
+use App\Models\Jadwal;
 use App\Models\Karyawan;
 use App\Models\Presensi;
 use App\Models\Setting;
@@ -36,9 +38,18 @@ class PresensiController extends Controller
 
         $today = Carbon::now()->toDateString();
 
+        // Cek jadwal hari ini (kalau hari libur, presensi ditolak)
+        $jadwal = Jadwal::getJadwalHarian($karyawan->id, $today);
+        if ($jadwal && $jadwal->isHariLibur()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Hari ini ditandai sebagai hari libur. Presensi tidak diperlukan.',
+            ], 422);
+        }
+
         // Cek sudah check-in hari ini
         $existingPresensi = Presensi::where('karyawan_id', $karyawan->id)
-            ->where('tgl_presensi', $today)
+            ->where('tanggal', $today)
             ->first();
 
         if ($existingPresensi && $existingPresensi->jam_masuk) {
@@ -51,12 +62,13 @@ class PresensiController extends Controller
         // Validasi GPS terhadap kantor pusat (Dinamis dari Setting)
         $userLat = $request->latitude;
         $userLon = $request->longitude;
-        
+
         $kantorLat = Setting::get('kantor_lat', -6.2087634);
         $kantorLng = Setting::get('kantor_lng', 106.8222568);
         $radius = Setting::get('kantor_radius', 500);
 
         $distance = $this->calculateDistance($userLat, $userLon, $kantorLat, $kantorLng);
+        $statusValid = 'valid';
         if ($distance > $radius) {
             return response()->json([
                 'success' => false,
@@ -66,21 +78,19 @@ class PresensiController extends Controller
 
         // Hitung keterlambatan (toleransi dari Setting)
         $now = Carbon::now();
-        $jamMasukJadwal = Carbon::parse($today . ' 08:00:00');
-        $toleransi = Setting::get('toleransi_menit', 10);
+        $jamKerja = $jadwal?->jam_masuk ?? '08:00:00';
+        $jamMasukJadwal = Carbon::parse($today . ' ' . $jamKerja);
+        $toleransi = (int) Setting::get('toleransi_menit', 10);
 
-        $keterlambatan_menit = 0;
-        $potongan = 0;
+        $menitTerlambat = 0;
+        $potonganTerlambat = 0;
 
         if ($now->greaterThan($jamMasukJadwal->copy()->addMinutes($toleransi))) {
-            $status = 'terlambat';
-            $keterlambatan_menit = $jamMasukJadwal->diffInMinutes($now);
-            
-            // Potongan dari Setting
-            $nominalPotongan = Setting::get('potongan_terlambat', 10000);
-            $potongan = floor($keterlambatan_menit / 10) * $nominalPotongan;
+            $statusPresensi = 'terlambat';
+            $menitTerlambat = (int) $jamMasukJadwal->diffInMinutes($now);
+            $potonganTerlambat = Presensi::hitungPotongan($menitTerlambat);
         } else {
-            $status = 'hadir';
+            $statusPresensi = 'hadir';
         }
 
         // Handle photo upload
@@ -95,41 +105,40 @@ class PresensiController extends Controller
             $fotoMasukPath = $fileName;
         }
 
+        $payload = [
+            'jadwal_id' => $jadwal?->id,
+            'jam_masuk' => $now,
+            'foto_masuk' => $fotoMasukPath,
+            'latitude_masuk' => $request->latitude,
+            'longitude_masuk' => $request->longitude,
+            'status_presensi' => $statusPresensi,
+            'status_valid' => $statusValid,
+            'menit_terlambat' => $menitTerlambat,
+            'potongan_terlambat' => $potonganTerlambat,
+        ];
+
         if ($existingPresensi) {
-            $existingPresensi->update([
-                'jam_masuk' => $now,
+            $existingPresensi->update(array_filter($payload, fn ($v) => $v !== null) + [
                 'foto_masuk' => $fotoMasukPath ?? $existingPresensi->foto_masuk,
-                'lat_masuk' => $request->latitude,
-                'long_masuk' => $request->longitude,
-                'status' => $status,
-                'keterlambatan_menit' => $keterlambatan_menit,
-                'potongan' => $potongan,
             ]);
             $presensi = $existingPresensi;
         } else {
             $presensi = Presensi::create([
                 'karyawan_id' => $karyawan->id,
-                'tgl_presensi' => $today,
-                'jam_masuk' => $now,
-                'lat_masuk' => $request->latitude,
-                'long_masuk' => $request->longitude,
-                'status' => $status,
-                'keterlambatan_menit' => $keterlambatan_menit,
-                'potongan' => $potongan,
-                'foto_masuk' => $fotoMasukPath,
-            ]);
+                'tanggal' => $today,
+            ] + $payload);
         }
 
         return response()->json([
             'success' => true,
             'data' => $presensi,
-            'status' => $status,
-            'message' => 'Presensi masuk berhasil dicatat (' . ucfirst($status) . ')',
+            'status' => $statusPresensi,
+            'message' => 'Presensi masuk berhasil dicatat (' . ucfirst($statusPresensi) . ')',
         ]);
     }
 
     /**
-     * UC-08: Melakukan Presensi Pulang (Check-out) - Sederhana, tanpa upload bukti
+     * UC-08: Melakukan Presensi Pulang (Check-out)
      */
     public function checkOut(Request $request): JsonResponse
     {
@@ -138,7 +147,7 @@ class PresensiController extends Controller
 
         $today = Carbon::now()->toDateString();
         $presensi = Presensi::where('karyawan_id', $karyawan->id)
-            ->where('tgl_presensi', $today)
+            ->where('tanggal', $today)
             ->firstOrFail();
 
         if (!$presensi->jam_masuk) {
@@ -148,7 +157,7 @@ class PresensiController extends Controller
             ], 422);
         }
 
-        if ($presensi->jam_pulang) {
+        if ($presensi->jam_keluar) {
             return response()->json([
                 'success' => false,
                 'message' => 'Anda sudah melakukan presensi pulang hari ini',
@@ -168,25 +177,23 @@ class PresensiController extends Controller
         }
 
         $now = Carbon::now();
-        $jamMasuk = Carbon::parse($presensi->jam_masuk);
-        $durasiMenit = $jamMasuk->diffInMinutes($now);
 
         $presensi->update([
-            'jam_pulang' => $now,
+            'jam_keluar' => $now,
             'foto_keluar' => $fotoKeluarPath,
-            'durasi_menit' => $durasiMenit,
+            'latitude_keluar' => $request->latitude,
+            'longitude_keluar' => $request->longitude,
         ]);
 
         return response()->json([
             'success' => true,
             'data' => $presensi,
-            'durasi_menit' => $durasiMenit,
             'message' => 'Presensi pulang berhasil dicatat',
         ]);
     }
 
     /**
-     * UC: Upload Bukti Pekerjaan per Detail Pekerjaan (tugas)
+     * UC: Upload Bukti Pekerjaan per Tugas
      */
     public function submitBuktiPekerjaan(Request $request): JsonResponse
     {
@@ -210,8 +217,8 @@ class PresensiController extends Controller
         $user = Auth::user();
         $karyawan = Karyawan::where('user_id', $user->id)->firstOrFail();
 
-        // Validasi bahwa tugas ini memang milik karyawan ini
-        $detailPekerjaan = \App\Models\DetailPekerjaan::where('id', $request->detail_pekerjaan_id)
+        // Validasi bahwa detail pekerjaan ini memang milik karyawan ini
+        $detailPekerjaan = DetailPekerjaan::where('id', $request->detail_pekerjaan_id)
             ->where('karyawan_id', $karyawan->id)
             ->firstOrFail();
 
@@ -301,15 +308,15 @@ class PresensiController extends Controller
         $user = Auth::user();
         $karyawan = Karyawan::where('user_id', $user->id)->firstOrFail();
 
-        $schedules = \App\Models\DetailPekerjaan::where('karyawan_id', $karyawan->id)
-            ->where('tanggal', '>=', Carbon::now()->startOfDay())
-            ->orderBy('tanggal', 'asc')
+        $schedules = Jadwal::where('karyawan_id', $karyawan->id)
+            ->where('tanggal_kerja', '>=', Carbon::now()->startOfDay())
+            ->orderBy('tanggal_kerja', 'asc')
             ->get();
 
         return response()->json([
             'success' => true,
             'data' => $schedules,
-            'message' => 'Detail Pekerjaan berhasil diambil',
+            'message' => 'Jadwal kerja berhasil diambil',
         ]);
     }
 
@@ -330,19 +337,19 @@ class PresensiController extends Controller
             ->with(['verifikasi']);
 
         if ($request->bulan) {
-            $query->whereYear('tgl_presensi', substr($request->bulan, 0, 4))
-                  ->whereMonth('tgl_presensi', substr($request->bulan, 5, 2));
+            $query->whereYear('tanggal', substr($request->bulan, 0, 4))
+                  ->whereMonth('tanggal', substr($request->bulan, 5, 2));
         }
 
-        $history = $query->orderBy('tgl_presensi', 'desc')
+        $history = $query->orderBy('tanggal', 'desc')
             ->limit($request->limit ?? 30)
             ->get();
 
         $summary = [
-            'total_hadir' => $history->where('status', 'hadir')->count(),
-            'total_terlambat' => $history->where('status', 'terlambat')->count(),
-            'total_tidak_hadir' => $history->where('status', 'tidak_hadir')->count(),
-            'total_izin' => $history->where('status', 'izin')->count(),
+            'total_hadir' => $history->where('status_presensi', 'hadir')->count(),
+            'total_terlambat' => $history->where('status_presensi', 'terlambat')->count(),
+            'total_tidak_hadir' => $history->where('status_presensi', 'tidak_hadir')->count(),
+            'total_izin' => $history->where('status_presensi', 'izin')->count(),
         ];
 
         return response()->json([
@@ -359,15 +366,15 @@ class PresensiController extends Controller
     public function getCurrentAttendance(Request $request): JsonResponse
     {
         $today = Carbon::now()->toDateString();
-        $presensis = Presensi::where('tgl_presensi', $today)
+        $presensis = Presensi::where('tanggal', $today)
             ->with(['karyawan', 'verifikasi'])
             ->get();
 
         $summary = [
-            'hadir' => $presensis->where('status', 'hadir')->count(),
-            'terlambat' => $presensis->where('status', 'terlambat')->count(),
-            'tidak_hadir' => $presensis->where('status', 'tidak_hadir')->count(),
-            'izin' => $presensis->where('status', 'izin')->count(),
+            'hadir' => $presensis->where('status_presensi', 'hadir')->count(),
+            'terlambat' => $presensis->where('status_presensi', 'terlambat')->count(),
+            'tidak_hadir' => $presensis->where('status_presensi', 'tidak_hadir')->count(),
+            'izin' => $presensis->where('status_presensi', 'izin')->count(),
             'menunggu_verifikasi' => $presensis->whereNull('verifikasi')->count(),
         ];
 

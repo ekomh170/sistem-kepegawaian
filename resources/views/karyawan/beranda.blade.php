@@ -8,9 +8,13 @@
     <section class="card">
         <h2>Presensi Hari Ini</h2>
 
-        @if ($presensiHariIni)
+        @if (isset($jadwalHariIni) && $jadwalHariIni && $jadwalHariIni->isHariLibur())
+            <div class="alert alert-warning" style="padding:10px;border-radius:8px;background:#fef3c7;border:1px solid #fcd34d;">
+                Hari ini ditandai sebagai <b>HARI LIBUR</b>. Presensi tidak diperlukan.
+            </div>
+        @elseif ($presensiHariIni)
             @php
-                $statusClass = match ($presensiHariIni->status) {
+                $statusClass = match ($presensiHariIni->status_presensi) {
                     'hadir' => 'pill-success',
                     'terlambat' => 'pill-warning',
                     'tidak_hadir' => 'pill-danger',
@@ -19,23 +23,27 @@
             @endphp
 
             <div class="row" style="align-items:center;justify-content:space-between;">
-                <span class="pill {{ $statusClass }}">{{ strtoupper($presensiHariIni->status) }}</span>
-                <span class="text-muted">{{ optional($presensiHariIni->tgl_presensi)->format('d M Y') }}</span>
+                <span class="pill {{ $statusClass }}">{{ strtoupper($presensiHariIni->status_presensi) }}</span>
+                <span class="text-muted">{{ optional($presensiHariIni->tanggal)->format('d M Y') }}</span>
             </div>
 
             <p class="text-muted" style="margin-top:10px;">
                 Jam masuk: {{ optional($presensiHariIni->jam_masuk)->format('H:i') ?? '-' }}<br>
-                Jam keluar: {{ optional($presensiHariIni->jam_pulang)->format('H:i') ?? '-' }}<br>
-                Durasi: {{ $presensiHariIni->durasi_menit ?? 0 }} menit
+                Jam keluar: {{ optional($presensiHariIni->jam_keluar)->format('H:i') ?? '-' }}
+                @if ($presensiHariIni->menit_terlambat > 0)
+                    <br>Telat: {{ $presensiHariIni->menit_terlambat }} menit (Rp {{ number_format((float) $presensiHariIni->potongan_terlambat, 0, ',', '.') }})
+                @endif
             </p>
         @else
             <p class="text-muted">Belum ada data presensi untuk hari ini.</p>
         @endif
 
-        <div class="row" style="margin-top:12px;">
-            <a class="btn btn-primary" href="{{ route('karyawan.presensi.masuk') }}">Presensi Masuk</a>
-            <a class="btn btn-secondary" href="{{ route('karyawan.presensi.pulang') }}">Presensi Pulang</a>
-        </div>
+        @unless (isset($jadwalHariIni) && $jadwalHariIni && $jadwalHariIni->isHariLibur())
+            <div class="row" style="margin-top:12px;">
+                <a class="btn btn-primary" href="{{ route('karyawan.presensi.masuk') }}">Presensi Masuk</a>
+                <a class="btn btn-secondary" href="{{ route('karyawan.presensi.pulang') }}">Presensi Pulang</a>
+            </div>
+        @endunless
     </section>
 
     {{-- SECTION 2: DAFTAR TUGAS HARI INI --}}
@@ -74,7 +82,7 @@
                         <span class="pill {{ $badgeClass }}">{{ $badgeText }}</span>
                     </div>
                     <p class="text-muted" style="margin:4px 0 0;font-size:0.88em;">
-                        🕰️ {{ substr((string) $tugas->jam_masuk, 0, 5) }} - {{ substr((string) $tugas->jam_pulang, 0, 5) }}
+                        🕰️ {{ substr((string) optional($tugas->jadwal)->jam_masuk, 0, 5) }} - {{ substr((string) optional($tugas->jadwal)->jam_pulang, 0, 5) }}
                     </p>
                     <p class="text-muted" style="margin:4px 0 0;font-size:0.85em;">
                         {{ $tugas->keterangan_pekerjaan ?? '-' }}

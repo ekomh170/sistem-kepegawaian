@@ -45,7 +45,7 @@
                     </div>
 
                     <p class="text-muted" style="margin:6px 0 0;">
-                        🕰️ {{ substr((string) $tugas->jam_masuk, 0, 5) }} - {{ substr((string) $tugas->jam_pulang, 0, 5) }}
+                        🕰️ {{ substr((string) optional($tugas->jadwal)->jam_masuk, 0, 5) }} - {{ substr((string) optional($tugas->jadwal)->jam_pulang, 0, 5) }}
                     </p>
 
                     <div style="margin-top: 8px; padding: 10px; background-color: #f3f4f6; border-radius: 8px; font-size: 0.9em;">

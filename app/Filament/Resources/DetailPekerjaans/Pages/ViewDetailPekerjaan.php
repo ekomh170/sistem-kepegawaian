@@ -13,7 +13,8 @@ class ViewDetailPekerjaan extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            EditAction::make(),
+            EditAction::make()
+                ->visible(fn () => \Illuminate\Support\Facades\Auth::user()?->role === 'admin'),
         ];
     }
 }

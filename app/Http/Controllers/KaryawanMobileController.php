@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BuktiPekerjaan;
 use App\Models\DetailPekerjaan;
+use App\Models\Jadwal;
 use App\Models\Karyawan;
 use App\Models\Presensi;
 use Carbon\Carbon;
@@ -21,17 +22,20 @@ class KaryawanMobileController extends Controller
         $karyawan = $this->resolveKaryawan();
         $today = Carbon::today()->toDateString();
 
+        // Jadwal hari ini
+        $jadwalHariIni = Jadwal::getJadwalHarian($karyawan->id, $today);
+
         // Presensi hari ini (1 per hari)
         $presensiHariIni = Presensi::query()
             ->with('verifikasi')
             ->where('karyawan_id', $karyawan->id)
-            ->where('tgl_presensi', $today)
+            ->where('tanggal', $today)
             ->first();
 
-        // Daftar tugas hari ini
+        // Daftar tugas hari ini (via jadwal)
         $tugasHariIni = DetailPekerjaan::query()
             ->where('karyawan_id', $karyawan->id)
-            ->where('tanggal', $today)
+            ->whereHas('jadwal', fn ($q) => $q->where('tanggal_kerja', $today))
             ->get();
 
         // Bukti yang sudah diupload hari ini
@@ -42,6 +46,7 @@ class KaryawanMobileController extends Controller
             ->keyBy('detail_pekerjaan_id');
 
         return view('karyawan.beranda', [
+            'jadwalHariIni' => $jadwalHariIni,
             'presensiHariIni' => $presensiHariIni,
             'tugasHariIni' => $tugasHariIni,
             'buktiHariIni' => $buktiHariIni,
@@ -56,7 +61,7 @@ class KaryawanMobileController extends Controller
 
         $presensiHariIni = Presensi::query()
             ->where('karyawan_id', $karyawan->id)
-            ->where('tgl_presensi', $today)
+            ->where('tanggal', $today)
             ->first();
 
         return view('karyawan.presensi-masuk', [
@@ -92,7 +97,7 @@ class KaryawanMobileController extends Controller
 
         $presensiHariIni = Presensi::query()
             ->where('karyawan_id', $karyawan->id)
-            ->where('tgl_presensi', $today)
+            ->where('tanggal', $today)
             ->first();
 
         return view('karyawan.presensi-pulang', [
@@ -130,8 +135,9 @@ class KaryawanMobileController extends Controller
         $today = Carbon::today()->toDateString();
 
         $tugasHariIni = DetailPekerjaan::query()
+            ->with('jadwal')
             ->where('karyawan_id', $karyawan->id)
-            ->where('tanggal', $today)
+            ->whereHas('jadwal', fn ($q) => $q->where('tanggal_kerja', $today))
             ->get();
 
         $buktiHariIni = BuktiPekerjaan::query()
@@ -155,7 +161,8 @@ class KaryawanMobileController extends Controller
         $karyawan = $this->resolveKaryawan();
         $detailId = $request->query('detail_pekerjaan_id');
 
-        $tugas = DetailPekerjaan::where('id', $detailId)
+        $tugas = DetailPekerjaan::with('jadwal')
+            ->where('id', $detailId)
             ->where('karyawan_id', $karyawan->id)
             ->firstOrFail();
 
@@ -250,10 +257,10 @@ class KaryawanMobileController extends Controller
         $startDate = Carbon::today();
         $endDate = Carbon::today()->addDays(6);
 
-        $jadwalMingguan = DetailPekerjaan::query()
+        $jadwalMingguan = Jadwal::query()
             ->where('karyawan_id', $karyawan->id)
-            ->whereBetween('tanggal', [$startDate->toDateString(), $endDate->toDateString()])
-            ->orderBy('tanggal')
+            ->whereBetween('tanggal_kerja', [$startDate->toDateString(), $endDate->toDateString()])
+            ->orderBy('tanggal_kerja')
             ->get();
 
         return view('karyawan.jadwal', [
@@ -270,15 +277,15 @@ class KaryawanMobileController extends Controller
         $riwayat = Presensi::query()
             ->with(['verifikasi'])
             ->where('karyawan_id', $karyawan->id)
-            ->orderByDesc('tgl_presensi')
+            ->orderByDesc('tanggal')
             ->limit(30)
             ->get();
 
         $summary = [
-            'hadir' => $riwayat->where('status', 'hadir')->count(),
-            'terlambat' => $riwayat->where('status', 'terlambat')->count(),
-            'tidak_hadir' => $riwayat->where('status', 'tidak_hadir')->count(),
-            'izin' => $riwayat->where('status', 'izin')->count(),
+            'hadir' => $riwayat->where('status_presensi', 'hadir')->count(),
+            'terlambat' => $riwayat->where('status_presensi', 'terlambat')->count(),
+            'tidak_hadir' => $riwayat->where('status_presensi', 'tidak_hadir')->count(),
+            'izin' => $riwayat->where('status_presensi', 'izin')->count(),
         ];
 
         return view('karyawan.riwayat', [

@@ -36,7 +36,7 @@
         @else
             @foreach ($riwayat as $item)
                 @php
-                    $statusClass = match ($item->status) {
+                    $statusClass = match ($item->status_presensi) {
                         'hadir' => 'pill-success',
                         'terlambat' => 'pill-warning',
                         'tidak_hadir' => 'pill-danger',
@@ -46,12 +46,14 @@
 
                 <div class="card" style="margin:10px 0 0;">
                     <div class="row" style="justify-content:space-between;align-items:center;">
-                        <b>{{ optional($item->tgl_presensi)->format('d M Y') }}</b>
-                        <span class="pill {{ $statusClass }}">{{ strtoupper($item->status) }}</span>
+                        <b>{{ optional($item->tanggal)->format('d M Y') }}</b>
+                        <span class="pill {{ $statusClass }}">{{ strtoupper($item->status_presensi) }}</span>
                     </div>
                     <p class="text-muted" style="margin:6px 0 0;">
-                        Masuk: {{ optional($item->jam_masuk)->format('H:i') ?? '-' }} | Pulang: {{ optional($item->jam_pulang)->format('H:i') ?? '-' }}
-                        <br>Durasi: {{ $item->durasi_menit ?? 0 }} menit
+                        Masuk: {{ optional($item->jam_masuk)->format('H:i') ?? '-' }} | Keluar: {{ optional($item->jam_keluar)->format('H:i') ?? '-' }}
+                        @if ($item->menit_terlambat > 0)
+                            <br>Telat: {{ $item->menit_terlambat }} menit (Rp {{ number_format((float) $item->potongan_terlambat, 0, ',', '.') }})
+                        @endif
                     </p>
                 </div>
             @endforeach

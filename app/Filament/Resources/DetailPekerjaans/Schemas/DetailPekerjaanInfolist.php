@@ -42,25 +42,25 @@ class DetailPekerjaanInfolist
                     ]),
 
                 Section::make('Jadwal Kerja')
-                    ->description('Tanggal dan jam penugasan')
+                    ->description('Tanggal dan jam jadwal kerja terkait')
                     ->columns(3)
                     ->columnSpanFull()
                     ->schema([
-                        TextEntry::make('tanggal')
+                        TextEntry::make('jadwal.tanggal_kerja')
                             ->label('Tanggal')
                             ->date('d F Y')
                             ->icon('heroicon-o-calendar'),
-                        TextEntry::make('jam_masuk')
+                        TextEntry::make('jadwal.jam_masuk')
                             ->label('Jam Masuk')
                             ->time('H:i')
                             ->icon('heroicon-o-clock'),
-                        TextEntry::make('jam_pulang')
+                        TextEntry::make('jadwal.jam_pulang')
                             ->label('Jam Pulang')
                             ->time('H:i')
                             ->icon('heroicon-o-clock'),
                     ]),
 
-                Section::make('Lokasi Penugasan')
+                Section::make('Lokasi Tugas')
                     ->description('Detail lokasi kerja')
                     ->columns(2)
                     ->columnSpanFull()

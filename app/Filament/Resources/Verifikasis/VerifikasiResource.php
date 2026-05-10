@@ -71,7 +71,7 @@ class VerifikasiResource extends Resource
                         Select::make('presensi_id')
                             ->label('Presensi')
                             ->relationship('presensi', 'id')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "Presensi " . ($record->tgl_presensi?->format('d M Y') ?? '') . " - " . ($record->karyawan?->user?->nama ?? 'Unknown'))
+                            ->getOptionLabelFromRecordUsing(fn ($record) => "Presensi " . ($record->tanggal?->format('d M Y') ?? '') . " - " . ($record->karyawan?->user?->nama ?? 'Unknown'))
                             ->searchable()
                             ->preload()
                             ->required()

@@ -23,9 +23,9 @@ class LaporanPresensiDetailExport implements FromCollection, WithHeadings, WithM
     {
         return Presensi::query()
             ->with(['karyawan.user'])
-            ->when($this->periode, fn ($q) => $q->whereRaw("DATE_FORMAT(tgl_presensi, '%Y-%m') = ?", [$this->periode]))
+            ->when($this->periode, fn ($q) => $q->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$this->periode]))
             ->when($this->karyawan_id, fn ($q) => $q->where('karyawan_id', $this->karyawan_id))
-            ->orderBy('tgl_presensi', 'desc')
+            ->orderBy('tanggal', 'desc')
             ->orderBy('karyawan_id')
             ->get();
     }
@@ -37,9 +37,8 @@ class LaporanPresensiDetailExport implements FromCollection, WithHeadings, WithM
             'Karyawan',
             'NIK',
             'Jam Masuk',
-            'Jam Pulang',
+            'Jam Keluar',
             'Status',
-            'Durasi (menit)',
             'Keterlambatan (menit)',
             'Potongan (Rp)',
         ];
@@ -48,21 +47,20 @@ class LaporanPresensiDetailExport implements FromCollection, WithHeadings, WithM
     public function map($p): array
     {
         return [
-            $p->tgl_presensi,
+            $p->tanggal,
             $p->karyawan?->user?->nama ?? '-',
             $p->karyawan?->nik ?? '-',
             $p->jam_masuk ? Carbon::parse($p->jam_masuk)->format('H:i') : '-',
-            $p->jam_pulang ? Carbon::parse($p->jam_pulang)->format('H:i') : '-',
-            match ($p->status) {
+            $p->jam_keluar ? Carbon::parse($p->jam_keluar)->format('H:i') : '-',
+            match ($p->status_presensi) {
                 'hadir' => 'Hadir',
                 'terlambat' => 'Terlambat',
                 'tidak_hadir' => 'Alpa',
                 'izin' => 'Izin',
-                default => $p->status,
+                default => $p->status_presensi,
             },
-            $p->durasi_menit ?? 0,
-            $p->keterlambatan_menit ?? 0,
-            $p->potongan ?? 0,
+            $p->menit_terlambat ?? 0,
+            $p->potongan_terlambat ?? 0,
         ];
     }
 }

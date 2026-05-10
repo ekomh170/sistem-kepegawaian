@@ -37,6 +37,11 @@ class Karyawan extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function jadwals(): HasMany
+    {
+        return $this->hasMany(Jadwal::class, 'karyawan_id');
+    }
+
     public function detailPekerjaans(): HasMany
     {
         return $this->hasMany(DetailPekerjaan::class, 'karyawan_id');

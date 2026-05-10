@@ -15,10 +15,8 @@ class DetailPekerjaan extends Model
     public const UPDATED_AT = null;
 
     protected $fillable = [
+        'jadwal_id',
         'karyawan_id',
-        'tanggal',
-        'jam_masuk',
-        'jam_pulang',
         'nama_lokasi',
         'alamat_lokasi',
         'latitude',
@@ -30,14 +28,18 @@ class DetailPekerjaan extends Model
     ];
 
     protected $casts = [
-        'tanggal' => 'date',
         'latitude' => 'decimal:7',
         'longitude' => 'decimal:7',
     ];
 
+    public function jadwal(): BelongsTo
+    {
+        return $this->belongsTo(Jadwal::class, 'jadwal_id');
+    }
+
     public function karyawan(): BelongsTo
     {
-        return $this->belongsTo(Karyawan::class);
+        return $this->belongsTo(Karyawan::class, 'karyawan_id');
     }
 
     public function buktiPekerjaans(): HasMany

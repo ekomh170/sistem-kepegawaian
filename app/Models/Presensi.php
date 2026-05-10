@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -14,26 +16,30 @@ class Presensi extends Model
 
     protected $fillable = [
         'karyawan_id',
-        'tgl_presensi',
+        'jadwal_id',
+        'tanggal',
         'jam_masuk',
-        'jam_pulang',
-        'status',
+        'jam_keluar',
         'foto_masuk',
         'foto_keluar',
-        'lat_masuk',
-        'long_masuk',
-        'durasi_menit',
-        'keterlambatan_menit',
-        'potongan',
+        'latitude_masuk',
+        'longitude_masuk',
+        'latitude_keluar',
+        'longitude_keluar',
+        'menit_terlambat',
+        'potongan_terlambat',
+        'status_presensi',
+        'status_valid',
     ];
 
     protected function casts(): array
     {
         return [
-            'tgl_presensi' => 'date',
+            'tanggal' => 'date',
             'jam_masuk' => 'datetime',
-            'jam_pulang' => 'datetime',
-            'durasi_menit' => 'integer',
+            'jam_keluar' => 'datetime',
+            'menit_terlambat' => 'integer',
+            'potongan_terlambat' => 'decimal:2',
         ];
     }
 
@@ -42,8 +48,52 @@ class Presensi extends Model
         return $this->belongsTo(Karyawan::class, 'karyawan_id');
     }
 
+    public function jadwal(): BelongsTo
+    {
+        return $this->belongsTo(Jadwal::class, 'jadwal_id');
+    }
+
     public function verifikasi(): HasOne
     {
         return $this->hasOne(Verifikasi::class, 'presensi_id');
+    }
+
+    public static function hitungKeterlambatan(string $jamMasuk, string $jamJadwal): int
+    {
+        $masuk = Carbon::parse($jamMasuk);
+        $jadwal = Carbon::parse($jamJadwal);
+
+        return $masuk->greaterThan($jadwal) ? (int) $jadwal->diffInMinutes($masuk) : 0;
+    }
+
+    public static function hitungPotongan(int $menitTerlambat): float
+    {
+        if ($menitTerlambat <= 10) {
+            return 0;
+        }
+
+        if ($menitTerlambat > 30) {
+            return 20000;
+        }
+
+        // 11..30 menit: Rp 10.000 per blok 10 menit (dibulatkan ke atas)
+        $blok = (int) ceil($menitTerlambat / 10);
+        return $blok * 10000;
+    }
+
+    public function getStatusPresensi(): string
+    {
+        return $this->status_presensi ?? '-';
+    }
+
+    public static function getRiwayatBulanan(int $karyawanId, string $periode): Collection
+    {
+        $start = Carbon::parse($periode . '-01')->startOfMonth();
+        $end = $start->copy()->endOfMonth();
+
+        return self::where('karyawan_id', $karyawanId)
+            ->whereBetween('tanggal', [$start, $end])
+            ->orderBy('tanggal')
+            ->get();
     }
 }

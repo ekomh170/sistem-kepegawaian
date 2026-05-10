@@ -9,9 +9,8 @@
 
         @if (!$presensiHariIni || !$presensiHariIni->jam_masuk)
             <p class="text-muted">Anda belum check-in hari ini, sehingga belum bisa check-out.</p>
-        @elseif ($presensiHariIni->jam_pulang)
-            <p class="text-muted">Anda sudah check-out pada {{ \Carbon\Carbon::parse($presensiHariIni->jam_pulang)->format('H:i') }}.</p>
-            <p class="text-muted">Durasi kerja: {{ $presensiHariIni->durasi_menit ?? 0 }} menit</p>
+        @elseif ($presensiHariIni->jam_keluar)
+            <p class="text-muted">Anda sudah check-out pada {{ \Carbon\Carbon::parse($presensiHariIni->jam_keluar)->format('H:i') }}.</p>
         @else
             @if ($errors->any())
                 <div style="background-color: #ffebee; color: #c62828; padding: 10px; border-radius: 5px; margin-bottom: 15px;">

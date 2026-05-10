@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Admin;
 use App\Models\DetailPekerjaan;
+use App\Models\Jadwal;
 use App\Models\Karyawan;
 use App\Models\Laporan;
 use App\Models\Notifikasi;
@@ -149,13 +150,15 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        // ========== DETAIL PEKERJAAN & PRESENSI DATA (3 BULAN TERAKHIR) ==========
+        // ========== JADWAL + TUGAS + PRESENSI DATA (3 BULAN TERAKHIR) ==========
+        // Sesuai BAB 4: 6 hari kerja per minggu, 1 hari libur (Minggu) ditentukan admin,
+        // jam kerja 08:00–16:00.
         $semuaKaryawan = Karyawan::all();
         $tanggalAcuan = \Carbon\Carbon::parse('2026-05-08');
 
-        // Generate presensi 3 bulan terakhir sampai 8 Mei 2026
-        $startDate = $tanggalAcuan->copy()->subMonths(2)->startOfMonth(); // Awal bulan 2 bulan lalu
-        $endDate = $tanggalAcuan->copy(); // 8 Mei 2026
+        // Generate jadwal & presensi sampai 8 Mei 2026
+        $startDate = $tanggalAcuan->copy()->subMonths(2)->startOfMonth();
+        $endDate = $tanggalAcuan->copy();
 
         foreach ($semuaKaryawan as $kr) {
             // Set gaji pokok random per karyawan jika belum ada
@@ -165,80 +168,99 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
 
-            // Generate presensi per hari kerja selama periode seed
+            // Generate jadwal harian: Sabtu = 6 hari kerja menurut praktik banyak UMKM, Minggu libur.
             $currentDate = $startDate->copy();
             while ($currentDate->lte($endDate)) {
-                if ($currentDate->isWeekend()) {
+                $tgl = $currentDate->copy();
+                $isLibur = $tgl->isSunday(); // Minggu = hari libur
+
+                $jadwal = Jadwal::updateOrCreate(
+                    [
+                        'karyawan_id' => $kr->id,
+                        'tanggal_kerja' => $tgl->toDateString(),
+                    ],
+                    [
+                        'admin_id' => $admin->id,
+                        'jam_masuk' => '08:00:00',
+                        'jam_pulang' => '16:00:00',
+                        'hari_libur' => $isLibur,
+                        'status' => 'aktif',
+                    ]
+                );
+
+                if ($isLibur) {
                     $currentDate->addDay();
                     continue;
                 }
 
-                $tgl = $currentDate->copy();
-
-                // Buat jadwal kerja
-                $jadwal = DetailPekerjaan::updateOrCreate(
+                // Buat 1 detail pekerjaan default per jadwal
+                $tugas = DetailPekerjaan::firstOrCreate(
                     [
-                        'karyawan_id' => $kr->id,
-                        'tanggal' => $tgl->toDateString(),
+                        'jadwal_id' => $jadwal->id,
                     ],
                     [
-                        'jam_masuk' => '08:00:00',
-                        'jam_pulang' => '17:00:00',
+                        'karyawan_id' => $kr->id,
                         'nama_lokasi' => 'Kantor CV Boss Muda Mandiri',
                         'alamat_lokasi' => 'Jl. Jend. Sudirman No. 45, Jakarta Pusat',
                         'latitude' => -6.2087634,
                         'longitude' => 106.8222568,
                         'radius_meter' => 500,
                         'keterangan_pekerjaan' => 'Pekerjaan harian sesuai SOP',
+                        'status' => 'disetujui',
                     ]
                 );
 
                 // Buat presensi jika belum ada
-                if (!Presensi::where('karyawan_id', $kr->id)->where('tgl_presensi', $tgl->toDateString())->exists()) {
+                if (!Presensi::where('karyawan_id', $kr->id)->where('tanggal', $tgl->toDateString())->exists()) {
                     $rand = rand(1, 100);
-                    $potongan = 0;
+                    $potonganTerlambat = 0;
+                    $menitTerlambat = 0;
 
                     if ($rand <= 80) { // 80% hadir tepat waktu
                         $jamMasukTime = '07:' . str_pad(rand(30, 59), 2, '0', STR_PAD_LEFT) . ':00';
-                        $jamKeluarTime = '17:' . str_pad(rand(0, 30), 2, '0', STR_PAD_LEFT) . ':00';
-                        $status = 'hadir';
+                        $jamKeluarTime = '16:' . str_pad(rand(0, 30), 2, '0', STR_PAD_LEFT) . ':00';
+                        $statusPresensi = 'hadir';
                     } elseif ($rand <= 92) { // 12% terlambat
-                        $menitTerlambat = rand(5, 60);
+                        $menitTerlambat = rand(11, 60);
                         $jamMasukTime = '08:' . str_pad(rand(11, 59), 2, '0', STR_PAD_LEFT) . ':00';
-                        $jamKeluarTime = '17:' . str_pad(rand(0, 30), 2, '0', STR_PAD_LEFT) . ':00';
-                        $status = 'terlambat';
-                        // Hitung potongan sesuai logika: per 10 menit Rp10.000
-                        $potongan = ceil($menitTerlambat / 10) * 10000;
+                        $jamKeluarTime = '16:' . str_pad(rand(0, 30), 2, '0', STR_PAD_LEFT) . ':00';
+                        $statusPresensi = 'terlambat';
+                        $potonganTerlambat = Presensi::hitungPotongan($menitTerlambat);
                     } elseif ($rand <= 97) { // 5% izin
-                        $status = 'izin';
+                        $statusPresensi = 'izin';
                         $jamMasukTime = null;
                         $jamKeluarTime = null;
                     } else { // 3% tidak hadir (alpa)
-                        $status = 'tidak_hadir';
+                        $statusPresensi = 'tidak_hadir';
                         $jamMasukTime = null;
                         $jamKeluarTime = null;
                     }
 
                     $jamMasuk = $jamMasukTime ? $tgl->toDateString() . ' ' . $jamMasukTime : null;
                     $jamKeluar = $jamKeluarTime ? $tgl->toDateString() . ' ' . $jamKeluarTime : null;
-                    $durasi = ($jamMasuk && $jamKeluar) ? \Carbon\Carbon::parse($jamMasuk)->diffInMinutes(\Carbon\Carbon::parse($jamKeluar)) : 0;
 
                     $presensi = Presensi::create([
                         'karyawan_id' => $kr->id,
-                        'tgl_presensi' => $tgl->toDateString(),
+                        'jadwal_id' => $jadwal->id,
+                        'tanggal' => $tgl->toDateString(),
                         'jam_masuk' => $jamMasuk,
-                        'jam_pulang' => $jamKeluar,
-                        'status' => $status,
-                        'foto_masuk' => in_array($status, ['hadir', 'terlambat']) ? 'presensi/sample-masuk.jpg' : null,
-                        'foto_keluar' => in_array($status, ['hadir', 'terlambat']) ? 'presensi/sample-keluar.jpg' : null,
-                        'durasi_menit' => $durasi,
-                        'potongan' => $potongan,
+                        'jam_keluar' => $jamKeluar,
+                        'foto_masuk' => in_array($statusPresensi, ['hadir', 'terlambat']) ? 'presensi/sample-masuk.jpg' : null,
+                        'foto_keluar' => in_array($statusPresensi, ['hadir', 'terlambat']) ? 'presensi/sample-keluar.jpg' : null,
+                        'latitude_masuk' => in_array($statusPresensi, ['hadir', 'terlambat']) ? -6.2087634 : null,
+                        'longitude_masuk' => in_array($statusPresensi, ['hadir', 'terlambat']) ? 106.8222568 : null,
+                        'latitude_keluar' => in_array($statusPresensi, ['hadir', 'terlambat']) ? -6.2087634 : null,
+                        'longitude_keluar' => in_array($statusPresensi, ['hadir', 'terlambat']) ? 106.8222568 : null,
+                        'menit_terlambat' => $menitTerlambat,
+                        'potongan_terlambat' => $potonganTerlambat,
+                        'status_presensi' => $statusPresensi,
+                        'status_valid' => in_array($statusPresensi, ['hadir', 'terlambat']) ? 'valid' : 'pending',
                     ]);
 
                     // Bukti pekerjaan hanya untuk yang hadir
-                    if (in_array($status, ['hadir', 'terlambat'])) {
+                    if (in_array($statusPresensi, ['hadir', 'terlambat'])) {
                         \App\Models\BuktiPekerjaan::create([
-                            'detail_pekerjaan_id' => $jadwal->id,
+                            'detail_pekerjaan_id' => $tugas->id,
                             'karyawan_id' => $kr->id,
                             'foto_before' => 'bukti_pekerjaan/sample-before.jpg',
                             'foto_after' => 'bukti_pekerjaan/sample-after.jpg',
@@ -266,13 +288,13 @@ class DatabaseSeeder extends Seeder
 
         foreach ($semuaKaryawan as $kr) {
             $presensis = Presensi::where('karyawan_id', $kr->id)
-                ->whereRaw("DATE_FORMAT(tgl_presensi, '%Y-%m') = ?", [$periodeLaporan])
+                ->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$periodeLaporan])
                 ->get();
 
-            $jumlahHadir = $presensis->whereIn('status', ['hadir', 'terlambat'])->count();
-            $jumlahTidakHadir = $presensis->where('status', 'tidak_hadir')->count();
-            $jumlahTerlambat = $presensis->where('status', 'terlambat')->count();
-            $totalPotongan = (float) $presensis->where('status', 'terlambat')->sum('potongan');
+            $jumlahHadir = $presensis->whereIn('status_presensi', ['hadir', 'terlambat'])->count();
+            $jumlahTidakHadir = $presensis->where('status_presensi', 'tidak_hadir')->count();
+            $jumlahTerlambat = $presensis->where('status_presensi', 'terlambat')->count();
+            $totalPotongan = (float) $presensis->where('status_presensi', 'terlambat')->sum('potongan_terlambat');
             $gajiPokok = (float) ($kr->gaji_pokok ?? 5000000);
             $gajiBersih = max(0, $gajiPokok - $totalPotongan);
 

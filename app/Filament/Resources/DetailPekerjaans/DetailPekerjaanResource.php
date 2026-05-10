@@ -24,11 +24,11 @@ class DetailPekerjaanResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static ?string $navigationLabel = 'Penugasan';
+    protected static ?string $navigationLabel = 'Detail Pekerjaan';
 
     protected static string|\UnitEnum|null $navigationGroup = 'Operasional';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 4;
 
     protected static ?string $recordTitleAttribute = 'nama_lokasi';
 
@@ -74,9 +74,7 @@ class DetailPekerjaanResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array

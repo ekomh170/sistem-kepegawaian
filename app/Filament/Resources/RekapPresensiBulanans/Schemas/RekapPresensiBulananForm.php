@@ -26,13 +26,13 @@ class RekapPresensiBulananForm
 
         // Ambil data presensi karyawan di periode tersebut
         $presensis = Presensi::where('karyawan_id', $karyawanId)
-            ->whereRaw("DATE_FORMAT(tgl_presensi, '%Y-%m') = ?", [$periode])
+            ->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$periode])
             ->get();
 
-        $jumlahHadir = $presensis->whereIn('status', ['hadir', 'terlambat'])->count();
-        $jumlahTidakHadir = $presensis->where('status', 'tidak_hadir')->count();
-        $jumlahTerlambat = $presensis->where('status', 'terlambat')->count();
-        $totalPotongan = (float) $presensis->where('status', 'terlambat')->sum('potongan');
+        $jumlahHadir = $presensis->whereIn('status_presensi', ['hadir', 'terlambat'])->count();
+        $jumlahTidakHadir = $presensis->where('status_presensi', 'tidak_hadir')->count();
+        $jumlahTerlambat = $presensis->where('status_presensi', 'terlambat')->count();
+        $totalPotongan = (float) $presensis->where('status_presensi', 'terlambat')->sum('potongan_terlambat');
 
         // Ambil gaji pokok dari data karyawan
         $karyawan = Karyawan::find($karyawanId);

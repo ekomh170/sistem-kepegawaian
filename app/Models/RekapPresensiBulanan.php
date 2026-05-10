@@ -45,16 +45,16 @@ class RekapPresensiBulanan extends Model
     public function hitungRekapPresensiBulanan(): self
     {
         $presensis = Presensi::where('karyawan_id', $this->karyawan_id)
-            ->whereRaw("DATE_FORMAT(tgl_presensi, '%Y-%m') = ?", [$this->periode])
+            ->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$this->periode])
             ->get();
 
-        $this->jumlah_hadir = $presensis->whereIn('status', ['hadir', 'terlambat'])->count();
-        $this->jumlah_tidak_hadir = $presensis->where('status', 'tidak_hadir')->count();
-        $this->jumlah_terlambat = $presensis->where('status', 'terlambat')->count();
+        $this->jumlah_hadir = $presensis->whereIn('status_presensi', ['hadir', 'terlambat'])->count();
+        $this->jumlah_tidak_hadir = $presensis->where('status_presensi', 'tidak_hadir')->count();
+        $this->jumlah_terlambat = $presensis->where('status_presensi', 'terlambat')->count();
 
         $this->total_potongan_keterlambatan = $presensis
-            ->where('status', 'terlambat')
-            ->sum('potongan');
+            ->where('status_presensi', 'terlambat')
+            ->sum('potongan_terlambat');
 
         // Ambil gaji pokok dari data karyawan
         $this->gaji_pokok = $this->karyawan?->gaji_pokok ?? 0;

@@ -13,7 +13,7 @@ class BuktiPekerjaanForm
                 \Filament\Forms\Components\Select::make('detail_pekerjaan_id')
                     ->label('Detail Pekerjaan')
                     ->relationship('detailPekerjaan', 'nama_lokasi')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->tanggal?->format('d M Y')} - {$record->nama_lokasi} ({$record->karyawan?->user?->nama})")
+                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->jadwal?->tanggal_kerja?->format('d M Y')} - {$record->nama_lokasi} ({$record->karyawan?->user?->nama})")
                     ->searchable()
                     ->preload()
                     ->required(),

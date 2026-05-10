@@ -21,25 +21,25 @@ class AttendanceRealtimeStatsWidget extends StatsOverviewWidget
         $bulanLalu = Carbon::now()->subMonth()->format('Y-m');
 
         // Data hari ini
-        $hadirHariIni = Presensi::where('tgl_presensi', $today)
-            ->whereIn('status', ['hadir', 'terlambat'])
+        $hadirHariIni = Presensi::where('tanggal', $today)
+            ->whereIn('status_presensi', ['hadir', 'terlambat'])
             ->count();
 
-        $terlambatHariIni = Presensi::where('tgl_presensi', $today)
-            ->where('status', 'terlambat')
+        $terlambatHariIni = Presensi::where('tanggal', $today)
+            ->where('status_presensi', 'terlambat')
             ->count();
 
         // Data bulan ini
-        $hadirBulanIni = Presensi::whereRaw("DATE_FORMAT(tgl_presensi, '%Y-%m') = ?", [$bulanIni])
-            ->whereIn('status', ['hadir', 'terlambat'])
+        $hadirBulanIni = Presensi::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulanIni])
+            ->whereIn('status_presensi', ['hadir', 'terlambat'])
             ->count();
 
-        $terlambatBulanIni = Presensi::whereRaw("DATE_FORMAT(tgl_presensi, '%Y-%m') = ?", [$bulanIni])
-            ->where('status', 'terlambat')
+        $terlambatBulanIni = Presensi::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulanIni])
+            ->where('status_presensi', 'terlambat')
             ->count();
 
-        $alpaBulanIni = Presensi::whereRaw("DATE_FORMAT(tgl_presensi, '%Y-%m') = ?", [$bulanIni])
-            ->where('status', 'tidak_hadir')
+        $alpaBulanIni = Presensi::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulanIni])
+            ->where('status_presensi', 'tidak_hadir')
             ->count();
 
         // Total karyawan aktif
@@ -50,8 +50,8 @@ class AttendanceRealtimeStatsWidget extends StatsOverviewWidget
             ->sum('total_potongan_keterlambatan');
 
         // Trend hadir vs bulan lalu
-        $hadirBulanLalu = Presensi::whereRaw("DATE_FORMAT(tgl_presensi, '%Y-%m') = ?", [$bulanLalu])
-            ->whereIn('status', ['hadir', 'terlambat'])
+        $hadirBulanLalu = Presensi::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulanLalu])
+            ->whereIn('status_presensi', ['hadir', 'terlambat'])
             ->count();
 
         $trendHadir = $hadirBulanLalu > 0

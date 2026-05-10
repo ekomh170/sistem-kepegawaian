@@ -9,7 +9,7 @@
         <h2>Detail Tugas</h2>
         <div style="padding: 12px; background-color: #eff6ff; border-radius: 8px; border-left: 4px solid #3b82f6;">
             <b style="color: #1e3a8a;">{{ $tugas->nama_lokasi }}</b><br>
-            <span class="text-muted">🕰️ {{ substr((string) $tugas->jam_masuk, 0, 5) }} - {{ substr((string) $tugas->jam_pulang, 0, 5) }}</span><br>
+            <span class="text-muted">🕰️ {{ substr((string) optional($tugas->jadwal)->jam_masuk, 0, 5) }} - {{ substr((string) optional($tugas->jadwal)->jam_pulang, 0, 5) }}</span><br>
             <span class="text-muted">📍 {{ $tugas->alamat_lokasi ?? '-' }}</span><br>
             <span class="text-muted">📋 {{ $tugas->keterangan_pekerjaan ?? 'Pekerjaan rutin' }}</span>
         </div>

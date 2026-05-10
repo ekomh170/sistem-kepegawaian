@@ -19,23 +19,26 @@ class DetailPekerjaansTable
                     ->label('Karyawan')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('tanggal')
+                TextColumn::make('jadwal.tanggal_kerja')
+                    ->label('Tanggal')
                     ->date()
                     ->sortable(),
-                TextColumn::make('jam_masuk')
-                    ->time()
-                    ->sortable(),
-                TextColumn::make('jam_pulang')
-                    ->time()
-                    ->sortable(),
+                TextColumn::make('jadwal.jam_masuk')
+                    ->label('Jam Masuk')
+                    ->time(),
+                TextColumn::make('jadwal.jam_pulang')
+                    ->label('Jam Pulang')
+                    ->time(),
                 TextColumn::make('nama_lokasi')
                     ->searchable(),
                 TextColumn::make('latitude')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('longitude')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('radius_meter')
                     ->numeric()
                     ->sortable(),
@@ -51,9 +54,7 @@ class DetailPekerjaansTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([
-                //
-            ])
+            ->filters([])
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make()

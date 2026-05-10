@@ -34,7 +34,7 @@ class PresensiResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Operasional';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 5;
 
     public static function canViewAny(): bool
     {
@@ -78,12 +78,22 @@ class PresensiResource extends Resource
                             ->required()
                             ->columnSpanFull(),
 
-                        DatePicker::make('tgl_presensi')
+                        Select::make('jadwal_id')
+                            ->label('Jadwal Terkait')
+                            ->relationship('jadwal', 'tanggal_kerja')
+                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->tanggal_kerja->format('d M Y') . ' (' . substr($record->jam_masuk, 0, 5) . '-' . substr($record->jam_pulang, 0, 5) . ')')
+                            ->searchable()
+                            ->preload()
+                            ->placeholder('Auto-link by tanggal & karyawan')
+                            ->columnSpanFull(),
+
+                        DatePicker::make('tanggal')
                             ->label('Tanggal Presensi')
                             ->required()
                             ->default(now()),
 
-                        Select::make('status')
+                        Select::make('status_presensi')
+                            ->label('Status Presensi')
                             ->options([
                                 'hadir' => '✅ Hadir',
                                 'terlambat' => '⏰ Terlambat',
@@ -93,9 +103,18 @@ class PresensiResource extends Resource
                             ->required()
                             ->live()
                             ->default('hadir'),
+
+                        Select::make('status_valid')
+                            ->label('Status Validasi')
+                            ->options([
+                                'pending' => 'Pending',
+                                'valid' => 'Valid',
+                                'tidak_valid' => 'Tidak Valid',
+                            ])
+                            ->default('pending'),
                     ]),
 
-                Section::make('Waktu & Durasi')
+                Section::make('Waktu & Keterlambatan')
                     ->columns(2)
                     ->columnSpanFull()
                     ->schema([
@@ -107,23 +126,12 @@ class PresensiResource extends Resource
                                 self::hitungOtomatis($set, $get);
                             }),
 
-                        DateTimePicker::make('jam_pulang')
-                            ->label('Jam Pulang')
+                        DateTimePicker::make('jam_keluar')
+                            ->label('Jam Keluar')
                             ->seconds(false)
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(function ($set, $get) {
-                                self::hitungOtomatis($set, $get);
-                            }),
+                            ->live(onBlur: true),
 
-                        TextInput::make('durasi_menit')
-                            ->label('Durasi Kerja (menit)')
-                            ->numeric()
-                            ->default(0)
-                            ->disabled()
-                            ->dehydrated()
-                            ->helperText('Otomatis dari jam masuk & pulang'),
-
-                        TextInput::make('keterlambatan_menit')
+                        TextInput::make('menit_terlambat')
                             ->label('Keterlambatan (menit)')
                             ->numeric()
                             ->default(0)
@@ -131,18 +139,17 @@ class PresensiResource extends Resource
                             ->dehydrated()
                             ->helperText('Otomatis jika masuk setelah 08:00'),
 
-                        TextInput::make('potongan')
-                            ->label('Potongan (Rp)')
+                        TextInput::make('potongan_terlambat')
+                            ->label('Potongan Keterlambatan (Rp)')
                             ->numeric()
                             ->prefix('Rp')
                             ->default(0)
                             ->disabled()
                             ->dehydrated()
-                            ->helperText('Per 10 menit terlambat = Rp 10.000')
-                            ->columnSpanFull(),
+                            ->helperText('Toleransi 10 menit, Rp 10.000 per blok 10 menit, Rp 20.000 jika >30 menit'),
                     ]),
 
-                Section::make('Foto & Lokasi Presensi')
+                Section::make('Foto & Lokasi Masuk')
                     ->columns(2)
                     ->columnSpanFull()
                     ->schema([
@@ -156,8 +163,8 @@ class PresensiResource extends Resource
                             ->image()
                             ->directory('presensi')
                             ->maxSize(2048),
-                        \Dotswan\MapPicker\Fields\Map::make('location')
-                            ->label('Pilih Lokasi di Peta')
+                        \Dotswan\MapPicker\Fields\Map::make('location_masuk')
+                            ->label('Lokasi Masuk')
                             ->columnSpanFull()
                             ->defaultLocation(
                                 latitude: (float) \App\Models\Setting::get('kantor_lat', -6.2087634),
@@ -167,75 +174,69 @@ class PresensiResource extends Resource
                                 if (!$state || !isset($state['lat'], $state['lng'])) {
                                     return;
                                 }
-                                $set('lat_masuk', $state['lat']);
-                                $set('long_masuk', $state['lng']);
+                                $set('latitude_masuk', $state['lat']);
+                                $set('longitude_masuk', $state['lng']);
                             })
                             ->afterStateHydrated(function ($set, $record): void {
-                                if ($record && $record->lat_masuk && $record->long_masuk) {
-                                    $set('location', ['lat' => $record->lat_masuk, 'lng' => $record->long_masuk]);
+                                if ($record && $record->latitude_masuk && $record->longitude_masuk) {
+                                    $set('location_masuk', ['lat' => $record->latitude_masuk, 'lng' => $record->longitude_masuk]);
                                 }
                             })
                             ->live(onBlur: true)
                             ->showMarker()
                             ->markerColor('#3b82f6')
-                            ->showFullscreenControl()
-                            ->showZoomControl()
                             ->draggable()
                             ->clickable(true),
-                        TextInput::make('lat_masuk')
-                            ->label('Latitude')
+                        TextInput::make('latitude_masuk')
+                            ->label('Latitude Masuk')
                             ->numeric()
                             ->live()
                             ->default(null),
-                        TextInput::make('long_masuk')
-                            ->label('Longitude')
+                        TextInput::make('longitude_masuk')
+                            ->label('Longitude Masuk')
                             ->numeric()
                             ->live()
+                            ->default(null),
+                        TextInput::make('latitude_keluar')
+                            ->label('Latitude Keluar')
+                            ->numeric()
+                            ->default(null),
+                        TextInput::make('longitude_keluar')
+                            ->label('Longitude Keluar')
+                            ->numeric()
                             ->default(null),
                     ]),
             ]);
     }
 
     /**
-     * Auto-hitung durasi, keterlambatan, dan potongan
+     * Auto-hitung keterlambatan dan potongan
      */
     private static function hitungOtomatis($set, $get): void
     {
         $jamMasuk = $get('jam_masuk');
-        $jamPulang = $get('jam_pulang');
 
-        if (!$jamMasuk || !$jamPulang) {
+        if (!$jamMasuk) {
             return;
         }
 
         $masuk = \Carbon\Carbon::parse($jamMasuk);
-        $pulang = \Carbon\Carbon::parse($jamPulang);
 
-        // Hitung durasi
-        $durasi = $masuk->diffInMinutes($pulang);
-        $set('durasi_menit', max(0, $durasi));
-
-        // Hitung keterlambatan (batas masuk 08:00)
         $batasMasuk = $masuk->copy()->setTime(8, 0, 0);
         $toleransi = (int) \App\Models\Setting::get('toleransi_menit', 10);
         $batasToleransi = $batasMasuk->copy()->addMinutes($toleransi);
 
         if ($masuk->gt($batasToleransi)) {
-            $terlambatMenit = $batasMasuk->diffInMinutes($masuk);
-            $set('keterlambatan_menit', $terlambatMenit);
+            $terlambatMenit = (int) $batasMasuk->diffInMinutes($masuk);
+            $set('menit_terlambat', $terlambatMenit);
+            $set('potongan_terlambat', \App\Models\Presensi::hitungPotongan($terlambatMenit));
 
-            // Hitung potongan per 10 menit
-            $potonganPer10 = (int) \App\Models\Setting::get('potongan_terlambat', 10000);
-            $potongan = ceil($terlambatMenit / 10) * $potonganPer10;
-            $set('potongan', $potongan);
-
-            // Auto-set status terlambat
-            $set('status', 'terlambat');
+            $set('status_presensi', 'terlambat');
         } else {
-            $set('keterlambatan_menit', 0);
-            $set('potongan', 0);
-            if ($get('status') === 'terlambat') {
-                $set('status', 'hadir');
+            $set('menit_terlambat', 0);
+            $set('potongan_terlambat', 0);
+            if ($get('status_presensi') === 'terlambat') {
+                $set('status_presensi', 'hadir');
             }
         }
     }
@@ -249,7 +250,7 @@ class PresensiResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('tgl_presensi')
+                TextColumn::make('tanggal')
                     ->label('Tanggal')
                     ->date('d M Y')
                     ->sortable(),
@@ -257,11 +258,12 @@ class PresensiResource extends Resource
                     ->label('Masuk')
                     ->dateTime('H:i')
                     ->placeholder('-'),
-                TextColumn::make('jam_pulang')
-                    ->label('Pulang')
+                TextColumn::make('jam_keluar')
+                    ->label('Keluar')
                     ->dateTime('H:i')
                     ->placeholder('-'),
-                TextColumn::make('status')
+                TextColumn::make('status_presensi')
+                    ->label('Status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'hadir' => 'success',
@@ -277,22 +279,27 @@ class PresensiResource extends Resource
                         'izin' => 'Izin',
                         default => $state,
                     }),
-                TextColumn::make('durasi_menit')
-                    ->label('Durasi')
-                    ->suffix(' mnt')
-                    ->placeholder('-'),
-                TextColumn::make('keterlambatan_menit')
+                TextColumn::make('status_valid')
+                    ->label('Validasi')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'valid' => 'success',
+                        'tidak_valid' => 'danger',
+                        default => 'gray',
+                    })
+                    ->toggleable(),
+                TextColumn::make('menit_terlambat')
                     ->label('Telat')
                     ->suffix(' mnt')
                     ->color('warning')
                     ->placeholder('-'),
-                TextColumn::make('potongan')
+                TextColumn::make('potongan_terlambat')
                     ->label('Potongan')
                     ->money('idr')
                     ->color('danger')
                     ->placeholder('-'),
             ])
-            ->defaultSort('tgl_presensi', 'desc')
+            ->defaultSort('tanggal', 'desc')
             ->filters([])
             ->recordActions([
                 EditAction::make()

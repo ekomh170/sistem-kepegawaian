@@ -2,11 +2,10 @@
 
 namespace App\Filament\Resources\DetailPekerjaans\Schemas;
 
-use Filament\Forms\Components\DatePicker;
+use App\Models\Jadwal;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TimePicker;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Http;
 
@@ -17,17 +16,35 @@ class DetailPekerjaanForm
         return $schema
             ->components([
                 Select::make('karyawan_id')
+                    ->label('Karyawan')
                     ->relationship('karyawan', 'nik')
                     ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nik} - " . ($record->user?->nama ?? 'Unknown'))
                     ->searchable(['nik'])
                     ->preload()
-                    ->required(),
-                DatePicker::make('tanggal')
-                    ->required(),
-                TimePicker::make('jam_masuk')
-                    ->required(),
-                TimePicker::make('jam_pulang')
-                    ->required(),
+                    ->required()
+                    ->live(),
+                Select::make('jadwal_id')
+                    ->label('Jadwal')
+                    ->options(function ($get) {
+                        $karyawanId = $get('karyawan_id');
+                        if (!$karyawanId) {
+                            return [];
+                        }
+
+                        return Jadwal::where('karyawan_id', $karyawanId)
+                            ->where('hari_libur', false)
+                            ->orderByDesc('tanggal_kerja')
+                            ->limit(60)
+                            ->get()
+                            ->mapWithKeys(fn ($j) => [
+                                $j->id => $j->tanggal_kerja->format('d M Y') . ' (' . substr($j->jam_masuk, 0, 5) . '-' . substr($j->jam_pulang, 0, 5) . ')',
+                            ])
+                            ->toArray();
+                    })
+                    ->searchable()
+                    ->preload()
+                    ->required()
+                    ->helperText('Pilih jadwal kerja untuk detail pekerjaan ini. Hanya jadwal non-libur yang muncul.'),
                 TextInput::make('nama_lokasi')
                     ->required()
                     ->live(onBlur: true)
@@ -55,7 +72,6 @@ class DetailPekerjaanForm
                         $set('latitude', $lat);
                         $set('longitude', $lng);
 
-                        // Reverse geocoding via Nominatim (OpenStreetMap) — gratis, tanpa API key
                         try {
                             $response = Http::withHeaders([
                                 'User-Agent' => 'SistemKepegawaian/1.0',
@@ -71,7 +87,6 @@ class DetailPekerjaanForm
                                 $data = $response->json();
                                 $address = $data['address'] ?? [];
 
-                                // Nama lokasi: ambil yang paling spesifik
                                 $namaLokasi = $address['building']
                                     ?? $address['amenity']
                                     ?? $address['office']
@@ -82,14 +97,13 @@ class DetailPekerjaanForm
                                     ?? ($data['display_name'] ? explode(',', $data['display_name'])[0] : null)
                                     ?? '';
 
-                                // Alamat lengkap
                                 $alamatLokasi = $data['display_name'] ?? '';
 
                                 $set('nama_lokasi', $namaLokasi);
                                 $set('alamat_lokasi', $alamatLokasi);
                             }
                         } catch (\Throwable $e) {
-                            // Jika API gagal, biarkan field kosong agar admin isi manual
+                            // Biarkan field kosong agar admin isi manual
                         }
                     })
                     ->afterStateHydrated(function ($set, $record): void {
@@ -119,7 +133,7 @@ class DetailPekerjaanForm
                 Textarea::make('keterangan_pekerjaan')
                     ->default(null)
                     ->columnSpanFull(),
-                \Filament\Forms\Components\Select::make('status')
+                Select::make('status')
                     ->options([
                         'pending' => 'Pending (Menunggu Respon Karyawan)',
                         'disetujui' => 'Disetujui (Diterima Karyawan)',
