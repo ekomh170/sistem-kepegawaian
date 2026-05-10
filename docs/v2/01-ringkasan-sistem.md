@@ -53,7 +53,7 @@ Sistem Informasi Kepegawaian CV Boss Muda Mandiri adalah aplikasi web berbasis L
 sistem-kepegawaian/
 ├── app/
 │   ├── Exports/                        # Class export Excel/CSV
-│   │   ├── LaporanPresensiExport.php      # Export rekap potongan
+│   │   ├── LaporanPresensiExport.php      # Export rekap presensi bulanan
 │   │   └── LaporanPresensiDetailExport.php # Export presensi harian
 │   ├── Filament/
 │   │   ├── Pages/
@@ -67,7 +67,7 @@ sistem-kepegawaian/
 │   │   │   ├── Laporans/              # + Export CSV/Excel/PDF
 │   │   │   ├── Notifikasis/
 │   │   │   ├── Presensis/             # + Auto-kalkulasi + MapPicker
-│   │   │   ├── RekapPotongans/        # Rekap potongan gaji
+│   │   │   ├── RekapPresensiBulanans/        # Rekap presensi bulanan gaji
 │   │   │   ├── Supervisors/
 │   │   │   └── Verifikasis/
 │   │   └── Widgets/                    # 3 Dashboard Widgets
@@ -90,7 +90,7 @@ sistem-kepegawaian/
 │       ├── Presensi.php
 │       ├── Verifikasi.php
 │       ├── BuktiPekerjaan.php
-│       ├── RekapPotongan.php
+│       ├── RekapPresensiBulanan.php
 │       ├── Setting.php
 │       ├── Laporan.php
 │       └── Notifikasi.php
@@ -109,7 +109,7 @@ sistem-kepegawaian/
 │   │   ├── jadwal.blade.php
 │   │   └── riwayat.blade.php
 │   └── exports/
-│       ├── laporan-pdf.blade.php          # Template PDF rekap potongan
+│       ├── laporan-pdf.blade.php          # Template PDF rekap presensi bulanan
 │       └── laporan-presensi-pdf.blade.php # Template PDF presensi harian
 └── routes/
     └── web.php                         # Semua route definisi

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\RekapPotongan;
+use App\Models\RekapPresensiBulanan;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +17,7 @@ class LaporanEvaluasiChartWidget extends ChartWidget
 
     protected function getData(): array
     {
-        $rekap = RekapPotongan::query()
+        $rekap = RekapPresensiBulanan::query()
             ->select(
                 'periode',
                 DB::raw('SUM(jumlah_hadir) as total_hadir'),

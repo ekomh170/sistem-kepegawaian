@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Filament\Resources\RekapPotongans;
+namespace App\Filament\Resources\RekapPresensiBulanans;
 
-use App\Filament\Resources\RekapPotongans\Pages\CreateRekapPotongan;
-use App\Filament\Resources\RekapPotongans\Pages\EditRekapPotongan;
-use App\Filament\Resources\RekapPotongans\Pages\ListRekapPotongans;
-use App\Filament\Resources\RekapPotongans\Schemas\RekapPotonganForm;
-use App\Filament\Resources\RekapPotongans\Tables\RekapPotongansTable;
-use App\Models\RekapPotongan;
+use App\Filament\Resources\RekapPresensiBulanans\Pages\CreateRekapPresensiBulanan;
+use App\Filament\Resources\RekapPresensiBulanans\Pages\EditRekapPresensiBulanan;
+use App\Filament\Resources\RekapPresensiBulanans\Pages\ListRekapPresensiBulanans;
+use App\Filament\Resources\RekapPresensiBulanans\Schemas\RekapPresensiBulananForm;
+use App\Filament\Resources\RekapPresensiBulanans\Tables\RekapPresensiBulanansTable;
+use App\Models\RekapPresensiBulanan;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -16,13 +16,13 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
-class RekapPotonganResource extends Resource
+class RekapPresensiBulananResource extends Resource
 {
-    protected static ?string $model = RekapPotongan::class;
+    protected static ?string $model = RekapPresensiBulanan::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
 
-    protected static ?string $navigationLabel = 'Rekap Potongan';
+    protected static ?string $navigationLabel = 'Rekap Presensi Bulanan';
 
     protected static string|\UnitEnum|null $navigationGroup = 'Keuangan & Laporan';
 
@@ -55,12 +55,12 @@ class RekapPotonganResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return RekapPotonganForm::configure($schema);
+        return RekapPresensiBulananForm::configure($schema);
     }
 
     public static function table(Table $table): Table
     {
-        return RekapPotongansTable::configure($table);
+        return RekapPresensiBulanansTable::configure($table);
     }
 
     public static function getRelations(): array
@@ -73,9 +73,9 @@ class RekapPotonganResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListRekapPotongans::route('/'),
-            'create' => CreateRekapPotongan::route('/create'),
-            'edit' => EditRekapPotongan::route('/{record}/edit'),
+            'index' => ListRekapPresensiBulanans::route('/'),
+            'create' => CreateRekapPresensiBulanan::route('/create'),
+            'edit' => EditRekapPresensiBulanan::route('/{record}/edit'),
         ];
     }
 }

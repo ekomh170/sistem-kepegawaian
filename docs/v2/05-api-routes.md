@@ -28,9 +28,9 @@
 
 | Method | URI | Name | Controller | Deskripsi |
 |--------|-----|------|------------|-----------|
-| GET | `/laporan/export/csv` | `laporan.export.csv` | `LaporanExportController@exportCsv` | Export rekap potongan ke CSV |
-| GET | `/laporan/export/excel` | `laporan.export.excel` | `LaporanExportController@exportExcel` | Export rekap potongan ke Excel |
-| GET | `/laporan/export/pdf` | `laporan.export.pdf` | `LaporanExportController@exportPdf` | Export rekap potongan ke PDF |
+| GET | `/laporan/export/csv` | `laporan.export.csv` | `LaporanExportController@exportCsv` | Export rekap presensi bulanan ke CSV |
+| GET | `/laporan/export/excel` | `laporan.export.excel` | `LaporanExportController@exportExcel` | Export rekap presensi bulanan ke Excel |
+| GET | `/laporan/export/pdf` | `laporan.export.pdf` | `LaporanExportController@exportPdf` | Export rekap presensi bulanan ke PDF |
 | GET | `/laporan/export-presensi/csv` | `laporan.export-presensi.csv` | `LaporanExportController@exportPresensiCsv` | Export presensi harian ke CSV |
 | GET | `/laporan/export-presensi/excel` | `laporan.export-presensi.excel` | `LaporanExportController@exportPresensiExcel` | Export presensi harian ke Excel |
 | GET | `/laporan/export-presensi/pdf` | `laporan.export-presensi.pdf` | `LaporanExportController@exportPresensiPdf` | Export presensi harian ke PDF |
@@ -59,7 +59,7 @@ Akses melalui `/admin/...` dikendalikan secara otomatis oleh Filament untuk mode
 - `PresensiResource` (Log Harian + Auto-kalkulasi)
 - `VerifikasiResource` (Review)
 - `BuktiPekerjaanResource` (Review Hasil Kerja)
-- `RekapPotonganResource` (Rekap Gaji)
+- `RekapPresensiBulananResource` (Rekap Presensi Bulanan / Gaji)
 - `LaporanResource` (+ Export per record)
 - `SettingResource` (Key-Value)
 - `LokasiKantorPage` (Custom Page + MapPicker)

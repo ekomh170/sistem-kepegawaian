@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\RekapPotongan;
+use App\Models\RekapPresensiBulanan;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -15,16 +15,16 @@ class LaporanExportController extends Controller
             'karyawan_id' => 'nullable|integer|exists:tb_karyawan,id',
         ]);
 
-        $rekapPotongans = RekapPotongan::query()
+        $rekapPresensiBulanans = RekapPresensiBulanan::query()
             ->with(['karyawan.user'])
             ->when($request->filled('periode'), fn ($query) => $query->where('periode', $request->string('periode')))
             ->when($request->filled('karyawan_id'), fn ($query) => $query->where('karyawan_id', $request->integer('karyawan_id')))
             ->orderByDesc('created_at')
             ->get();
 
-        $filename = 'laporan-rekap-potongan-' . now()->format('Ymd-His') . '.csv';
+        $filename = 'laporan-rekap-presensi-bulanan-' . now()->format('Ymd-His') . '.csv';
 
-        return response()->streamDownload(function () use ($rekapPotongans): void {
+        return response()->streamDownload(function () use ($rekapPresensiBulanans): void {
             $handle = fopen('php://output', 'wb');
 
             fputcsv($handle, [
@@ -40,7 +40,7 @@ class LaporanExportController extends Controller
                 'Tanggal Generate',
             ]);
 
-            foreach ($rekapPotongans as $p) {
+            foreach ($rekapPresensiBulanans as $p) {
                 fputcsv($handle, [
                     $p->periode,
                     $p->karyawan?->user?->nama ?? $p->karyawan?->nik,
@@ -68,7 +68,7 @@ class LaporanExportController extends Controller
             'karyawan_id' => 'nullable|integer|exists:tb_karyawan,id',
         ]);
 
-        $filename = 'laporan-rekap-potongan-' . now()->format('Ymd-His') . '.xlsx';
+        $filename = 'laporan-rekap-presensi-bulanan-' . now()->format('Ymd-His') . '.xlsx';
         return \Maatwebsite\Excel\Facades\Excel::download(
             new \App\Exports\LaporanPresensiExport($request->string('periode'), $request->integer('karyawan_id')),
             $filename
@@ -82,7 +82,7 @@ class LaporanExportController extends Controller
             'karyawan_id' => 'nullable|integer|exists:tb_karyawan,id',
         ]);
 
-        $rekapPotongans = RekapPotongan::query()
+        $rekapPresensiBulanans = RekapPresensiBulanan::query()
             ->with(['karyawan.user'])
             ->when($request->filled('periode'), fn ($query) => $query->where('periode', $request->string('periode')))
             ->when($request->filled('karyawan_id'), fn ($query) => $query->where('karyawan_id', $request->integer('karyawan_id')))
@@ -90,11 +90,11 @@ class LaporanExportController extends Controller
             ->get();
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.laporan-pdf', [
-            'penggajians' => $rekapPotongans,
+            'penggajians' => $rekapPresensiBulanans,
             'periode' => $request->string('periode') ?: 'Semua Periode'
         ]);
 
-        return $pdf->download('laporan-rekap-potongan-' . now()->format('Ymd-His') . '.pdf');
+        return $pdf->download('laporan-rekap-presensi-bulanan-' . now()->format('Ymd-His') . '.pdf');
     }
 
     // ========== EXPORT PRESENSI HARIAN ==========

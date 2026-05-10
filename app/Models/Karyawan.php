@@ -47,9 +47,9 @@ class Karyawan extends Model
         return $this->hasMany(Presensi::class, 'karyawan_id');
     }
 
-    public function rekapPotongans(): HasMany
+    public function rekapPresensiBulanans(): HasMany
     {
-        return $this->hasMany(RekapPotongan::class, 'karyawan_id');
+        return $this->hasMany(RekapPresensiBulanan::class, 'karyawan_id');
     }
 
     public function buktiPekerjaans(): HasMany

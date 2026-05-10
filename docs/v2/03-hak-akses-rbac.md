@@ -34,7 +34,7 @@ User login → /login (Filament Login Page)
 | **Presensi** | ✅ CRUD | 👁️ View Only | ❌ |
 | **Verifikasi** | ✅ CRUD | 👁️ View Only | ❌ |
 | **Bukti Pekerjaan** | ✅ CRUD | 👁️ View Only | ❌ |
-| **Rekap Potongan** | ✅ CRUD | 👁️ View Only | ❌ |
+| **Rekap Presensi Bulanan** | ✅ CRUD | 👁️ View Only | ❌ |
 | **Laporan** | ✅ CRUD + Export | 👁️ View + Export | ❌ |
 | **Notifikasi** | ✅ CRUD | 👁️ View Only | ❌ |
 | **Pengaturan (Setting)** | ✅ CRUD | ❌ | ❌ |

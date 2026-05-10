@@ -37,7 +37,7 @@ if ($adminPanel) {
  * Requires authentication
  */
 Route::middleware(['auth'])->group(function () {
-    // UC-04: Export laporan rekap potongan (Admin & Supervisor)
+    // UC-04: Export laporan rekap presensi bulanan (Admin & Supervisor)
     Route::get('/laporan/export/csv', [LaporanExportController::class, 'exportCsv'])
         ->middleware('role:admin,supervisor')
         ->name('laporan.export.csv');

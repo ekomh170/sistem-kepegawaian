@@ -74,7 +74,7 @@ class LaporanResource extends Resource
                             ->label('Tipe Laporan')
                             ->options([
                                 'presensi' => '📋 Laporan Presensi (Detail Harian)',
-                                'rekap_potongan' => '💰 Laporan Rekap Potongan',
+                                'rekap_presensi_bulanan' => '💰 Laporan Rekap Presensi Bulanan',
                             ])
                             ->required()
                             ->default('presensi')
@@ -82,8 +82,8 @@ class LaporanResource extends Resource
                             ->afterStateHydrated(function ($set, $record) {
                                 if ($record && $record->judul) {
                                     $judul = strtolower($record->judul);
-                                    if (str_contains($judul, 'rekap') || str_contains($judul, 'potongan')) {
-                                        $set('tipe_laporan', 'rekap_potongan');
+                                    if (str_contains($judul, 'rekap') || str_contains($judul, 'bulanan') || str_contains($judul, 'potongan')) {
+                                        $set('tipe_laporan', 'rekap_presensi_bulanan');
                                     } else {
                                         $set('tipe_laporan', 'presensi');
                                     }
@@ -172,7 +172,7 @@ class LaporanResource extends Resource
 
         $tipeName = match ($tipe) {
             'presensi' => 'Laporan Presensi',
-            'rekap_potongan' => 'Laporan Rekap Potongan',
+            'rekap_presensi_bulanan' => 'Laporan Rekap Presensi Bulanan',
             default => 'Laporan',
         };
 

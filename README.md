@@ -1,6 +1,6 @@
 # Sistem Informasi Kepegawaian
 
-Sistem informasi kepegawaian untuk CV Boss Muda Mandiri yang dibangun dengan Laravel 12, Filament v5, dan MySQL. Aplikasi ini dipakai untuk mengelola data karyawan, presensi harian, penugasan, bukti pekerjaan, rekap potongan, laporan, dan pengaturan lokasi kantor.
+Sistem informasi kepegawaian untuk CV Boss Muda Mandiri yang dibangun dengan Laravel 12, Filament v5, dan MySQL. Aplikasi ini dipakai untuk mengelola data karyawan, presensi harian, penugasan, bukti pekerjaan, rekap presensi bulanan, laporan, dan pengaturan lokasi kantor.
 
 Dokumentasi utama ada di [docs/v2](docs/v2), sedangkan referensi dokumentasi lama tetap disimpan di [docs/v1](docs/v1).
 
@@ -12,7 +12,7 @@ Dokumentasi utama ada di [docs/v2](docs/v2), sedangkan referensi dokumentasi lam
 
 ## Fitur Utama
 
-- Manajemen akun, karyawan, presensi, detail pekerjaan, bukti pekerjaan, rekap potongan, laporan, verifikasi, dan setting.
+- Manajemen akun, karyawan, presensi, detail pekerjaan, bukti pekerjaan, rekap presensi bulanan, laporan, verifikasi, dan setting.
 - Presensi harian dengan validasi lokasi dan dukungan capture kamera/base64.
 - Portal mobile karyawan untuk beranda, tugas, jadwal, riwayat, dan upload bukti.
 - Export laporan ke CSV, Excel, dan PDF.

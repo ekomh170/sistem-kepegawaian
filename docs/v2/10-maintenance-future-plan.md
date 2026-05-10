@@ -11,7 +11,7 @@ Berikut adalah aspek-aspek yang masih bisa ditingkatkan dari versi saat ini:
 
 ### ⚙️ Otomatisasi Sistem
 - [ ] **Pemicu Notifikasi (Triggers)**: Mengintegrasikan notifikasi otomatis saat Admin membuat `DetailPekerjaan` baru, agar Karyawan langsung menerima pesan di portal mereka.
-- [ ] **Kalkulasi Gaji Otomatis**: Membuat *Command* atau *Job* bulanan yang menarik data dari `tb_presensi` (total hadir & total potongan) untuk mengisi tabel `tb_rekap_potongan` secara otomatis.
+- [ ] **Kalkulasi Gaji Otomatis**: Membuat *Command* atau *Job* bulanan yang menarik data dari `tb_presensi` (total hadir & total potongan) untuk mengisi tabel `tb_rekap_presensi_bulanan` secara otomatis.
 - [ ] **Reminder Absensi**: Mengirimkan notifikasi ke Karyawan yang belum check-in pada pukul 08:10 WIB.
 
 ### 📊 Laporan & Monitoring

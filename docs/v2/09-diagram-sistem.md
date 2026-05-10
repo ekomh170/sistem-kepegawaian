@@ -21,7 +21,7 @@ flowchart LR
         UC3["Monitoring Presensi Real-Time"]
         UC4["Verifikasi Presensi Karyawan"]
         UC5["Review Bukti Pekerjaan"]
-        UC6["Kelola Rekap Potongan"]
+        UC6["Kelola Rekap Presensi Bulanan"]
         UC7["Export Laporan (CSV/Excel/PDF)"]
     end
 
@@ -134,7 +134,7 @@ erDiagram
         text catatan
     }
 
-    tb_rekap_potongan {
+    tb_rekap_presensi_bulanan {
         bigint id PK
         bigint karyawan_id FK
         bigint admin_id FK
@@ -182,11 +182,11 @@ erDiagram
     tb_karyawan ||--o{ tb_presensi : "logs"
     tb_karyawan ||--o{ tb_detail_pekerjaan : "assigned to"
     tb_karyawan ||--o{ tb_bukti_pekerjaan : "submits"
-    tb_karyawan ||--o{ tb_rekap_potongan : "has salary"
+    tb_karyawan ||--o{ tb_rekap_presensi_bulanan : "has salary"
 
     tb_presensi ||--o| tb_verifikasi : "validated in"
     tb_supervisor ||--o{ tb_verifikasi : "performs"
-    tb_admin ||--o{ tb_rekap_potongan : "generates"
+    tb_admin ||--o{ tb_rekap_presensi_bulanan : "generates"
 
     tb_detail_pekerjaan ||--o{ tb_bukti_pekerjaan : "requires proof"
 ```
@@ -201,5 +201,5 @@ erDiagram
     - `tb_detail_pekerjaan` mencatat tugas spesifik yang harus diterima/ditolak karyawan.
 3.  **Bukti per Tugas**: Relasi antara `tb_detail_pekerjaan` dan `tb_bukti_pekerjaan` memungkinkan karyawan mengunggah banyak laporan hasil kerja dalam satu hari sesuai jumlah tugas yang diberikan.
 4.  **Verifikasi Berjenjang**: Setiap log presensi harian diverifikasi oleh Supervisor melalui tabel `tb_verifikasi`.
-5.  **Rekap Potongan**: Tabel `tb_rekap_potongan` menghitung gaji bersih per bulan berdasarkan data presensi (hadir/telat/alpa).
+5.  **Rekap Presensi Bulanan**: Tabel `tb_rekap_presensi_bulanan` menghitung gaji bersih per bulan berdasarkan data presensi (hadir/telat/alpa).
 6.  **Pengaturan Dinamis**: Tabel `tb_setting` menyimpan konfigurasi sistem secara key-value (lokasi kantor, radius, potongan, dll).

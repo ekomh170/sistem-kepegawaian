@@ -5,9 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class RekapPotongan extends Model
+class RekapPresensiBulanan extends Model
 {
-    protected $table = 'tb_rekap_potongan';
+    protected $table = 'tb_rekap_presensi_bulanan';
 
     protected $fillable = [
         'karyawan_id',
@@ -40,9 +40,9 @@ class RekapPotongan extends Model
     }
 
     /**
-     * Hitung rekap potongan berdasarkan data presensi bulanan
+     * Hitung rekap presensi bulanan berdasarkan data presensi karyawan
      */
-    public function hitungRekapPotongan(): self
+    public function hitungRekapPresensiBulanan(): self
     {
         $presensis = Presensi::where('karyawan_id', $this->karyawan_id)
             ->whereRaw("DATE_FORMAT(tgl_presensi, '%Y-%m') = ?", [$this->periode])
@@ -64,9 +64,9 @@ class RekapPotongan extends Model
     }
 
     /**
-     * Generate slip potongan (return data array untuk PDF/view)
+     * Generate slip rekap presensi bulanan (return data array untuk PDF/view)
      */
-    public function generateSlipPotongan(): array
+    public function generateSlipRekapPresensiBulanan(): array
     {
         $karyawan = $this->karyawan()->with('user')->first();
         $namaPerusahaan = Setting::get('nama_perusahaan', 'CV Boss Muda Mandiri');

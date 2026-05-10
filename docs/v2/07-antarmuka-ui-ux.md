@@ -51,7 +51,7 @@ Halaman khusus untuk mengelola penugasan lapangan:
 - **View**: Infolist 3 section dengan avatar, badge, icon, copyable fields, format Rp.
 
 ### 2.4 Form Laporan (LaporanResource)
-- Tipe: Presensi / Rekap Potongan (dengan icon).
+- Tipe: Presensi / Rekap Presensi Bulanan (dengan icon).
 - Jenis: Harian / Bulanan / Tahunan → format periode otomatis berubah.
 - Judul auto-generated (hidden field).
 - Export per record: 3 tombol (CSV, Excel, PDF) di tiap baris tabel.

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\RekapPotongans\Schemas;
+namespace App\Filament\Resources\RekapPresensiBulanans\Schemas;
 
 use App\Models\Karyawan;
 use App\Models\Presensi;
@@ -10,7 +10,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
 
-class RekapPotonganForm
+class RekapPresensiBulananForm
 {
     /**
      * Hitung rekap dari data presensi berdasarkan karyawan_id dan periode

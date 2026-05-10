@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-use App\Models\RekapPotongan;
+use App\Models\RekapPresensiBulanan;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -21,7 +21,7 @@ class LaporanPresensiExport implements FromCollection, WithHeadings, WithMapping
 
     public function collection()
     {
-        return RekapPotongan::query()
+        return RekapPresensiBulanan::query()
             ->with(['karyawan.user'])
             ->when($this->periode, fn ($query) => $query->where('periode', $this->periode))
             ->when($this->karyawan_id, fn ($query) => $query->where('karyawan_id', $this->karyawan_id))

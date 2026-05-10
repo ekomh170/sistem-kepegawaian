@@ -261,7 +261,7 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // ========== AUTO-GENERATE REKAP POTONGAN PERIODE MARET SAJA ==========
+        // ========== AUTO-GENERATE REKAP PRESENSI BULANAN PERIODE MARET SAJA ==========
         $periodeLaporan = $tanggalAcuan->copy()->subMonths(2)->format('Y-m');
 
         foreach ($semuaKaryawan as $kr) {
@@ -276,7 +276,7 @@ class DatabaseSeeder extends Seeder
             $gajiPokok = (float) ($kr->gaji_pokok ?? 5000000);
             $gajiBersih = max(0, $gajiPokok - $totalPotongan);
 
-            \App\Models\RekapPotongan::updateOrCreate(
+            \App\Models\RekapPresensiBulanan::updateOrCreate(
                 [
                     'karyawan_id' => $kr->id,
                     'periode' => $periodeLaporan,
@@ -312,13 +312,13 @@ class DatabaseSeeder extends Seeder
 
         Laporan::updateOrCreate(
             [
-                'judul' => "Laporan Rekap Potongan {$periodeLaporan}",
+                'judul' => "Laporan Rekap Presensi Bulanan {$periodeLaporan}",
                 'periode' => $periodeLaporan,
             ],
             [
                 'jenis' => 'Bulanan',
                 'filter' => json_encode(['karyawan_id' => 'all']),
-                'file_path' => "laporan/{$periodeLaporan}-rekap-potongan.pdf",
+                'file_path' => "laporan/{$periodeLaporan}-rekap-presensi-bulanan.pdf",
                 'generated_by' => $adminUser->id,
                 'tgl_generate' => \Carbon\Carbon::parse($periodeLaporan . '-28 19:00:00'),
             ]

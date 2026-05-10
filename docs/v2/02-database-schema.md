@@ -17,7 +17,7 @@ Sistem menggunakan **14 tabel migrasi** dengan prefiks `tb_` pada tabel bisnis u
 | 6 | `tb_presensi` | Catatan presensi harian (1x per hari) | `Presensi` |
 | 7 | `tb_verifikasi` | Hasil verifikasi supervisor terhadap presensi | `Verifikasi` |
 | 8 | `tb_bukti_pekerjaan` | Foto before/after hasil kerja per tugas | `BuktiPekerjaan` |
-| 9 | `tb_rekap_potongan` | Rekap gaji & potongan per periode | `RekapPotongan` |
+| 9 | `tb_rekap_presensi_bulanan` | Rekap presensi bulanan (gaji & potongan) per periode | `RekapPresensiBulanan` |
 | 10 | `tb_laporan` | Metadata laporan yang di-generate | `Laporan` |
 | 11 | `tb_notifikasi` | Notifikasi untuk semua user | `Notifikasi` |
 | 12 | `tb_setting` | Pengaturan sistem (key-value) | `Setting` |
@@ -137,7 +137,7 @@ Sistem menggunakan **14 tabel migrasi** dengan prefiks `tb_` pada tabel bisnis u
 | uploaded_at | datetime nullable | Waktu upload |
 | created_at | timestamp | Waktu pembuatan |
 
-### 2.9 `tb_rekap_potongan`
+### 2.9 `tb_rekap_presensi_bulanan`
 | Kolom | Tipe | Keterangan |
 |-------|------|------------|
 | id | bigint PK | Auto increment |
@@ -203,7 +203,7 @@ erDiagram
 
     tb_karyawan ||--o{ tb_detail_pekerjaan : "has tasks"
     tb_karyawan ||--o{ tb_presensi : "has daily logs"
-    tb_karyawan ||--o{ tb_rekap_potongan : "has salaries"
+    tb_karyawan ||--o{ tb_rekap_presensi_bulanan : "has salaries"
     tb_karyawan ||--o{ tb_bukti_pekerjaan : "uploads"
 
     tb_detail_pekerjaan ||--o{ tb_bukti_pekerjaan : "has proofs"
