@@ -75,6 +75,7 @@ class LaporanResource extends Resource
                             ->options([
                                 'presensi' => '📋 Laporan Presensi (Detail Harian)',
                                 'rekap_presensi_bulanan' => '💰 Laporan Rekap Presensi Bulanan',
+                                'rekap_pekerjaan' => '📦 Rekap Pekerjaan',
                             ])
                             ->required()
                             ->default('presensi')
@@ -82,7 +83,9 @@ class LaporanResource extends Resource
                             ->afterStateHydrated(function ($set, $record) {
                                 if ($record && $record->judul) {
                                     $judul = strtolower($record->judul);
-                                    if (str_contains($judul, 'rekap') || str_contains($judul, 'bulanan') || str_contains($judul, 'potongan')) {
+                                    if (str_contains($judul, 'pekerjaan')) {
+                                        $set('tipe_laporan', 'rekap_pekerjaan');
+                                    } elseif (str_contains($judul, 'rekap') || str_contains($judul, 'bulanan') || str_contains($judul, 'potongan')) {
                                         $set('tipe_laporan', 'rekap_presensi_bulanan');
                                     } else {
                                         $set('tipe_laporan', 'presensi');
@@ -160,6 +163,25 @@ class LaporanResource extends Resource
             ]);
     }
 
+    private static function resolveExportRoute(Laporan $record, string $format): string
+    {
+        $judul = strtolower($record->judul);
+        $params = ['periode' => $record->periode];
+
+        if (str_contains($judul, 'pekerjaan')) {
+            return route("laporan.export-pekerjaan.{$format}", $params);
+        }
+
+        if (str_contains($judul, 'presensi')) {
+            $isBulanan = str_contains($judul, 'rekap') || str_contains($judul, 'bulanan');
+            return $isBulanan
+                ? route("laporan.export.{$format}", $params)
+                : route("laporan.export-presensi.{$format}", $params);
+        }
+
+        return route("laporan.export.{$format}", $params);
+    }
+
     private static function generateJudul($set, $get): void
     {
         $tipe = $get('tipe_laporan');
@@ -173,6 +195,7 @@ class LaporanResource extends Resource
         $tipeName = match ($tipe) {
             'presensi' => 'Laporan Presensi',
             'rekap_presensi_bulanan' => 'Laporan Rekap Presensi Bulanan',
+            'rekap_pekerjaan' => 'Laporan Rekap Pekerjaan',
             default => 'Laporan',
         };
 
@@ -232,25 +255,19 @@ class LaporanResource extends Resource
                     ->label('CSV')
                     ->icon('heroicon-o-document-text')
                     ->color('success')
-                    ->url(fn (Laporan $record): string => str_contains(strtolower($record->judul), 'presensi')
-                        ? route('laporan.export-presensi.csv', ['periode' => $record->periode])
-                        : route('laporan.export.csv', ['periode' => $record->periode]),
+                    ->url(fn (Laporan $record): string => self::resolveExportRoute($record, 'csv'),
                         shouldOpenInNewTab: true),
                 \Filament\Actions\Action::make('export_excel')
                     ->label('Excel')
                     ->icon('heroicon-o-table-cells')
                     ->color('primary')
-                    ->url(fn (Laporan $record): string => str_contains(strtolower($record->judul), 'presensi')
-                        ? route('laporan.export-presensi.excel', ['periode' => $record->periode])
-                        : route('laporan.export.excel', ['periode' => $record->periode]),
+                    ->url(fn (Laporan $record): string => self::resolveExportRoute($record, 'excel'),
                         shouldOpenInNewTab: true),
                 \Filament\Actions\Action::make('export_pdf')
                     ->label('PDF')
                     ->icon('heroicon-o-document-arrow-down')
                     ->color('danger')
-                    ->url(fn (Laporan $record): string => str_contains(strtolower($record->judul), 'presensi')
-                        ? route('laporan.export-presensi.pdf', ['periode' => $record->periode])
-                        : route('laporan.export.pdf', ['periode' => $record->periode]),
+                    ->url(fn (Laporan $record): string => self::resolveExportRoute($record, 'pdf'),
                         shouldOpenInNewTab: true),
                 EditAction::make(),
                 DeleteAction::make(),

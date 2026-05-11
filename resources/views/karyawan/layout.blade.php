@@ -225,6 +225,57 @@
             color: #92400e;
             border-color: #fcd34d;
         }
+
+        /* ── loading bar ── */
+        #page-loader {
+            position: fixed;
+            top: 0; left: 0;
+            height: 3px;
+            width: 0;
+            background: linear-gradient(90deg, #0f766e, #f59e0b);
+            z-index: 9999;
+            transition: width 0.25s ease, opacity 0.4s ease;
+            border-radius: 0 2px 2px 0;
+        }
+
+        /* ── overlay logout ── */
+        #logout-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 9998;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 15px;
+        }
+        #logout-overlay.show { display: flex; }
+        .spinner {
+            width: 32px; height: 32px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── alert dismiss ── */
+        .js-auto-dismiss {
+            transition: opacity 0.5s ease, transform 0.5s ease, max-height 0.5s ease;
+        }
+        .js-auto-dismiss.fading {
+            opacity: 0;
+            transform: translateY(-6px);
+            max-height: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            margin: 0 !important;
+            overflow: hidden;
+        }
     </style>
 </head>
 <body>
@@ -232,24 +283,24 @@
         <div class="hero">
             <div class="hero-head">
                 <h1>{{ $title ?? 'Portal Karyawan' }}</h1>
-                <form method="POST" action="{{ route('karyawan.logout') }}">
+                <form id="logout-form" method="POST" action="{{ route('karyawan.logout') }}">
                     @csrf
-                    <button type="submit" class="btn-logout">Logout</button>
+                    <button type="submit" class="btn-logout">Keluar</button>
                 </form>
             </div>
             <p>{{ $subtitle ?? 'Akses presensi, jadwal, dan riwayat dalam satu tampilan mobile.' }}</p>
         </div>
 
         @if (session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
+            <div class="alert alert-success js-auto-dismiss">{{ session('success') }}</div>
         @endif
 
         @if (session('error'))
-            <div class="alert alert-error">{{ session('error') }}</div>
+            <div class="alert alert-error js-auto-dismiss">{{ session('error') }}</div>
         @endif
 
         @if ($errors->any())
-            <div class="alert alert-error">
+            <div class="alert alert-error js-auto-dismiss">
                 @foreach ($errors->all() as $error)
                     <div>{{ $error }}</div>
                 @endforeach
@@ -276,5 +327,61 @@
         <a href="{{ route('karyawan.tugas') }}" class="{{ request()->routeIs('karyawan.tugas*') ? 'active' : '' }}">Tugas</a>
         <a href="{{ route('karyawan.riwayat') }}" class="{{ request()->routeIs('karyawan.riwayat') ? 'active' : '' }}">Riwayat</a>
     </nav>
+    <!-- loading bar -->
+    <div id="page-loader"></div>
+
+    <!-- logout overlay -->
+    <div id="logout-overlay" role="status" aria-live="polite">
+        <div class="spinner"></div>
+        <span>Sedang keluar&hellip;</span>
+    </div>
+
+    <script>
+    (function () {
+        var loader = document.getElementById('page-loader');
+
+        /* ── loading bar ── */
+        function startLoader() {
+            loader.style.opacity = '1';
+            loader.style.width = '70%';
+        }
+        function finishLoader() {
+            loader.style.width = '100%';
+            setTimeout(function () { loader.style.opacity = '0'; loader.style.width = '0'; }, 350);
+        }
+
+        // mulai bar saat link diklik
+        document.addEventListener('click', function (e) {
+            var a = e.target.closest('a[href]');
+            if (!a) return;
+            var href = a.getAttribute('href');
+            if (!href || href.startsWith('#') || href.startsWith('javascript')) return;
+            startLoader();
+        });
+
+        // selesai saat halaman sudah load
+        window.addEventListener('pageshow', finishLoader);
+        window.addEventListener('load', finishLoader);
+
+        /* ── logout overlay ── */
+        var logoutForm = document.getElementById('logout-form');
+        if (logoutForm) {
+            logoutForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                document.getElementById('logout-overlay').classList.add('show');
+                startLoader();
+                // submit setelah overlay tampil sebentar agar animasi terlihat
+                setTimeout(function () { logoutForm.submit(); }, 350);
+            });
+        }
+
+        /* ── auto-dismiss alert ── */
+        var alerts = document.querySelectorAll('.js-auto-dismiss');
+        alerts.forEach(function (el) {
+            el.style.maxHeight = el.scrollHeight + 'px';
+            setTimeout(function () { el.classList.add('fading'); }, 4000);
+        });
+    })();
+    </script>
 </body>
 </html>

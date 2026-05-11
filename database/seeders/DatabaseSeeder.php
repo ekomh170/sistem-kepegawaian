@@ -152,9 +152,9 @@ class DatabaseSeeder extends Seeder
         // Sesuai BAB 4: 6 hari kerja per minggu, 1 hari libur (Minggu) ditentukan admin,
         // jam kerja 08:00–16:00.
         $semuaKaryawan = Karyawan::all();
-        $tanggalAcuan = \Carbon\Carbon::parse('2026-05-08');
+        $tanggalAcuan = \Carbon\Carbon::parse('2026-05-11');
 
-        // Generate jadwal & presensi sampai 8 Mei 2026
+        // Generate jadwal & presensi sampai 11 Mei 2026
         $startDate = $tanggalAcuan->copy()->subMonths(2)->startOfMonth();
         $endDate = $tanggalAcuan->copy();
 
@@ -162,7 +162,7 @@ class DatabaseSeeder extends Seeder
             // Set gaji pokok random per karyawan jika belum ada
             if (!$kr->gaji_pokok || $kr->gaji_pokok == 0) {
                 $kr->update([
-                    'gaji_pokok' => fake()->randomElement([4500000, 5000000, 5500000, 6000000, 6500000, 7000000]),
+                    'gaji_pokok' => 2827593,
                 ]);
             }
 
@@ -202,26 +202,28 @@ class DatabaseSeeder extends Seeder
                         'alamat_lokasi' => 'Jl. Jend. Sudirman No. 45, Jakarta Pusat',
                         'latitude' => -6.2087634,
                         'longitude' => 106.8222568,
-                        'radius_meter' => 500,
                         'keterangan_pekerjaan' => 'Pekerjaan harian sesuai SOP',
                         'status' => 'disetujui',
                     ]
                 );
 
-                // Buat presensi jika belum ada
-                if (!Presensi::where('karyawan_id', $kr->id)->where('tanggal', $tgl->toDateString())->exists()) {
+                // Buat presensi jika belum ada (skip hari ini agar karyawan bisa test check-in asli)
+                $isToday = $tgl->isToday();
+                if (!$isToday && !Presensi::where('karyawan_id', $kr->id)->where('tanggal', $tgl->toDateString())->exists()) {
                     $rand = rand(1, 100);
                     $potonganTerlambat = 0;
                     $menitTerlambat = 0;
 
                     if ($rand <= 80) { // 80% hadir tepat waktu
                         $jamMasukTime = '07:' . str_pad(rand(30, 59), 2, '0', STR_PAD_LEFT) . ':00';
-                        $jamKeluarTime = '16:' . str_pad(rand(0, 30), 2, '0', STR_PAD_LEFT) . ':00';
+                        // Hari ini: masih di kantor, belum pulang
+                        $jamKeluarTime = $isToday ? null : '16:' . str_pad(rand(0, 30), 2, '0', STR_PAD_LEFT) . ':00';
                         $statusPresensi = 'hadir';
                     } elseif ($rand <= 92) { // 12% terlambat
                         $menitTerlambat = rand(11, 60);
                         $jamMasukTime = '08:' . str_pad(rand(11, 59), 2, '0', STR_PAD_LEFT) . ':00';
-                        $jamKeluarTime = '16:' . str_pad(rand(0, 30), 2, '0', STR_PAD_LEFT) . ':00';
+                        // Hari ini: masih di kantor, belum pulang
+                        $jamKeluarTime = $isToday ? null : '16:' . str_pad(rand(0, 30), 2, '0', STR_PAD_LEFT) . ':00';
                         $statusPresensi = 'terlambat';
                         $potonganTerlambat = Presensi::hitungPotongan($menitTerlambat);
                     } elseif ($rand <= 97) { // 5% izin
@@ -236,6 +238,7 @@ class DatabaseSeeder extends Seeder
 
                     $jamMasuk = $jamMasukTime ? $tgl->toDateString() . ' ' . $jamMasukTime : null;
                     $jamKeluar = $jamKeluarTime ? $tgl->toDateString() . ' ' . $jamKeluarTime : null;
+                    $sudahHadir = in_array($statusPresensi, ['hadir', 'terlambat']);
 
                     $presensi = Presensi::create([
                         'karyawan_id' => $kr->id,
@@ -243,25 +246,26 @@ class DatabaseSeeder extends Seeder
                         'tanggal' => $tgl->toDateString(),
                         'jam_masuk' => $jamMasuk,
                         'jam_keluar' => $jamKeluar,
-                        'foto_masuk' => in_array($statusPresensi, ['hadir', 'terlambat']) ? 'presensi/sample-masuk.jpg' : null,
-                        'foto_keluar' => in_array($statusPresensi, ['hadir', 'terlambat']) ? 'presensi/sample-keluar.jpg' : null,
-                        'latitude_masuk' => in_array($statusPresensi, ['hadir', 'terlambat']) ? -6.2087634 : null,
-                        'longitude_masuk' => in_array($statusPresensi, ['hadir', 'terlambat']) ? 106.8222568 : null,
-                        'latitude_keluar' => in_array($statusPresensi, ['hadir', 'terlambat']) ? -6.2087634 : null,
-                        'longitude_keluar' => in_array($statusPresensi, ['hadir', 'terlambat']) ? 106.8222568 : null,
+                        'foto_masuk' => null,
+                        'foto_keluar' => null,
+                        'latitude_masuk' => $sudahHadir ? -6.2087634 : null,
+                        'longitude_masuk' => $sudahHadir ? 106.8222568 : null,
+                        'latitude_keluar' => ($sudahHadir && !$isToday) ? -6.2087634 : null,
+                        'longitude_keluar' => ($sudahHadir && !$isToday) ? 106.8222568 : null,
                         'menit_terlambat' => $menitTerlambat,
                         'potongan_terlambat' => $potonganTerlambat,
                         'status_presensi' => $statusPresensi,
-                        'status_valid' => in_array($statusPresensi, ['hadir', 'terlambat']) ? 'valid' : 'pending',
+                        // Hari ini masih pending (belum pulang/diverifikasi)
+                        'status_valid' => ($sudahHadir && !$isToday) ? 'valid' : 'pending',
                     ]);
 
-                    // Bukti pekerjaan hanya untuk yang hadir
-                    if (in_array($statusPresensi, ['hadir', 'terlambat'])) {
+                    // Bukti pekerjaan dan verifikasi hanya untuk hari sebelumnya yang sudah selesai
+                    if ($sudahHadir && !$isToday) {
                         \App\Models\BuktiPekerjaan::create([
                             'detail_pekerjaan_id' => $tugas->id,
                             'karyawan_id' => $kr->id,
-                            'foto_before' => 'bukti_pekerjaan/sample-before.jpg',
-                            'foto_after' => 'bukti_pekerjaan/sample-after.jpg',
+                            'foto_before' => null,
+                            'foto_after' => null,
                             'keterangan' => 'Tugas selesai, area bersih.',
                             'status' => 'disetujui',
                             'uploaded_at' => $jamKeluar,

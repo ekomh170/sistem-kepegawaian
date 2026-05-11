@@ -46,11 +46,11 @@ class KaryawanMobileController extends Controller
             ->keyBy('detail_pekerjaan_id');
 
         return view('karyawan.beranda', [
-            'jadwalHariIni' => $jadwalHariIni,
+            'jadwalHariIni'   => $jadwalHariIni,
             'presensiHariIni' => $presensiHariIni,
-            'tugasHariIni' => $tugasHariIni,
-            'buktiHariIni' => $buktiHariIni,
-            'today' => $today,
+            'tugasHariIni'    => $tugasHariIni,
+            'buktiHariIni'    => $buktiHariIni,
+            'today'           => $today,
         ]);
     }
 
@@ -308,11 +308,26 @@ class KaryawanMobileController extends Controller
             ->select('tb_detail_pekerjaan.*')
             ->get();
 
+        $bulanIni = Carbon::today();
+        $presensBulanIni = Presensi::query()
+            ->where('karyawan_id', $karyawan->id)
+            ->whereYear('tanggal', $bulanIni->year)
+            ->whereMonth('tanggal', $bulanIni->month)
+            ->get();
+
+        $totalPotongan = $presensBulanIni->sum('potongan_terlambat');
+        $hariHadir     = $presensBulanIni->whereIn('status_presensi', ['hadir', 'terlambat'])->count();
+        $estimasiGaji  = max(0, ($karyawan->gaji_pokok ?? 0) - $totalPotongan);
+
         return view('karyawan.riwayat', [
             'riwayat'          => $riwayat,
             'summary'          => $summary,
-            'laporanTerbaru'   => null,
             'riwayatPekerjaan' => $riwayatPekerjaan,
+            'gajiPokok'        => $karyawan->gaji_pokok ?? 0,
+            'totalPotongan'    => $totalPotongan,
+            'estimasiGaji'     => $estimasiGaji,
+            'hariHadir'        => $hariHadir,
+            'namaBulan'        => $bulanIni->translatedFormat('F Y'),
         ]);
     }
 
@@ -321,7 +336,7 @@ class KaryawanMobileController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/login');
+        return redirect('/login')->with('status', 'Berhasil keluar. Sampai jumpa!');
     }
 
     private function resolveKaryawan(): Karyawan

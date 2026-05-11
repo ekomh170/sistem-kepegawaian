@@ -5,17 +5,25 @@
 
 @section('content')
     <section class="card">
-        <h2>Estimasi Gaji</h2>
-        @if ($laporanTerbaru)
-            <div class="stats" style="grid-template-columns:1fr;">
-                <div class="stat-item">
-                    <small class="text-muted">Periode {{ $laporanTerbaru->periode }}</small>
-                    <b>Rp {{ number_format((float) $laporanTerbaru->estimasi_gaji, 0, ',', '.') }}</b>
-                </div>
+        <h2>Estimasi Gaji — {{ $namaBulan }}</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+            <div style="background:#f0fdf4;border-radius:8px;padding:10px;">
+                <p class="text-muted" style="margin:0;font-size:0.8em;">Gaji Pokok</p>
+                <p style="margin:4px 0 0;font-weight:700;color:#15803d;">Rp {{ number_format((float)$gajiPokok, 0, ',', '.') }}</p>
             </div>
-        @else
-            <p class="text-muted">Belum ada laporan gaji untuk ditampilkan.</p>
-        @endif
+            <div style="background:#fef2f2;border-radius:8px;padding:10px;">
+                <p class="text-muted" style="margin:0;font-size:0.8em;">Total Potongan</p>
+                <p style="margin:4px 0 0;font-weight:700;color:#dc2626;">- Rp {{ number_format((float)$totalPotongan, 0, ',', '.') }}</p>
+            </div>
+        </div>
+        <div style="background:#eff6ff;border-radius:8px;padding:12px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+                <p class="text-muted" style="margin:0;font-size:0.8em;">Estimasi Diterima</p>
+                <p style="margin:4px 0 0;font-weight:700;font-size:1.15em;color:#1d4ed8;">Rp {{ number_format((float)$estimasiGaji, 0, ',', '.') }}</p>
+            </div>
+            <span class="pill pill-info" style="font-size:0.75em;">{{ $hariHadir }} hari hadir</span>
+        </div>
+        <p class="text-muted" style="margin-top:8px;font-size:0.75em;">* Estimasi berdasarkan presensi yang sudah tercatat. Angka final ditentukan oleh admin.</p>
     </section>
 
     <section class="card">
@@ -96,6 +104,16 @@
                     @endif
                     @if ($pekerjaan->status === 'ditolak' && $pekerjaan->alasan_tolak)
                         <p style="margin:4px 0 0; font-size:0.85em; color:#b91c1c;">Alasan: {{ $pekerjaan->alasan_tolak }}</p>
+                    @endif
+                    @if ($pekerjaan->latitude && $pekerjaan->longitude)
+                        <a href="https://www.google.com/maps?q={{ $pekerjaan->latitude }},{{ $pekerjaan->longitude }}"
+                           target="_blank" rel="noopener"
+                           style="display:inline-flex;align-items:center;gap:5px;margin-top:7px;padding:5px 10px;background:#1d4ed8;color:#fff;border-radius:7px;font-size:0.78em;font-weight:600;text-decoration:none;">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="white">
+                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                            </svg>
+                            Lihat di Google Maps
+                        </a>
                     @endif
                 </div>
             @endforeach

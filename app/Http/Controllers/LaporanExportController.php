@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DetailPekerjaan;
 use App\Models\RekapPresensiBulanan;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -186,5 +187,98 @@ class LaporanExportController extends Controller
         ]);
 
         return $pdf->download('laporan-presensi-' . now()->format('Ymd-His') . '.pdf');
+    }
+
+    // ========== EXPORT REKAP PEKERJAAN ==========
+
+    private function getPekerjaanQuery(Request $request)
+    {
+        $request->validate([
+            'periode' => 'nullable|string|max:20',
+            'karyawan_id' => 'nullable|integer|exists:tb_karyawan,id',
+        ]);
+
+        return DetailPekerjaan::query()
+            ->with(['karyawan.user', 'jadwal', 'buktiPekerjaans'])
+            ->join('tb_jadwal', 'tb_jadwal.id', '=', 'tb_detail_pekerjaan.jadwal_id')
+            ->when(
+                $request->filled('periode'),
+                fn ($q) => $q->whereRaw("DATE_FORMAT(tb_jadwal.tanggal_kerja, '%Y-%m') = ?", [$request->string('periode')])
+            )
+            ->when($request->filled('karyawan_id'), fn ($q) => $q->where('tb_detail_pekerjaan.karyawan_id', $request->integer('karyawan_id')))
+            ->orderByDesc('tb_jadwal.tanggal_kerja')
+            ->orderBy('tb_detail_pekerjaan.karyawan_id')
+            ->select('tb_detail_pekerjaan.*')
+            ->get();
+    }
+
+    private function pekerjaanHeadings(): array
+    {
+        return [
+            'Tanggal',
+            'Karyawan',
+            'NIK',
+            'Nama Lokasi',
+            'Status Tugas',
+            'Alasan Tolak',
+            'Bukti Diupload',
+            'Keterangan',
+        ];
+    }
+
+    private function pekerjaanRow($p): array
+    {
+        return [
+            optional($p->jadwal?->tanggal_kerja)->format('Y-m-d') ?? '-',
+            $p->karyawan?->user?->nama ?? '-',
+            $p->karyawan?->nik ?? '-',
+            $p->nama_lokasi ?? '-',
+            match ($p->status) {
+                'disetujui' => 'Diterima',
+                'ditolak' => 'Ditolak',
+                default => 'Menunggu',
+            },
+            $p->alasan_tolak ?? '-',
+            $p->buktiPekerjaans->count() > 0 ? 'Ya' : 'Belum',
+            $p->keterangan_pekerjaan ?? '-',
+        ];
+    }
+
+    public function exportPekerjaanCsv(Request $request): StreamedResponse
+    {
+        $data = $this->getPekerjaanQuery($request);
+        $filename = 'laporan-rekap-pekerjaan-' . now()->format('Ymd-His') . '.csv';
+
+        return response()->streamDownload(function () use ($data): void {
+            $handle = fopen('php://output', 'wb');
+            fputcsv($handle, $this->pekerjaanHeadings());
+
+            foreach ($data as $p) {
+                fputcsv($handle, $this->pekerjaanRow($p));
+            }
+            fclose($handle);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    public function exportPekerjaanExcel(Request $request)
+    {
+        $filename = 'laporan-rekap-pekerjaan-' . now()->format('Ymd-His') . '.xlsx';
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\LaporanPekerjaanExport($request->string('periode'), $request->integer('karyawan_id')),
+            $filename
+        );
+    }
+
+    public function exportPekerjaanPdf(Request $request)
+    {
+        $data = $this->getPekerjaanQuery($request);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.laporan-pekerjaan-pdf', [
+            'pekerjaans' => $data,
+            'periode' => $request->string('periode') ?: 'Semua Periode',
+        ]);
+
+        return $pdf->download('laporan-rekap-pekerjaan-' . now()->format('Ymd-His') . '.pdf');
     }
 }

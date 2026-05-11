@@ -24,10 +24,10 @@ class DetailPekerjaansTable
                     ->date()
                     ->sortable(),
                 TextColumn::make('jadwal.jam_masuk')
-                    ->label('Jam Masuk')
+                    ->label('Jam Dimulai')
                     ->time(),
                 TextColumn::make('jadwal.jam_pulang')
-                    ->label('Jam Pulang')
+                    ->label('Jam Selesai')
                     ->time(),
                 TextColumn::make('nama_lokasi')
                     ->searchable(),
@@ -39,9 +39,6 @@ class DetailPekerjaansTable
                     ->numeric()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('radius_meter')
-                    ->numeric()
-                    ->sortable(),
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {

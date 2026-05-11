@@ -20,6 +20,11 @@ class FilamentLoginResponse implements LoginResponseContract
             default => Filament::getUrl(),
         };
 
+        if ($user?->role === 'karyawan') {
+            return redirect()->to($targetUrl)
+                ->with('success', 'Selamat datang kembali, ' . $user->nama . '!');
+        }
+
         return redirect()->to($targetUrl);
     }
 }

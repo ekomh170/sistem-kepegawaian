@@ -17,6 +17,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
@@ -153,19 +154,24 @@ class PresensiResource extends Resource
                     ]),
 
                 Section::make('Foto & Lokasi Masuk')
+                    ->description('Foto selfie karyawan diambil otomatis via kamera saat check-in/out. Upload di sini hanya untuk koreksi manual oleh admin.')
                     ->columns(2)
                     ->columnSpanFull()
                     ->schema([
                         \Filament\Forms\Components\FileUpload::make('foto_masuk')
                             ->label('Foto Masuk')
                             ->image()
-                            ->directory('presensi')
-                            ->maxSize(2048),
+                            ->directory('presensi/masuk')
+                            ->disk('public')
+                            ->maxSize(2048)
+                            ->helperText('Normalnya terisi otomatis dari selfie karyawan.'),
                         \Filament\Forms\Components\FileUpload::make('foto_keluar')
                             ->label('Foto Keluar')
                             ->image()
-                            ->directory('presensi')
-                            ->maxSize(2048),
+                            ->directory('presensi/keluar')
+                            ->disk('public')
+                            ->maxSize(2048)
+                            ->helperText('Normalnya terisi otomatis dari selfie karyawan.'),
                         \Dotswan\MapPicker\Fields\Map::make('location_masuk')
                             ->label('Lokasi Masuk')
                             ->columnSpanFull()
@@ -227,11 +233,11 @@ class PresensiResource extends Resource
                             ->date('d F Y'),
                         TextEntry::make('jam_masuk')
                             ->label('Jam Masuk')
-                            ->dateTime('H:i')
+                            ->time('H:i')
                             ->placeholder('-'),
                         TextEntry::make('jam_keluar')
                             ->label('Jam Keluar')
-                            ->dateTime('H:i')
+                            ->time('H:i')
                             ->placeholder('-'),
                         TextEntry::make('status_presensi')
                             ->label('Status Presensi')
@@ -273,7 +279,24 @@ class PresensiResource extends Resource
                             ->placeholder('-'),
                     ]),
 
-                Section::make('Lokasi & Foto')
+                Section::make('Foto Presensi')
+                    ->description('Foto selfie diambil otomatis dari kamera karyawan saat check-in/check-out')
+                    ->columns(2)
+                    ->columnSpanFull()
+                    ->schema([
+                        ImageEntry::make('foto_masuk')
+                            ->label('Foto Masuk')
+                            ->disk('public')
+                            ->height(200)
+                            ->placeholder('Belum ada foto masuk'),
+                        ImageEntry::make('foto_keluar')
+                            ->label('Foto Keluar')
+                            ->disk('public')
+                            ->height(200)
+                            ->placeholder('Belum ada foto keluar'),
+                    ]),
+
+                Section::make('Koordinat GPS')
                     ->columns(2)
                     ->columnSpanFull()
                     ->schema([
@@ -338,11 +361,11 @@ class PresensiResource extends Resource
                     ->sortable(),
                 TextColumn::make('jam_masuk')
                     ->label('Masuk')
-                    ->dateTime('H:i')
+                    ->time('H:i')
                     ->placeholder('-'),
                 TextColumn::make('jam_keluar')
                     ->label('Keluar')
-                    ->dateTime('H:i')
+                    ->time('H:i')
                     ->placeholder('-'),
                 TextColumn::make('status_presensi')
                     ->label('Status')

@@ -37,7 +37,7 @@ class DetailPekerjaanForm
                             ->limit(60)
                             ->get()
                             ->mapWithKeys(fn ($j) => [
-                                $j->id => $j->tanggal_kerja->format('d M Y') . ' (' . substr($j->jam_masuk, 0, 5) . '-' . substr($j->jam_pulang, 0, 5) . ')',
+                                $j->id => $j->tanggal_kerja->format('d M Y') . ' (Dimulai ' . substr($j->jam_masuk, 0, 5) . ' — Selesai ' . substr($j->jam_pulang, 0, 5) . ')',
                             ])
                             ->toArray();
                     })
@@ -48,11 +48,11 @@ class DetailPekerjaanForm
                 TextInput::make('nama_lokasi')
                     ->required()
                     ->live(onBlur: true)
-                    ->helperText('Otomatis terisi dari peta, tapi bisa diubah manual.'),
+                    ->helperText('Otomatis terisi dari peta. Gunakan kolom pencarian di pojok kiri atas peta untuk mencari tempat.'),
                 Textarea::make('alamat_lokasi')
                     ->default(null)
                     ->live(onBlur: true)
-                    ->helperText('Otomatis terisi dari peta, tapi bisa diubah manual.')
+                    ->helperText('Otomatis terisi dari peta atau hasil pencarian, bisa diubah manual.')
                     ->columnSpanFull(),
                 \Dotswan\MapPicker\Fields\Map::make('location')
                     ->label('Pilih Lokasi di Peta (Klik/Geser Pin)')
@@ -126,10 +126,6 @@ class DetailPekerjaanForm
                     ->numeric()
                     ->live()
                     ->default(null),
-                TextInput::make('radius_meter')
-                    ->required()
-                    ->numeric()
-                    ->default(500),
                 Textarea::make('keterangan_pekerjaan')
                     ->default(null)
                     ->columnSpanFull(),

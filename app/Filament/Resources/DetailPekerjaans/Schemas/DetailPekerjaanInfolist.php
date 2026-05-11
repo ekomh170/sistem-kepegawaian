@@ -42,7 +42,7 @@ class DetailPekerjaanInfolist
                     ]),
 
                 Section::make('Jadwal Kerja')
-                    ->description('Tanggal dan jam jadwal kerja terkait')
+                    ->description('Tanggal dan jam pekerjaan')
                     ->columns(3)
                     ->columnSpanFull()
                     ->schema([
@@ -51,11 +51,11 @@ class DetailPekerjaanInfolist
                             ->date('d F Y')
                             ->icon('heroicon-o-calendar'),
                         TextEntry::make('jadwal.jam_masuk')
-                            ->label('Jam Masuk')
+                            ->label('Jam Dimulai')
                             ->time('H:i')
                             ->icon('heroicon-o-clock'),
                         TextEntry::make('jadwal.jam_pulang')
-                            ->label('Jam Pulang')
+                            ->label('Jam Selesai')
                             ->time('H:i')
                             ->icon('heroicon-o-clock'),
                     ]),
@@ -68,11 +68,8 @@ class DetailPekerjaanInfolist
                         TextEntry::make('nama_lokasi')
                             ->label('Nama Lokasi')
                             ->weight('bold')
-                            ->icon('heroicon-o-map-pin'),
-                        TextEntry::make('radius_meter')
-                            ->label('Radius Geofence')
-                            ->suffix(' meter')
-                            ->icon('heroicon-o-signal'),
+                            ->icon('heroicon-o-map-pin')
+                            ->columnSpanFull(),
                         TextEntry::make('alamat_lokasi')
                             ->label('Alamat Lengkap')
                             ->placeholder('-')

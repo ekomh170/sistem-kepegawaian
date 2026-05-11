@@ -47,7 +47,43 @@ php artisan migrate:fresh --seed
 
 ---
 
-## 4. Reset & Optimasi Cepat
+## 4. Setup Storage Link di Windows (Wajib Saat Instalasi Baru)
+
+`php artisan storage:link` di **Windows** kadang membuat folder kosong biasa di `public/storage` alih-alih junction ke `storage/app/public`. Akibatnya foto presensi & bukti pekerjaan yang diupload karyawan **tidak tampil** di browser.
+
+### Cara Cek
+
+Buka PowerShell di folder project, jalankan:
+
+```powershell
+(Get-Item public\storage -Force).Attributes
+```
+
+- ✅ **Benar:** output mengandung `ReparsePoint` (artinya junction aktif)
+- ❌ **Salah:** output hanya `Directory` (folder kosong biasa)
+
+### Cara Perbaiki (jika salah)
+
+```powershell
+# Hapus folder kosong lama
+Remove-Item public\storage -Force -Recurse
+
+# Buat junction yang benar
+New-Item -ItemType Junction -Path public\storage -Target storage\app\public
+```
+
+Setelah ini verifikasi:
+
+```powershell
+(Get-Item public\storage -Force).Attributes
+# Output harus: Directory, ReparsePoint
+```
+
+> Lakukan langkah ini **sekali** setelah instalasi awal (`composer run setup`). Tidak perlu diulang kecuali folder `public/storage` terhapus atau project dipindah.
+
+---
+
+## 5. Reset & Optimasi Cepat (Cache Bersih)
 Jika sistem terasa berat atau perubahan kode tidak muncul, jalankan perintah "Sakti" ini di terminal:
 
 ```powershell
@@ -57,7 +93,7 @@ php artisan optimize:clear; php artisan config:cache; php artisan view:cache
 
 ---
 
-## 5. Mengubah Struktur Form Admin (Filament)
+## 6. Mengubah Struktur Form Admin (Filament)
 Jika ingin menambah/menghapus inputan di panel Admin, cari file di folder:
 `app/Filament/Resources/[NamaModul]/Schemas/`
 

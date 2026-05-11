@@ -56,6 +56,17 @@
                         📍 {{ $tugas->alamat_lokasi ?? '-' }}
                     </p>
 
+                    @if ($tugas->latitude && $tugas->longitude)
+                        <a href="https://www.google.com/maps?q={{ $tugas->latitude }},{{ $tugas->longitude }}"
+                           target="_blank" rel="noopener"
+                           style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:7px 12px;background:#1d4ed8;color:#fff;border-radius:8px;font-size:0.82em;font-weight:600;text-decoration:none;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="white">
+                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                            </svg>
+                            Buka di Google Maps
+                        </a>
+                    @endif
+
                     {{-- STATUS: PENDING — Karyawan pilih Terima / Tolak --}}
                     @if ($statusTugas === 'pending')
                         <div style="margin-top: 12px; padding: 12px; background: #fffbeb; border-radius: 8px; border: 1px solid #fcd34d;">

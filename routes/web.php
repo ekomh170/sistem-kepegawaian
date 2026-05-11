@@ -59,6 +59,17 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('role:admin,supervisor')
         ->name('laporan.export-presensi.pdf');
 
+    // Export laporan rekap pekerjaan (Admin & Supervisor)
+    Route::get('/laporan/export-pekerjaan/csv', [LaporanExportController::class, 'exportPekerjaanCsv'])
+        ->middleware('role:admin,supervisor')
+        ->name('laporan.export-pekerjaan.csv');
+    Route::get('/laporan/export-pekerjaan/excel', [LaporanExportController::class, 'exportPekerjaanExcel'])
+        ->middleware('role:admin,supervisor')
+        ->name('laporan.export-pekerjaan.excel');
+    Route::get('/laporan/export-pekerjaan/pdf', [LaporanExportController::class, 'exportPekerjaanPdf'])
+        ->middleware('role:admin,supervisor')
+        ->name('laporan.export-pekerjaan.pdf');
+
     // Halaman mobile Karyawan (UC-07, UC-08, UC-09, UC-10, UC-12)
     Route::prefix('karyawan')
         ->name('karyawan.')
