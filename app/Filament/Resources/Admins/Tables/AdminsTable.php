@@ -16,18 +16,20 @@ class AdminsTable
         return $table
             ->columns([
                 TextColumn::make('user.nama')
-                    ->label('User')
+                    ->label('Nama')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('nip')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('divisi')
+                TextColumn::make('user.email')
+                    ->label('Email')
                     ->searchable(),
-                TextColumn::make('level_akses')
-                    ->badge(),
+                TextColumn::make('nik')
+                    ->label('NIK')
+                    ->searchable(),
+                TextColumn::make('no_hp')
+                    ->label('No. HP'),
                 TextColumn::make('created_at')
                     ->dateTime('d M Y H:i')
+                    ->label('Dibuat Pada')
                     ->sortable(),
             ])
             ->filters([])

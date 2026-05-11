@@ -7,7 +7,6 @@ use App\Models\DetailPekerjaan;
 use App\Models\Jadwal;
 use App\Models\Karyawan;
 use App\Models\Laporan;
-use App\Models\Notifikasi;
 use App\Models\Presensi;
 use App\Models\Supervisor;
 use App\Models\User;
@@ -85,9 +84,8 @@ class DatabaseSeeder extends Seeder
         $admin = Admin::updateOrCreate(
             ['user_id' => $adminUser->id],
             [
-                'nip' => 'ADM-001',
-                'divisi' => 'Sumber Daya Manusia',
-                'level_akses' => 'penuh',
+                'nik' => 'ADM-001',
+                'no_hp' => '081200000001',
             ]
         );
 
@@ -95,8 +93,8 @@ class DatabaseSeeder extends Seeder
         $supervisor = Supervisor::updateOrCreate(
             ['user_id' => $supervisorUser->id],
             [
-                'jabatan' => 'Direktur Utama',
-                'level_akses' => 'menengah',
+                'nik' => 'SPV-001',
+                'no_hp' => '081200000002',
             ]
         );
 
@@ -346,58 +344,6 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // ========== NOTIFIKASI DATA ==========
-        Notifikasi::updateOrCreate(
-            [
-                'user_id' => $karyawanUser->id,
-                'pesan' => 'Jadwal kerja reguler dimulai pukul 08:00 di Kantor CV Boss Muda Mandiri.',
-            ],
-            [
-                'tipe' => 'info',
-                'terbaca' => true,
-                'tgl_kirim' => '2026-04-27 07:00:00',
-                'channel' => 'in_app',
-            ]
-        );
-
-        Notifikasi::updateOrCreate(
-            [
-                'user_id' => $supervisorUser->id,
-                'pesan' => 'Ada 1 presensi menunggu verifikasi dari staf lapangan.',
-            ],
-            [
-                'tipe' => 'urgent',
-                'terbaca' => false,
-                'tgl_kirim' => '2026-04-27 17:10:00',
-                'channel' => 'email',
-            ]
-        );
-
-        Notifikasi::updateOrCreate(
-            [
-                'user_id' => $adminUser->id,
-                'pesan' => 'Laporan presensi bulan Maret sudah siap untuk diekspor.',
-            ],
-            [
-                'tipe' => 'info',
-                'terbaca' => false,
-                'tgl_kirim' => \Carbon\Carbon::parse($periodeLaporan . '-28 18:00:00')->toDateTimeString(),
-                'channel' => 'in_app',
-            ]
-        );
-
-        Notifikasi::updateOrCreate(
-            [
-                'user_id' => $karyawanUser->id,
-                'pesan' => 'Peringatan: Presensi Anda pada 2026-04-26 menunjukkan keterlambatan 55 menit.',
-            ],
-            [
-                'tipe' => 'peringatan',
-                'terbaca' => true,
-                'tgl_kirim' => '2026-04-26 09:00:00',
-                'channel' => 'email',
-            ]
-        );
         // ========== SETTING DATA ==========
         $settings = [
             [

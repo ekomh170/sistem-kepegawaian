@@ -72,14 +72,15 @@ erDiagram
     tb_admin {
         bigint id PK
         bigint user_id FK
-        string nip
-        string divisi
+        string nik
+        string no_hp
     }
 
     tb_supervisor {
         bigint id PK
         bigint user_id FK
-        string jabatan
+        string nik
+        string no_hp
     }
 
     tb_karyawan {
@@ -90,12 +91,21 @@ erDiagram
         decimal gaji_pokok
     }
 
-    tb_detail_pekerjaan {
+    tb_jadwal {
         bigint id PK
         bigint karyawan_id FK
-        date tanggal
+        bigint admin_id FK
+        date tanggal_kerja
         time jam_masuk
         time jam_pulang
+        boolean hari_libur
+        enum status "aktif/dibatalkan"
+    }
+
+    tb_detail_pekerjaan {
+        bigint id PK
+        bigint jadwal_id FK
+        bigint karyawan_id FK
         string nama_lokasi
         decimal latitude
         decimal longitude
@@ -106,13 +116,17 @@ erDiagram
     tb_presensi {
         bigint id PK
         bigint karyawan_id FK
-        date tgl_presensi
+        bigint jadwal_id FK
+        date tanggal
         datetime jam_masuk
-        datetime jam_pulang
-        enum status "hadir/terlambat/tidak_hadir/izin"
+        datetime jam_keluar
+        enum status_presensi "hadir/terlambat/tidak_hadir/izin"
+        enum status_valid "pending/valid/tidak_valid"
         string foto_masuk
-        integer keterlambatan_menit
-        decimal potongan
+        decimal latitude_masuk
+        decimal longitude_masuk
+        integer menit_terlambat
+        decimal potongan_terlambat
     }
 
     tb_bukti_pekerjaan {
@@ -158,15 +172,6 @@ erDiagram
         datetime tgl_generate
     }
 
-    tb_notifikasi {
-        bigint id PK
-        bigint user_id FK
-        enum tipe "info/peringatan/urgent"
-        text pesan
-        boolean terbaca
-        string channel
-    }
-
     tb_setting {
         bigint id PK
         string key UK
@@ -176,13 +181,18 @@ erDiagram
     tb_user ||--o| tb_admin : "is a"
     tb_user ||--o| tb_supervisor : "is a"
     tb_user ||--o| tb_karyawan : "is a"
-    tb_user ||--o{ tb_notifikasi : "receives"
     tb_user ||--o{ tb_laporan : "generates"
 
+    tb_admin ||--o{ tb_jadwal : "creates"
+
+    tb_karyawan ||--o{ tb_jadwal : "has schedule"
     tb_karyawan ||--o{ tb_presensi : "logs"
     tb_karyawan ||--o{ tb_detail_pekerjaan : "assigned to"
     tb_karyawan ||--o{ tb_bukti_pekerjaan : "submits"
     tb_karyawan ||--o{ tb_rekap_presensi_bulanan : "has salary"
+
+    tb_jadwal ||--o{ tb_detail_pekerjaan : "has tasks"
+    tb_jadwal ||--o| tb_presensi : "has presensi"
 
     tb_presensi ||--o| tb_verifikasi : "validated in"
     tb_supervisor ||--o{ tb_verifikasi : "performs"

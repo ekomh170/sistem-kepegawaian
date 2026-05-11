@@ -94,17 +94,7 @@ Edit cepat:
 Edit cepat:
 - logic CRUD + permission -> `LokasiGpsResource.php`
 
-## 6. Notifikasis
-
-- `app/Filament/Resources/Notifikasis/NotifikasiResource.php`
-- `app/Filament/Resources/Notifikasis/Pages/CreateNotifikasi.php`
-- `app/Filament/Resources/Notifikasis/Pages/EditNotifikasi.php`
-- `app/Filament/Resources/Notifikasis/Pages/ListNotifikasis.php`
-
-Edit cepat:
-- field dan permission -> `NotifikasiResource.php`
-
-## 7. Presensis
+## 6. Presensis
 
 - `app/Filament/Resources/Presensis/PresensiResource.php`
 - `app/Filament/Resources/Presensis/Pages/CreatePresensi.php`
@@ -114,7 +104,7 @@ Edit cepat:
 Edit cepat:
 - behavior utama presensi di panel -> `PresensiResource.php`
 
-## 8. Supervisors
+## 7. Supervisors
 
 - `app/Filament/Resources/Supervisors/SupervisorResource.php`
 - `app/Filament/Resources/Supervisors/Pages/CreateSupervisor.php`
@@ -124,7 +114,7 @@ Edit cepat:
 Edit cepat:
 - akses dan form/table supervisor -> `SupervisorResource.php`
 
-## 9. Verifikasis
+## 8. Verifikasis
 
 - `app/Filament/Resources/Verifikasis/VerifikasiResource.php`
 - `app/Filament/Resources/Verifikasis/Pages/CreateVerifikasi.php`

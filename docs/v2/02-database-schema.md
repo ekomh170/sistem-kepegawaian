@@ -10,16 +10,16 @@ Sistem menggunakan **14 tabel migrasi** dengan prefiks `tb_` pada tabel bisnis u
 | No | Nama Tabel | Deskripsi | Model |
 |----|-----------|-----------|-------|
 | 1 | `tb_user` | Data autentikasi & profil semua pengguna | `User` |
-| 2 | `tb_admin` | Data tambahan admin (NIP, divisi) | `Admin` |
-| 3 | `tb_supervisor` | Data tambahan supervisor (jabatan) | `Supervisor` |
+| 2 | `tb_admin` | Data tambahan admin (NIK, no_hp) | `Admin` |
+| 3 | `tb_supervisor` | Data tambahan supervisor (NIK, no_hp) | `Supervisor` |
 | 4 | `tb_karyawan` | Data lengkap karyawan (NIK, posisi, kontrak) | `Karyawan` |
-| 5 | `tb_detail_pekerjaan` | Daftar tugas harian (task list) | `DetailPekerjaan` |
-| 6 | `tb_presensi` | Catatan presensi harian (1x per hari) | `Presensi` |
-| 7 | `tb_verifikasi` | Hasil verifikasi supervisor terhadap presensi | `Verifikasi` |
-| 8 | `tb_bukti_pekerjaan` | Foto before/after hasil kerja per tugas | `BuktiPekerjaan` |
-| 9 | `tb_rekap_presensi_bulanan` | Rekap presensi bulanan (gaji & potongan) per periode | `RekapPresensiBulanan` |
-| 10 | `tb_laporan` | Metadata laporan yang di-generate | `Laporan` |
-| 11 | `tb_notifikasi` | Notifikasi untuk semua user | `Notifikasi` |
+| 5 | `tb_jadwal` | Jadwal kerja per karyawan per tanggal | `Jadwal` |
+| 6 | `tb_detail_pekerjaan` | Daftar tugas per jadwal | `DetailPekerjaan` |
+| 7 | `tb_presensi` | Catatan presensi harian (1x per hari) | `Presensi` |
+| 8 | `tb_verifikasi` | Hasil verifikasi supervisor terhadap presensi | `Verifikasi` |
+| 9 | `tb_bukti_pekerjaan` | Foto before/after hasil kerja per tugas | `BuktiPekerjaan` |
+| 10 | `tb_rekap_presensi_bulanan` | Rekap presensi bulanan (gaji & potongan) per periode | `RekapPresensiBulanan` |
+| 11 | `tb_laporan` | Metadata laporan yang di-generate | `Laporan` |
 | 12 | `tb_setting` | Pengaturan sistem (key-value) | `Setting` |
 | 13 | `sessions` | Session management Laravel | - |
 | 14 | `cache` | Cache framework | - |
@@ -45,9 +45,8 @@ Sistem menggunakan **14 tabel migrasi** dengan prefiks `tb_` pada tabel bisnis u
 |-------|------|------------|
 | id | bigint PK | Auto increment |
 | user_id | bigint FK → tb_user.id | Relasi ke user |
-| nip | varchar(255) | Nomor Induk Pegawai |
-| divisi | varchar(255) | Divisi kerja |
-| level_akses | varchar(255) | Level akses (penuh/menengah) |
+| nik | varchar(255) | Nomor Induk Karyawan (Admin) |
+| no_hp | varchar(30) | Nomor telepon |
 | created_at | timestamp | Waktu pembuatan |
 
 ### 2.3 `tb_supervisor`
@@ -55,8 +54,8 @@ Sistem menggunakan **14 tabel migrasi** dengan prefiks `tb_` pada tabel bisnis u
 |-------|------|------------|
 | id | bigint PK | Auto increment |
 | user_id | bigint FK → tb_user.id | Relasi ke user |
-| jabatan | varchar(255) | Jabatan supervisor |
-| level_akses | varchar(255) | Level akses |
+| nik | varchar(255) | Nomor Induk Karyawan (Supervisor) |
+| no_hp | varchar(30) | Nomor telepon |
 | created_at | timestamp | Waktu pembuatan |
 
 ### 2.4 `tb_karyawan`
@@ -76,14 +75,25 @@ Sistem menggunakan **14 tabel migrasi** dengan prefiks `tb_` pada tabel bisnis u
 | gaji_pokok | decimal(15,2) nullable | Gaji pokok bulanan |
 | created_at | timestamp | Waktu pembuatan |
 
-### 2.5 `tb_detail_pekerjaan` (Daftar Tugas)
+### 2.5 `tb_jadwal`
 | Kolom | Tipe | Keterangan |
 |-------|------|------------|
 | id | bigint PK | Auto increment |
-| karyawan_id | bigint FK → tb_karyawan.id | Karyawan yang ditugaskan |
-| tanggal | date | Tanggal penugasan |
+| karyawan_id | bigint FK → tb_karyawan.id | Karyawan yang dijadwalkan |
+| admin_id | bigint FK → tb_admin.id | Admin pembuat (nullable) |
+| tanggal_kerja | date | Tanggal kerja |
 | jam_masuk | time | Jam mulai kerja |
 | jam_pulang | time | Jam selesai kerja |
+| hari_libur | boolean | Penanda hari libur |
+| status | enum('aktif','dibatalkan') | Status jadwal |
+| created_at | timestamp | Waktu pembuatan |
+
+### 2.6 `tb_detail_pekerjaan` (Daftar Tugas)
+| Kolom | Tipe | Keterangan |
+|-------|------|------------|
+| id | bigint PK | Auto increment |
+| jadwal_id | bigint FK → tb_jadwal.id | Jadwal kerja terkait |
+| karyawan_id | bigint FK → tb_karyawan.id | Karyawan yang ditugaskan |
 | nama_lokasi | varchar(255) | Nama tempat kerja |
 | alamat_lokasi | text nullable | Alamat lengkap |
 | latitude | decimal(10,7) nullable | Koordinat GPS latitude |
@@ -94,25 +104,28 @@ Sistem menggunakan **14 tabel migrasi** dengan prefiks `tb_` pada tabel bisnis u
 | alasan_tolak | text nullable | Alasan jika karyawan menolak tugas |
 | created_at | timestamp | Waktu pembuatan |
 
-### 2.6 `tb_presensi` (Harian)
+### 2.7 `tb_presensi` (Harian)
 | Kolom | Tipe | Keterangan |
 |-------|------|------------|
 | id | bigint PK | Auto increment |
 | karyawan_id | bigint FK → tb_karyawan.id | Karyawan |
-| tgl_presensi | date | Tanggal presensi |
+| jadwal_id | bigint FK → tb_jadwal.id | Jadwal terkait (nullable) |
+| tanggal | date | Tanggal presensi |
 | jam_masuk | datetime nullable | Waktu check-in (di Kantor Pusat) |
-| jam_pulang | datetime nullable | Waktu check-out |
-| status | varchar(255) | hadir/terlambat/tidak_hadir/izin |
+| jam_keluar | datetime nullable | Waktu check-out |
+| status_presensi | enum('hadir','terlambat','tidak_hadir','izin') | Status presensi |
+| status_valid | enum('pending','valid','tidak_valid') | Status validasi |
 | foto_masuk | varchar(255) nullable | Path foto check-in (selfie) |
 | foto_keluar | varchar(255) nullable | Path foto check-out |
-| lat_masuk | decimal(10,7) nullable | Latitude saat check-in |
-| long_masuk | decimal(10,7) nullable | Longitude saat check-in |
-| durasi_menit | integer nullable | Total jam kerja |
-| keterlambatan_menit | integer default 0 | Menit keterlambatan dari 08:00 |
-| potongan | decimal(15,2) default 0 | Nominal potongan otomatis |
+| latitude_masuk | decimal(10,7) nullable | Latitude saat check-in |
+| longitude_masuk | decimal(10,7) nullable | Longitude saat check-in |
+| latitude_keluar | decimal(10,7) nullable | Latitude saat check-out |
+| longitude_keluar | decimal(10,7) nullable | Longitude saat check-out |
+| menit_terlambat | integer default 0 | Menit keterlambatan dari jam jadwal |
+| potongan_terlambat | decimal(10,2) default 0 | Nominal potongan otomatis |
 | created_at | timestamp | Waktu pembuatan |
 
-### 2.7 `tb_verifikasi`
+### 2.8 `tb_verifikasi`
 | Kolom | Tipe | Keterangan |
 |-------|------|------------|
 | id | bigint PK | Auto increment |
@@ -124,7 +137,7 @@ Sistem menggunakan **14 tabel migrasi** dengan prefiks `tb_` pada tabel bisnis u
 | alasan_tolak | varchar(255) nullable | Alasan penolakan |
 | created_at | timestamp | Waktu pembuatan |
 
-### 2.8 `tb_bukti_pekerjaan` (Per Tugas)
+### 2.9 `tb_bukti_pekerjaan` (Per Tugas)
 | Kolom | Tipe | Keterangan |
 |-------|------|------------|
 | id | bigint PK | Auto increment |
@@ -137,7 +150,7 @@ Sistem menggunakan **14 tabel migrasi** dengan prefiks `tb_` pada tabel bisnis u
 | uploaded_at | datetime nullable | Waktu upload |
 | created_at | timestamp | Waktu pembuatan |
 
-### 2.9 `tb_rekap_presensi_bulanan`
+### 2.10 `tb_rekap_presensi_bulanan`
 | Kolom | Tipe | Keterangan |
 |-------|------|------------|
 | id | bigint PK | Auto increment |
@@ -155,7 +168,7 @@ Sistem menggunakan **14 tabel migrasi** dengan prefiks `tb_` pada tabel bisnis u
 | created_at | timestamp | Waktu pembuatan |
 | updated_at | timestamp | Waktu update |
 
-### 2.10 `tb_laporan`
+### 2.11 `tb_laporan`
 | Kolom | Tipe | Keterangan |
 |-------|------|------------|
 | id | bigint PK | Auto increment |
@@ -166,18 +179,6 @@ Sistem menggunakan **14 tabel migrasi** dengan prefiks `tb_` pada tabel bisnis u
 | file_path | varchar(255) nullable | Path file laporan |
 | generated_by | bigint FK → tb_user.id | User yang membuat |
 | tgl_generate | datetime | Tanggal generate |
-| created_at | timestamp | Waktu pembuatan |
-
-### 2.11 `tb_notifikasi`
-| Kolom | Tipe | Keterangan |
-|-------|------|------------|
-| id | bigint PK | Auto increment |
-| user_id | bigint FK → tb_user.id | Penerima notifikasi |
-| tipe | varchar(255) | info/urgent/peringatan |
-| pesan | text | Isi pesan notifikasi |
-| terbaca | boolean default false | Status sudah dibaca |
-| tgl_kirim | datetime | Waktu kirim |
-| channel | varchar(255) | Channel notifikasi |
 | created_at | timestamp | Waktu pembuatan |
 
 ### 2.12 `tb_setting`
@@ -198,13 +199,18 @@ erDiagram
     tb_user ||--o| tb_admin : "has one"
     tb_user ||--o| tb_supervisor : "has one"
     tb_user ||--o| tb_karyawan : "has one"
-    tb_user ||--o{ tb_notifikasi : "has many"
     tb_user ||--o{ tb_laporan : "generated_by"
 
+    tb_admin ||--o{ tb_jadwal : "creates"
+
+    tb_karyawan ||--o{ tb_jadwal : "has schedule"
     tb_karyawan ||--o{ tb_detail_pekerjaan : "has tasks"
     tb_karyawan ||--o{ tb_presensi : "has daily logs"
     tb_karyawan ||--o{ tb_rekap_presensi_bulanan : "has salaries"
     tb_karyawan ||--o{ tb_bukti_pekerjaan : "uploads"
+
+    tb_jadwal ||--o{ tb_detail_pekerjaan : "has tasks"
+    tb_jadwal ||--o| tb_presensi : "has presensi"
 
     tb_detail_pekerjaan ||--o{ tb_bukti_pekerjaan : "has proofs"
 

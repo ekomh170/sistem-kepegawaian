@@ -29,9 +29,9 @@ class JadwalForm
                             ->required(),
                         Select::make('admin_id')
                             ->label('Admin Pembuat')
-                            ->relationship('admin', 'nip')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nip} - " . ($record->user?->nama ?? 'Unknown'))
-                            ->searchable(['nip'])
+                            ->relationship('admin', 'nik')
+                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nik} - " . ($record->user?->nama ?? 'Unknown'))
+                            ->searchable(['nik'])
                             ->preload()
                             ->default(fn () => \App\Models\Admin::where('user_id', Auth::id())->first()?->id),
                     ]),

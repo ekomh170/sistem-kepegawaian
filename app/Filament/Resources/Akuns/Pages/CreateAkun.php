@@ -28,14 +28,13 @@ class CreateAkun extends CreateRecord
             match ($data['role']) {
                 'admin' => Admin::create([
                     'user_id' => $user->id,
-                    'nip' => $data['admin_nip'],
-                    'divisi' => $data['admin_divisi'],
-                    'level_akses' => $data['admin_level_akses'],
+                    'nik' => $data['admin_nik'],
+                    'no_hp' => $data['admin_no_hp'],
                 ]),
                 'supervisor' => Supervisor::create([
                     'user_id' => $user->id,
-                    'jabatan' => $data['supervisor_jabatan'],
-                    'level_akses' => $data['supervisor_level_akses'],
+                    'nik' => $data['supervisor_nik'],
+                    'no_hp' => $data['supervisor_no_hp'],
                 ]),
                 'karyawan' => Karyawan::create([
                     'user_id' => $user->id,

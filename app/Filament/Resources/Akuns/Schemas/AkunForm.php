@@ -2,15 +2,12 @@
 
 namespace App\Filament\Resources\Akuns\Schemas;
 
-use App\Models\Admin;
 use App\Models\Karyawan;
 use App\Models\User;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -58,9 +55,10 @@ class AkunForm
                             ->live()
                             ->afterStateUpdated(function (Set $set): void {
                                 // Reset semua field role
-                                $set('admin_nip', null);
-                                $set('admin_divisi', null);
-                                $set('supervisor_jabatan', null);
+                                $set('admin_nik', null);
+                                $set('admin_no_hp', null);
+                                $set('supervisor_nik', null);
+                                $set('supervisor_no_hp', null);
                                 $set('karyawan_nik', null);
                                 $set('karyawan_posisi_karyawan', null);
                                 $set('karyawan_tgl_masuk', null);
@@ -80,17 +78,16 @@ class AkunForm
                     ->columnSpanFull()
                     ->visible(fn (Get $get): bool => $get('role') === 'admin')
                     ->schema([
-                        TextInput::make('admin_nip')
-                            ->label('NIP')
+                        TextInput::make('admin_nik')
+                            ->label('NIK')
                             ->required(fn (Get $get): bool => $get('role') === 'admin')
-                            ->maxLength(255)
-                            ->unique(table: Admin::class, column: 'nip', ignoreRecord: true)
+                            ->maxLength(100)
                             ->placeholder('ADM-XXX'),
-                        TextInput::make('admin_divisi')
-                            ->label('Divisi')
+                        TextInput::make('admin_no_hp')
+                            ->label('No. HP')
                             ->required(fn (Get $get): bool => $get('role') === 'admin')
-                            ->maxLength(255)
-                            ->placeholder('Contoh: IT, HRD, Keuangan'),
+                            ->maxLength(20)
+                            ->placeholder('08XXXXXXXXXX'),
                     ]),
 
                 // === SUPERVISOR SECTION ===
@@ -100,11 +97,16 @@ class AkunForm
                     ->columnSpanFull()
                     ->visible(fn (Get $get): bool => $get('role') === 'supervisor')
                     ->schema([
-                        TextInput::make('supervisor_jabatan')
-                            ->label('Jabatan')
+                        TextInput::make('supervisor_nik')
+                            ->label('NIK')
                             ->required(fn (Get $get): bool => $get('role') === 'supervisor')
-                            ->maxLength(255)
-                            ->placeholder('Contoh: Kepala Proyek'),
+                            ->maxLength(100)
+                            ->placeholder('SPV-XXX'),
+                        TextInput::make('supervisor_no_hp')
+                            ->label('No. HP')
+                            ->required(fn (Get $get): bool => $get('role') === 'supervisor')
+                            ->maxLength(20)
+                            ->placeholder('08XXXXXXXXXX'),
                     ]),
 
                 // === KARYAWAN SECTION ===

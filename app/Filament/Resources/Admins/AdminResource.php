@@ -26,7 +26,7 @@ class AdminResource extends Resource
 
     protected static ?string $navigationLabel = 'Admin';
 
-    protected static ?string $recordTitleAttribute = 'nip';
+    protected static ?string $recordTitleAttribute = 'nik';
 
     public static function shouldRegisterNavigation(): bool
     {

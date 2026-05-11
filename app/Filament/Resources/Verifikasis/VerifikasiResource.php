@@ -78,9 +78,9 @@ class VerifikasiResource extends Resource
                             ->unique(ignoreRecord: true),
                         Select::make('supervisor_id')
                             ->label('Supervisor')
-                            ->relationship('supervisor', 'id')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => ($record->user?->nama ?? 'Unknown') . " ({$record->jabatan})")
-                            ->searchable()
+                            ->relationship('supervisor', 'nik')
+                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nik} - " . ($record->user?->nama ?? 'Unknown'))
+                            ->searchable(['nik'])
                             ->preload()
                             ->required(),
                         Select::make('status')

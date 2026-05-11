@@ -62,9 +62,9 @@ class RekapPresensiBulananForm
                         self::hitungRekap($set, $get);
                     }),
                 Select::make('admin_id')
-                    ->relationship('admin', 'nip')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nip} - " . ($record->user?->nama ?? 'Unknown'))
-                    ->searchable(['nip'])
+                    ->relationship('admin', 'nik')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nik} - " . ($record->user?->nama ?? 'Unknown'))
+                    ->searchable(['nik'])
                     ->preload()
                     ->label('Admin Pembuat')
                     ->default(fn () => \App\Models\Admin::where('user_id', Auth::id())->first()?->id),

@@ -16,11 +16,13 @@ class AdminInfolist
                     ->columns(2)
                     ->schema([
                         TextEntry::make('user.nama')
-                            ->label('User'),
-                        TextEntry::make('nip'),
-                        TextEntry::make('divisi'),
-                        TextEntry::make('level_akses')
-                            ->badge(),
+                            ->label('Nama'),
+                        TextEntry::make('user.email')
+                            ->label('Email'),
+                        TextEntry::make('nik')
+                            ->label('NIK'),
+                        TextEntry::make('no_hp')
+                            ->label('No. HP'),
                         TextEntry::make('created_at')
                             ->dateTime('d M Y H:i')
                             ->label('Dibuat Pada'),

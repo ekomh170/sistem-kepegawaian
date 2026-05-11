@@ -71,7 +71,7 @@ Rule praktis:
 
 - `Admins`, `Karyawans`, `Supervisors`
 - `JadwalKerjas`, `Presensis`, `Verifikasis`
-- `Laporans`, `Notifikasis`, `LokasiGps`
+- `Laporans`, `LokasiGps`
 
 Map file lengkap ada di:
 - `docs/FILAMENT_FILE_MAP.md`

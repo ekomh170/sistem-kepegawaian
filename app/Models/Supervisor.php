@@ -14,8 +14,8 @@ class Supervisor extends Model
 
     protected $fillable = [
         'user_id',
-        'jabatan',
-        'level_akses',
+        'nik',
+        'no_hp',
     ];
 
     public function user(): BelongsTo

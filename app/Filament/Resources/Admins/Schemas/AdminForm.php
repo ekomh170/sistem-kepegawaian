@@ -23,20 +23,14 @@ class AdminForm
                             ->preload()
                             ->required()
                             ->unique(ignoreRecord: true),
-                        TextInput::make('nip')
+                        TextInput::make('nik')
+                            ->label('NIK')
                             ->required()
-                            ->maxLength(255)
-                            ->unique(ignoreRecord: true),
-                        TextInput::make('divisi')
+                            ->maxLength(100),
+                        TextInput::make('no_hp')
+                            ->label('No. HP')
                             ->required()
-                            ->maxLength(255),
-                        Select::make('level_akses')
-                            ->options([
-                                'dasar' => 'Dasar',
-                                'menengah' => 'Menengah',
-                                'penuh' => 'Penuh',
-                            ])
-                            ->required(),
+                            ->maxLength(20),
                     ]),
             ]);
     }

@@ -63,9 +63,9 @@ sistem-kepegawaian/
 │   │   │   ├── Akuns/
 │   │   │   ├── BuktiPekerjaans/
 │   │   │   ├── DetailPekerjaans/       # + Map Picker
+│   │   │   ├── Jadwals/
 │   │   │   ├── Karyawans/
 │   │   │   ├── Laporans/              # + Export CSV/Excel/PDF
-│   │   │   ├── Notifikasis/
 │   │   │   ├── Presensis/             # + Auto-kalkulasi + MapPicker
 │   │   │   ├── RekapPresensiBulanans/        # Rekap presensi bulanan gaji
 │   │   │   ├── Supervisors/
@@ -86,14 +86,14 @@ sistem-kepegawaian/
 │       ├── Admin.php
 │       ├── Supervisor.php
 │       ├── Karyawan.php
+│       ├── Jadwal.php
 │       ├── DetailPekerjaan.php
 │       ├── Presensi.php
 │       ├── Verifikasi.php
 │       ├── BuktiPekerjaan.php
 │       ├── RekapPresensiBulanan.php
 │       ├── Setting.php
-│       ├── Laporan.php
-│       └── Notifikasi.php
+│       └── Laporan.php
 ├── database/
 │   ├── migrations/                     # 14 Migration files
 │   └── seeders/

@@ -82,11 +82,6 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasOne(Supervisor::class, 'user_id');
     }
 
-    public function notifikasis(): HasMany
-    {
-        return $this->hasMany(Notifikasi::class, 'user_id');
-    }
-
     public function laporans(): HasMany
     {
         return $this->hasMany(Laporan::class, 'generated_by');
