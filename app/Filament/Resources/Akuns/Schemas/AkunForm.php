@@ -154,10 +154,11 @@ class AkunForm
                             ->placeholder('08XXXXXXXXXX'),
                         TextInput::make('karyawan_gaji_pokok')
                             ->label('Gaji Pokok (Rp)')
-                            ->numeric()
                             ->prefix('Rp')
                             ->required(fn (Get $get): bool => $get('role') === 'karyawan')
-                            ->placeholder('3000000'),
+                            ->placeholder('3.000.000')
+                            ->formatStateUsing(fn ($state) => $state ? number_format((int) $state, 0, ',', '.') : null)
+                            ->dehydrateStateUsing(fn ($state) => (int) str_replace('.', '', $state ?? '0')),
                         Textarea::make('karyawan_alamat')
                             ->label('Alamat')
                             ->rows(2)

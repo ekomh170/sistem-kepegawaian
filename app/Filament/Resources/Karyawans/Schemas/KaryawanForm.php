@@ -24,21 +24,19 @@ class KaryawanForm
                     ->columns(2)
                     ->columnSpanFull()
                     ->schema([
-                        // === SAAT CREATE: isi data akun baru ===
+                        // Data akun user (create/edit)
                         TextInput::make('user_nama')
                             ->label('Nama Lengkap')
                             ->required()
                             ->maxLength(255)
                             ->placeholder('Masukkan nama lengkap')
-                            ->columnSpanFull()
-                            ->visible(fn ($context) => $context === 'create'),
+                            ->columnSpanFull(),
                         TextInput::make('user_email')
                             ->label('Email')
                             ->email()
                             ->required()
                             ->maxLength(255)
-                            ->placeholder('contoh@email.com')
-                            ->visible(fn ($context) => $context === 'create'),
+                            ->placeholder('contoh@email.com'),
                         TextInput::make('user_password')
                             ->label('Password')
                             ->password()
@@ -46,20 +44,9 @@ class KaryawanForm
                             ->required(fn ($context) => $context === 'create')
                             ->dehydrated(fn ($state) => filled($state))
                             ->minLength(8)
-                            ->visible(fn ($context) => $context === 'create'),
-
-                        // === SAAT EDIT: tampilkan select user ===
-                        Select::make('user_id')
-                            ->label('Akun User')
-                            ->relationship('user', 'nama')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nama} ({$record->email})")
-                            ->searchable(['nama', 'email'])
-                            ->preload()
-                            ->required()
-                            ->disabled()
-                            ->dehydrated()
-                            ->columnSpanFull()
-                            ->visible(fn ($context) => $context === 'edit'),
+                            ->helperText(fn ($context) => $context === 'edit'
+                                ? 'Kosongkan jika tidak ingin mengubah password'
+                                : null),
                     ]),
 
                 Section::make('Identitas Karyawan')
@@ -122,11 +109,12 @@ class KaryawanForm
                             ->required(),
                         TextInput::make('gaji_pokok')
                             ->label('Gaji Pokok (Rp)')
-                            ->numeric()
                             ->prefix('Rp')
                             ->required()
                             ->default(0)
-                            ->placeholder('3000000'),
+                            ->placeholder('3.000.000')
+                            ->formatStateUsing(fn ($state) => $state ? number_format((int) $state, 0, ',', '.') : null)
+                            ->dehydrateStateUsing(fn ($state) => (int) str_replace('.', '', $state ?? '0')),
                     ]),
             ]);
     }

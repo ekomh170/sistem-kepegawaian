@@ -259,11 +259,21 @@
         @yield('content')
     </div>
 
-    <nav class="bottom-nav">
+    @php
+        $karyawanNav = auth()->user()?->karyawan;
+        $presensiNav = $karyawanNav
+            ? \App\Models\Presensi::where('karyawan_id', $karyawanNav->id)
+                  ->where('tanggal', today()->toDateString())
+                  ->first()
+            : null;
+        $sudahMasuk  = $presensiNav && $presensiNav->jam_masuk;
+        $sudahPulang = $presensiNav && $presensiNav->jam_keluar;
+        $presensiRoute = ($sudahMasuk && !$sudahPulang) ? 'karyawan.presensi.pulang' : 'karyawan.presensi.masuk';
+    @endphp
+    <nav class="bottom-nav" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
         <a href="{{ route('karyawan.beranda') }}" class="{{ request()->routeIs('karyawan.beranda') ? 'active' : '' }}">Beranda</a>
-        <a href="{{ route('karyawan.presensi.masuk') }}" class="{{ request()->routeIs('karyawan.presensi.masuk') ? 'active' : '' }}">Masuk</a>
+        <a href="{{ route($presensiRoute) }}" class="{{ request()->routeIs('karyawan.presensi.*') ? 'active' : '' }}">Presensi</a>
         <a href="{{ route('karyawan.tugas') }}" class="{{ request()->routeIs('karyawan.tugas*') ? 'active' : '' }}">Tugas</a>
-        <a href="{{ route('karyawan.jadwal') }}" class="{{ request()->routeIs('karyawan.jadwal') ? 'active' : '' }}">Jadwal</a>
         <a href="{{ route('karyawan.riwayat') }}" class="{{ request()->routeIs('karyawan.riwayat') ? 'active' : '' }}">Riwayat</a>
     </nav>
 </body>

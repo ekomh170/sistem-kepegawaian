@@ -21,7 +21,6 @@ class EditKaryawan extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        // Load user data into form fields
         $user = $this->record->user;
         if ($user) {
             $data['user_nama'] = $user->nama;
@@ -33,7 +32,6 @@ class EditKaryawan extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        // Update user record
         $user = $this->record->user;
         if ($user) {
             $user->nama = $data['user_nama'];
@@ -44,7 +42,6 @@ class EditKaryawan extends EditRecord
             $user->save();
         }
 
-        // Remove user fields from karyawan data
         unset($data['user_nama'], $data['user_email'], $data['user_password']);
 
         return $data;

@@ -80,8 +80,8 @@ class KaryawanMobileController extends Controller
             }
 
             return redirect()
-                ->route('karyawan.beranda')
-                ->with('success', $payload['message'] ?? 'Presensi masuk berhasil dicatat.');
+                ->route('karyawan.tugas')
+                ->with('success', $payload['message'] ?? 'Presensi masuk berhasil dicatat. Berikut daftar tugas hari ini.');
         } catch (ValidationException $exception) {
             throw $exception;
         } catch (Throwable $exception) {
@@ -129,10 +129,21 @@ class KaryawanMobileController extends Controller
     /**
      * Halaman Daftar Tugas — Karyawan melihat & upload bukti per tugas
      */
-    public function daftarTugas(): View
+    public function daftarTugas(): View|RedirectResponse
     {
         $karyawan = $this->resolveKaryawan();
         $today = Carbon::today()->toDateString();
+
+        $presensiHariIni = Presensi::where('karyawan_id', $karyawan->id)
+            ->where('tanggal', $today)
+            ->whereNotNull('jam_masuk')
+            ->first();
+
+        if (!$presensiHariIni) {
+            return redirect()
+                ->route('karyawan.presensi.masuk')
+                ->with('error', 'Anda harus presensi masuk terlebih dahulu untuk melihat daftar tugas.');
+        }
 
         $tugasHariIni = DetailPekerjaan::query()
             ->with('jadwal')
@@ -282,16 +293,26 @@ class KaryawanMobileController extends Controller
             ->get();
 
         $summary = [
-            'hadir' => $riwayat->where('status_presensi', 'hadir')->count(),
-            'terlambat' => $riwayat->where('status_presensi', 'terlambat')->count(),
+            'hadir'       => $riwayat->where('status_presensi', 'hadir')->count(),
+            'terlambat'   => $riwayat->where('status_presensi', 'terlambat')->count(),
             'tidak_hadir' => $riwayat->where('status_presensi', 'tidak_hadir')->count(),
-            'izin' => $riwayat->where('status_presensi', 'izin')->count(),
+            'izin'        => $riwayat->where('status_presensi', 'izin')->count(),
         ];
 
+        $riwayatPekerjaan = DetailPekerjaan::query()
+            ->with('jadwal')
+            ->join('tb_jadwal', 'tb_detail_pekerjaan.jadwal_id', '=', 'tb_jadwal.id')
+            ->where('tb_detail_pekerjaan.karyawan_id', $karyawan->id)
+            ->where('tb_jadwal.tanggal_kerja', '>=', now()->subDays(30)->toDateString())
+            ->orderByDesc('tb_jadwal.tanggal_kerja')
+            ->select('tb_detail_pekerjaan.*')
+            ->get();
+
         return view('karyawan.riwayat', [
-            'riwayat' => $riwayat,
-            'summary' => $summary,
-            'laporanTerbaru' => null,
+            'riwayat'          => $riwayat,
+            'summary'          => $summary,
+            'laporanTerbaru'   => null,
+            'riwayatPekerjaan' => $riwayatPekerjaan,
         ]);
     }
 

@@ -5,16 +5,19 @@ namespace App\Filament\Resources\Presensis;
 use App\Filament\Resources\Presensis\Pages\CreatePresensi;
 use App\Filament\Resources\Presensis\Pages\EditPresensi;
 use App\Filament\Resources\Presensis\Pages\ListPresensis;
+use App\Filament\Resources\Presensis\Pages\ViewPresensi;
 use App\Models\Presensi;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -209,6 +212,85 @@ class PresensiResource extends Resource
             ]);
     }
 
+    public static function infolist(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                Section::make('Data Presensi')
+                    ->columns(2)
+                    ->columnSpanFull()
+                    ->schema([
+                        TextEntry::make('karyawan.user.nama')
+                            ->label('Karyawan'),
+                        TextEntry::make('tanggal')
+                            ->label('Tanggal')
+                            ->date('d F Y'),
+                        TextEntry::make('jam_masuk')
+                            ->label('Jam Masuk')
+                            ->dateTime('H:i')
+                            ->placeholder('-'),
+                        TextEntry::make('jam_keluar')
+                            ->label('Jam Keluar')
+                            ->dateTime('H:i')
+                            ->placeholder('-'),
+                        TextEntry::make('status_presensi')
+                            ->label('Status Presensi')
+                            ->badge()
+                            ->color(fn (string $state): string => match ($state) {
+                                'hadir' => 'success',
+                                'terlambat' => 'warning',
+                                'tidak_hadir' => 'danger',
+                                'izin' => 'info',
+                                default => 'gray',
+                            })
+                            ->formatStateUsing(fn (string $state): string => match ($state) {
+                                'hadir' => 'Hadir',
+                                'terlambat' => 'Terlambat',
+                                'tidak_hadir' => 'Alpa',
+                                'izin' => 'Izin',
+                                default => $state,
+                            }),
+                        TextEntry::make('status_valid')
+                            ->label('Status Validasi')
+                            ->badge()
+                            ->color(fn (string $state): string => match ($state) {
+                                'valid' => 'success',
+                                'tidak_valid' => 'danger',
+                                default => 'gray',
+                            })
+                            ->formatStateUsing(fn (string $state): string => match ($state) {
+                                'valid' => 'Valid',
+                                'tidak_valid' => 'Tidak Valid',
+                                default => 'Pending',
+                            }),
+                        TextEntry::make('menit_terlambat')
+                            ->label('Keterlambatan')
+                            ->suffix(' menit')
+                            ->placeholder('-'),
+                        TextEntry::make('potongan_terlambat')
+                            ->label('Potongan')
+                            ->money('IDR')
+                            ->placeholder('-'),
+                    ]),
+
+                Section::make('Lokasi & Foto')
+                    ->columns(2)
+                    ->columnSpanFull()
+                    ->schema([
+                        TextEntry::make('latitude_masuk')
+                            ->label('Koordinat Masuk')
+                            ->formatStateUsing(fn ($record) => $record->latitude_masuk
+                                ? "{$record->latitude_masuk}, {$record->longitude_masuk}"
+                                : '-'),
+                        TextEntry::make('latitude_keluar')
+                            ->label('Koordinat Keluar')
+                            ->formatStateUsing(fn ($record) => $record->latitude_keluar
+                                ? "{$record->latitude_keluar}, {$record->longitude_keluar}"
+                                : '-'),
+                    ]),
+            ]);
+    }
+
     /**
      * Auto-hitung keterlambatan dan potongan
      */
@@ -302,6 +384,7 @@ class PresensiResource extends Resource
             ->defaultSort('tanggal', 'desc')
             ->filters([])
             ->recordActions([
+                ViewAction::make(),
                 EditAction::make()
                     ->visible(fn () => Auth::user()?->role === 'admin'),
                 DeleteAction::make()
@@ -324,6 +407,7 @@ class PresensiResource extends Resource
         return [
             'index' => ListPresensis::route('/'),
             'create' => CreatePresensi::route('/create'),
+            'view' => ViewPresensi::route('/{record}'),
             'edit' => EditPresensi::route('/{record}/edit'),
         ];
     }
