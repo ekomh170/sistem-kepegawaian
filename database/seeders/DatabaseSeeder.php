@@ -152,9 +152,9 @@ class DatabaseSeeder extends Seeder
         // Sesuai BAB 4: 6 hari kerja per minggu, 1 hari libur (Minggu) ditentukan admin,
         // jam kerja 08:00–16:00.
         $semuaKaryawan = Karyawan::all();
-        $tanggalAcuan = \Carbon\Carbon::parse('2026-05-11');
+        $tanggalAcuan = \Carbon\Carbon::parse('2026-05-12');
 
-        // Generate jadwal & presensi sampai 11 Mei 2026
+        // Generate jadwal & presensi sampai 12 Mei 2026
         $startDate = $tanggalAcuan->copy()->subMonths(2)->startOfMonth();
         $endDate = $tanggalAcuan->copy();
 
@@ -191,6 +191,9 @@ class DatabaseSeeder extends Seeder
                     continue;
                 }
 
+                // Buat presensi jika belum ada (skip hari ini agar karyawan bisa test check-in asli)
+                $isToday = $tgl->isToday();
+
                 // Buat 1 detail pekerjaan default per jadwal
                 $tugas = DetailPekerjaan::firstOrCreate(
                     [
@@ -203,12 +206,9 @@ class DatabaseSeeder extends Seeder
                         'latitude' => -6.2087634,
                         'longitude' => 106.8222568,
                         'keterangan_pekerjaan' => 'Pekerjaan harian sesuai SOP',
-                        'status' => 'disetujui',
+                        'status' => $isToday ? 'pending' : 'disetujui',
                     ]
                 );
-
-                // Buat presensi jika belum ada (skip hari ini agar karyawan bisa test check-in asli)
-                $isToday = $tgl->isToday();
                 if (!$isToday && !Presensi::where('karyawan_id', $kr->id)->where('tanggal', $tgl->toDateString())->exists()) {
                     $rand = rand(1, 100);
                     $potonganTerlambat = 0;

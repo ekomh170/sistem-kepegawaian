@@ -10,12 +10,14 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class SupervisorPanelProvider extends PanelProvider
@@ -52,6 +54,21 @@ class SupervisorPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
                 'role:supervisor',
-            ]);
+            ])
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn (): HtmlString => new HtmlString('<script>
+                    document.addEventListener("livewire:initialized", function () {
+                        Livewire.hook("request", function ({ fail }) {
+                            fail(function ({ status, preventDefault }) {
+                                if (status === 419) {
+                                    preventDefault();
+                                    window.location.href = "/login";
+                                }
+                            });
+                        });
+                    });
+                </script>')
+            );
     }
 }

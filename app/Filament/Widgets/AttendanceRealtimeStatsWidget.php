@@ -4,7 +4,6 @@ namespace App\Filament\Widgets;
 
 use App\Models\Karyawan;
 use App\Models\Presensi;
-use App\Models\RekapPresensiBulanan;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Carbon;
@@ -45,10 +44,6 @@ class AttendanceRealtimeStatsWidget extends StatsOverviewWidget
         // Total karyawan aktif
         $totalKaryawan = Karyawan::count();
 
-        // Total potongan bulan lalu
-        $totalPotonganBulanLalu = RekapPresensiBulanan::where('periode', $bulanLalu)
-            ->sum('total_potongan_keterlambatan');
-
         // Trend hadir vs bulan lalu
         $hadirBulanLalu = Presensi::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulanLalu])
             ->whereIn('status_presensi', ['hadir', 'terlambat'])
@@ -86,11 +81,6 @@ class AttendanceRealtimeStatsWidget extends StatsOverviewWidget
                 ->description('Tanpa keterangan')
                 ->descriptionIcon('heroicon-m-x-circle')
                 ->color('danger'),
-
-            Stat::make('Total Potongan Bulan Lalu', 'Rp ' . number_format($totalPotonganBulanLalu, 0, ',', '.'))
-                ->description("Periode {$bulanLalu}")
-                ->descriptionIcon('heroicon-m-banknotes')
-                ->color('info'),
         ];
     }
 

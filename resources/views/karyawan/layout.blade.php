@@ -332,8 +332,8 @@
 
     <!-- logout overlay -->
     <div id="logout-overlay" role="status" aria-live="polite">
-        <div class="spinner"></div>
-        <span>Sedang keluar&hellip;</span>
+        <div id="logout-spinner" class="spinner"></div>
+        <span id="logout-msg">Sedang keluar&hellip;</span>
     </div>
 
     <script>
@@ -368,10 +368,18 @@
         if (logoutForm) {
             logoutForm.addEventListener('submit', function (e) {
                 e.preventDefault();
-                document.getElementById('logout-overlay').classList.add('show');
+                var overlay = document.getElementById('logout-overlay');
+                var spinner = document.getElementById('logout-spinner');
+                var msg = document.getElementById('logout-msg');
+                overlay.classList.add('show');
                 startLoader();
-                // submit setelah overlay tampil sebentar agar animasi terlihat
-                setTimeout(function () { logoutForm.submit(); }, 350);
+                // Tampilkan sukses sebelum navigasi
+                setTimeout(function () {
+                    spinner.style.display = 'none';
+                    msg.textContent = 'Berhasil keluar! Sampai jumpa 👋';
+                    msg.style.fontSize = '16px';
+                }, 500);
+                setTimeout(function () { logoutForm.submit(); }, 1100);
             });
         }
 

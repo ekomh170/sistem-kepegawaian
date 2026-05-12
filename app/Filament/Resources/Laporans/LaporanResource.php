@@ -20,8 +20,10 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
@@ -163,6 +165,18 @@ class LaporanResource extends Resource
             ]);
     }
 
+    private static function resolveTipeLabel(string $judul): string
+    {
+        $judul = strtolower($judul);
+        if (str_contains($judul, 'pekerjaan')) {
+            return 'Rekap Pekerjaan';
+        }
+        if (str_contains($judul, 'rekap') || str_contains($judul, 'bulanan')) {
+            return 'Rekap Presensi Bulanan';
+        }
+        return 'Presensi Harian';
+    }
+
     private static function resolveExportRoute(Laporan $record, string $format): string
     {
         $judul = strtolower($record->judul);
@@ -212,6 +226,16 @@ class LaporanResource extends Resource
                     ->searchable()
                     ->weight('bold')
                     ->limit(40),
+                TextColumn::make('tipe')
+                    ->label('Tipe')
+                    ->badge()
+                    ->state(fn (Laporan $record): string => self::resolveTipeLabel($record->judul))
+                    ->color(fn (string $state): string => match ($state) {
+                        'Presensi Harian'          => 'info',
+                        'Rekap Presensi Bulanan'   => 'success',
+                        'Rekap Pekerjaan'          => 'warning',
+                        default                    => 'gray',
+                    }),
                 TextColumn::make('jenis')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -234,6 +258,25 @@ class LaporanResource extends Resource
             ])
             ->defaultSort('tgl_generate', 'desc')
             ->filters([
+                SelectFilter::make('tipe_laporan')
+                    ->label('Tipe Laporan')
+                    ->options([
+                        'presensi'               => 'Presensi Harian',
+                        'rekap_presensi_bulanan' => 'Rekap Presensi Bulanan',
+                        'rekap_pekerjaan'        => 'Rekap Pekerjaan',
+                    ])
+                    ->query(fn (Builder $query, array $data): Builder => match ($data['value'] ?? null) {
+                        'rekap_pekerjaan'        => $query->where('judul', 'like', '%pekerjaan%'),
+                        'rekap_presensi_bulanan' => $query->where(fn ($q) => $q
+                            ->where('judul', 'like', '%rekap%')
+                            ->orWhere('judul', 'like', '%bulanan%')
+                        )->where('judul', 'not like', '%pekerjaan%'),
+                        'presensi'               => $query->where('judul', 'like', '%presensi%')
+                            ->where('judul', 'not like', '%rekap%')
+                            ->where('judul', 'not like', '%bulanan%')
+                            ->where('judul', 'not like', '%pekerjaan%'),
+                        default                  => $query,
+                    }),
                 SelectFilter::make('jenis')
                     ->options([
                         'Harian' => 'Harian',
