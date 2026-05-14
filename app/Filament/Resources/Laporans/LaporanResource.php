@@ -312,13 +312,15 @@ class LaporanResource extends Resource
                     ->color('danger')
                     ->url(fn (Laporan $record): string => self::resolveExportRoute($record, 'pdf'),
                         shouldOpenInNewTab: true),
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    ->visible(fn () => Auth::user()?->role === 'admin'),
+                DeleteAction::make()
+                    ->visible(fn () => Auth::user()?->role === 'admin'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                ]),
+                ])->visible(fn () => Auth::user()?->role === 'admin'),
             ]);
     }
 
