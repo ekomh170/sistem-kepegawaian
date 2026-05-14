@@ -13,13 +13,13 @@ class AttendanceRealtimeStatsWidget extends StatsOverviewWidget
 {
     protected ?string $pollingInterval = '15s';
 
+    protected static ?int $sort = 1;
+
     protected function getStats(): array
     {
         $today = Carbon::today()->toDateString();
         $bulanIni = Carbon::now()->format('Y-m');
-        $bulanLalu = Carbon::now()->subMonth()->format('Y-m');
 
-        // Data hari ini
         $hadirHariIni = Presensi::where('tanggal', $today)
             ->whereIn('status_presensi', ['hadir', 'terlambat'])
             ->count();
@@ -28,33 +28,26 @@ class AttendanceRealtimeStatsWidget extends StatsOverviewWidget
             ->where('status_presensi', 'terlambat')
             ->count();
 
-        // Data bulan ini
-        $hadirBulanIni = Presensi::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulanIni])
-            ->whereIn('status_presensi', ['hadir', 'terlambat'])
-            ->count();
-
-        $terlambatBulanIni = Presensi::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulanIni])
-            ->where('status_presensi', 'terlambat')
-            ->count();
-
-        $alpaBulanIni = Presensi::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulanIni])
+        $tidakHadirHariIni = Presensi::where('tanggal', $today)
             ->where('status_presensi', 'tidak_hadir')
             ->count();
 
-        // Total karyawan aktif
-        $totalKaryawan = Karyawan::count();
-
-        // Trend hadir vs bulan lalu
-        $hadirBulanLalu = Presensi::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulanLalu])
+        $hadirBulanIni = Presensi::whereYear('tanggal', Carbon::now()->year)
+            ->whereMonth('tanggal', Carbon::now()->month)
             ->whereIn('status_presensi', ['hadir', 'terlambat'])
             ->count();
 
-        $trendHadir = $hadirBulanLalu > 0
-            ? round((($hadirBulanIni - $hadirBulanLalu) / $hadirBulanLalu) * 100, 1)
-            : 0;
+        $terlambatBulanIni = Presensi::whereYear('tanggal', Carbon::now()->year)
+            ->whereMonth('tanggal', Carbon::now()->month)
+            ->where('status_presensi', 'terlambat')
+            ->count();
 
-        $trendIcon = $trendHadir >= 0 ? 'heroicon-m-arrow-trending-up' : 'heroicon-m-arrow-trending-down';
-        $trendColor = $trendHadir >= 0 ? 'success' : 'danger';
+        $alpaBulanIni = Presensi::whereYear('tanggal', Carbon::now()->year)
+            ->whereMonth('tanggal', Carbon::now()->month)
+            ->where('status_presensi', 'tidak_hadir')
+            ->count();
+
+        $totalKaryawan = Karyawan::count();
 
         return [
             Stat::make('Total Karyawan', (string) $totalKaryawan)
@@ -67,20 +60,20 @@ class AttendanceRealtimeStatsWidget extends StatsOverviewWidget
                 ->descriptionIcon('heroicon-m-check-circle')
                 ->color('success'),
 
-            Stat::make('Hadir Bulan Ini', (string) $hadirBulanIni)
-                ->description($trendHadir != 0 ? ($trendHadir > 0 ? "+{$trendHadir}%" : "{$trendHadir}%") . ' vs bulan lalu' : 'Data bulan berjalan')
-                ->descriptionIcon($trendIcon)
-                ->color($trendColor),
-
-            Stat::make('Terlambat Bulan Ini', (string) $terlambatBulanIni)
-                ->description("Hari ini: {$terlambatHariIni} orang")
+            Stat::make('Terlambat Hari Ini', (string) $terlambatHariIni)
+                ->description("Alpa: {$tidakHadirHariIni} orang")
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('warning'),
 
-            Stat::make('Alpa Bulan Ini', (string) $alpaBulanIni)
-                ->description('Tanpa keterangan')
-                ->descriptionIcon('heroicon-m-x-circle')
-                ->color('danger'),
+            Stat::make('Hadir Bulan Ini', (string) $hadirBulanIni)
+                ->description(Carbon::now()->translatedFormat('F Y'))
+                ->descriptionIcon('heroicon-m-calendar-days')
+                ->color('success'),
+
+            Stat::make('Terlambat Bulan Ini', (string) $terlambatBulanIni)
+                ->description("Alpa bulan ini: {$alpaBulanIni}")
+                ->descriptionIcon('heroicon-m-exclamation-triangle')
+                ->color('warning'),
         ];
     }
 

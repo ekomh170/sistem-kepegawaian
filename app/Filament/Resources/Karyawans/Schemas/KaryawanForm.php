@@ -10,6 +10,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\RawJs;
 
 class KaryawanForm
 {
@@ -113,7 +114,7 @@ class KaryawanForm
                             ->required()
                             ->default(0)
                             ->placeholder('3.000.000')
-                            ->formatStateUsing(fn ($state) => $state ? number_format((int) $state, 0, ',', '.') : null)
+                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
                             ->dehydrateStateUsing(fn ($state) => (int) str_replace('.', '', $state ?? '0')),
                     ]),
             ]);

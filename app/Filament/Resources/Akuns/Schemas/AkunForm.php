@@ -12,6 +12,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use Filament\Support\RawJs;
 
 class AkunForm
 {
@@ -157,7 +158,7 @@ class AkunForm
                             ->prefix('Rp')
                             ->required(fn (Get $get): bool => $get('role') === 'karyawan')
                             ->placeholder('3.000.000')
-                            ->formatStateUsing(fn ($state) => $state ? number_format((int) $state, 0, ',', '.') : null)
+                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
                             ->dehydrateStateUsing(fn ($state) => (int) str_replace('.', '', $state ?? '0')),
                         Textarea::make('karyawan_alamat')
                             ->label('Alamat')

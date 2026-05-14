@@ -11,6 +11,8 @@ class LaporanEvaluasiChartWidget extends ChartWidget
 {
     protected ?string $heading = 'Grafik Evaluasi Kehadiran per Bulan';
 
+    protected static ?int $sort = 4;
+
     protected int|string|array $columnSpan = 'full';
 
     protected ?string $maxHeight = '350px';
@@ -22,8 +24,7 @@ class LaporanEvaluasiChartWidget extends ChartWidget
                 'periode',
                 DB::raw('SUM(jumlah_hadir) as total_hadir'),
                 DB::raw('SUM(jumlah_terlambat) as total_terlambat'),
-                DB::raw('SUM(jumlah_tidak_hadir) as total_tidak_hadir'),
-                DB::raw('SUM(total_potongan_keterlambatan) as total_potongan')
+                DB::raw('SUM(jumlah_tidak_hadir) as total_tidak_hadir')
             )
             ->groupBy('periode')
             ->orderBy('periode')

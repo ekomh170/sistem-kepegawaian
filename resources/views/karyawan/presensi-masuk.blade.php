@@ -8,13 +8,16 @@
         <h2>Form Check-in</h2>
 
         @if ($presensiHariIni && $presensiHariIni->jam_masuk)
-            <p class="text-muted">Anda sudah check-in pada {{ \Carbon\Carbon::parse($presensiHariIni->jam_masuk)->format('H:i') }}.</p>
-            @if ($presensiHariIni->foto_masuk)
-                <div style="margin-top: 15px; text-align: center;">
-                    <p style="margin-bottom: 5px; font-weight: bold; color: #555;">Foto Masuk Anda:</p>
-                    <img src="{{ asset('storage/' . $presensiHariIni->foto_masuk) }}" alt="Foto Masuk" style="max-width: 100%; border-radius: 8px; border: 1px solid #ddd; padding: 5px;">
-                </div>
-            @endif
+            {{-- Seharusnya sudah diredirect oleh controller, ini fallback --}}
+            <div class="alert alert-success" style="margin-bottom:10px;">
+                Anda sudah check-in pukul <b>{{ \Carbon\Carbon::parse($presensiHariIni->jam_masuk)->format('H:i') }}</b>.
+                @unless ($presensiHariIni->jam_keluar)
+                    Silakan lakukan presensi pulang.
+                @endunless
+            </div>
+            @unless ($presensiHariIni->jam_keluar)
+                <a href="{{ route('karyawan.presensi.pulang') }}" class="btn btn-secondary" style="width:100%;margin-top:8px;">Presensi Pulang</a>
+            @endunless
         @else
             @if ($errors->any())
                 <div style="background-color: #ffebee; color: #c62828; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
@@ -139,11 +142,19 @@
         btnCameraMode.addEventListener('click', startCamera);
 
         btnSnap.addEventListener('click', () => {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            const imageData = canvas.toDataURL('image/jpeg', 0.8);
+            // Skalakan ke max 1280px agar ukuran base64 tidak melebihi batas POST
+            const MAX_DIM = 1280;
+            let w = video.videoWidth;
+            let h = video.videoHeight;
+            if (w > MAX_DIM || h > MAX_DIM) {
+                if (w > h) { h = Math.round(h * MAX_DIM / w); w = MAX_DIM; }
+                else { w = Math.round(w * MAX_DIM / h); h = MAX_DIM; }
+            }
+            canvas.width = w;
+            canvas.height = h;
+            canvas.getContext('2d').drawImage(video, 0, 0, w, h);
+
+            const imageData = canvas.toDataURL('image/jpeg', 0.75);
             base64Input.value = imageData;
             
             webcamPreview.src = imageData;

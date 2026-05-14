@@ -11,6 +11,8 @@ class ProgressPekerjaanHariIniWidget extends Widget
 {
     protected string $view = 'filament.widgets.progress-pekerjaan-hari-ini-widget';
 
+    protected static ?int $sort = 3;
+
     protected int|string|array $columnSpan = 'full';
 
     protected ?string $pollingInterval = '30s';

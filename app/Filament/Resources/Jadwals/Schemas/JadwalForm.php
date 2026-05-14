@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Jadwals\Schemas;
 
+use App\Models\Admin;
+use App\Models\Karyawan;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TimePicker;
@@ -22,18 +24,41 @@ class JadwalForm
                     ->schema([
                         Select::make('karyawan_id')
                             ->label('Karyawan')
-                            ->relationship('karyawan', 'nik')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nik} - " . ($record->user?->nama ?? 'Unknown'))
-                            ->searchable(['nik'])
-                            ->preload()
+                            ->searchable()
+                            ->getSearchResultsUsing(fn (string $search) => Karyawan::with('user')
+                                ->where(function ($q) use ($search) {
+                                    $q->where('nik', 'like', "%{$search}%")
+                                      ->orWhereHas('user', fn ($u) => $u->where('nama', 'like', "%{$search}%"));
+                                })
+                                ->limit(50)
+                                ->get()
+                                ->mapWithKeys(fn ($k) => [$k->id => "{$k->nik} - " . ($k->user?->nama ?? '-')])
+                                ->all()
+                            )
+                            ->getOptionLabelUsing(function ($value) {
+                                $k = Karyawan::with('user')->find($value);
+                                return $k ? "{$k->nik} - " . ($k->user?->nama ?? '-') : $value;
+                            })
                             ->required(),
+
                         Select::make('admin_id')
                             ->label('Admin Pembuat')
-                            ->relationship('admin', 'nik')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nik} - " . ($record->user?->nama ?? 'Unknown'))
-                            ->searchable(['nik'])
-                            ->preload()
-                            ->default(fn () => \App\Models\Admin::where('user_id', Auth::id())->first()?->id),
+                            ->searchable()
+                            ->getSearchResultsUsing(fn (string $search) => Admin::with('user')
+                                ->where(function ($q) use ($search) {
+                                    $q->where('nik', 'like', "%{$search}%")
+                                      ->orWhereHas('user', fn ($u) => $u->where('nama', 'like', "%{$search}%"));
+                                })
+                                ->limit(20)
+                                ->get()
+                                ->mapWithKeys(fn ($a) => [$a->id => "{$a->nik} - " . ($a->user?->nama ?? '-')])
+                                ->all()
+                            )
+                            ->getOptionLabelUsing(function ($value) {
+                                $a = Admin::with('user')->find($value);
+                                return $a ? "{$a->nik} - " . ($a->user?->nama ?? '-') : $value;
+                            })
+                            ->default(fn () => Admin::where('user_id', Auth::id())->first()?->id),
                     ]),
 
                 Section::make('Tanggal & Jam Kerja')
@@ -42,8 +67,15 @@ class JadwalForm
                     ->columnSpanFull()
                     ->schema([
                         DatePicker::make('tanggal_kerja')
+                            ->label('Tanggal Mulai')
                             ->required()
                             ->native(false),
+                        DatePicker::make('tanggal_akhir')
+                            ->label('Tanggal Akhir (opsional)')
+                            ->helperText('Isi jika ingin membuat jadwal untuk rentang tanggal sekaligus.')
+                            ->visible(fn ($context) => $context === 'create')
+                            ->native(false)
+                            ->afterOrEqual('tanggal_kerja'),
                         TimePicker::make('jam_masuk')
                             ->required()
                             ->seconds(false)

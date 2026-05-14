@@ -32,6 +32,19 @@ class KaryawanResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'nik';
 
+    public static function getGlobalSearchResultDetails(\Illuminate\Database\Eloquent\Model $record): array
+    {
+        return [
+            'Nama' => $record->user?->nama ?? '-',
+            'Posisi' => $record->posisi_karyawan ?? '-',
+        ];
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['nik', 'user.nama'];
+    }
+
     public static function canViewAny(): bool
     {
         return Auth::user()?->role === 'admin';

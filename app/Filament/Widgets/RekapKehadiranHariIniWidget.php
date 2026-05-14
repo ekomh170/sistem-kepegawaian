@@ -12,6 +12,8 @@ class RekapKehadiranHariIniWidget extends Widget
 {
     protected string $view = 'filament.widgets.rekap-kehadiran-hari-ini-widget';
 
+    protected static ?int $sort = 2;
+
     protected int|string|array $columnSpan = 'full';
 
     protected ?string $pollingInterval = '30s';

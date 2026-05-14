@@ -76,8 +76,8 @@ class Presensi extends Model
             return 20000;
         }
 
-        // 11..30 menit: Rp 10.000 per blok 10 menit (dibulatkan ke atas)
-        $blok = (int) ceil($menitTerlambat / 10);
+        // 11-20 menit → 1 blok = Rp10.000, 21-30 menit → 2 blok = Rp20.000
+        $blok = (int) ceil(($menitTerlambat - 10) / 10);
         return $blok * 10000;
     }
 

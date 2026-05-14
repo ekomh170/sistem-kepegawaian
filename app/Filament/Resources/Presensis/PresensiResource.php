@@ -145,11 +145,12 @@ class PresensiResource extends Resource
 
                         TextInput::make('potongan_terlambat')
                             ->label('Potongan Keterlambatan (Rp)')
-                            ->numeric()
                             ->prefix('Rp')
                             ->default(0)
                             ->disabled()
                             ->dehydrated()
+                            ->formatStateUsing(fn ($state) => $state !== null ? number_format((float) $state, 0, ',', '.') : '0')
+                            ->dehydrateStateUsing(fn ($state) => (float) str_replace('.', '', $state ?? '0'))
                             ->helperText('Toleransi 10 menit, Rp 10.000 per blok 10 menit, Rp 20.000 jika >30 menit'),
                     ]),
 

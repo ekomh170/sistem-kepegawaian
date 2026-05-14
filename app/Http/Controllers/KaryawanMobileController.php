@@ -54,7 +54,7 @@ class KaryawanMobileController extends Controller
         ]);
     }
 
-    public function formPresensiMasuk(): View
+    public function formPresensiMasuk(): View|RedirectResponse
     {
         $karyawan = $this->resolveKaryawan();
         $today = Carbon::today()->toDateString();
@@ -63,6 +63,13 @@ class KaryawanMobileController extends Controller
             ->where('karyawan_id', $karyawan->id)
             ->where('tanggal', $today)
             ->first();
+
+        if ($presensiHariIni && $presensiHariIni->jam_masuk) {
+            if (!$presensiHariIni->jam_keluar) {
+                return redirect()->route('karyawan.presensi.pulang');
+            }
+            return redirect()->route('karyawan.beranda');
+        }
 
         return view('karyawan.presensi-masuk', [
             'presensiHariIni' => $presensiHariIni,

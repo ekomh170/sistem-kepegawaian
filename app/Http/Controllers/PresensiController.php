@@ -22,7 +22,7 @@ class PresensiController extends Controller
         $request->validate([
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
-            'foto_masuk' => 'nullable|image|max:5120',
+            'foto_masuk' => 'nullable|image|max:10240',
             'foto_masuk_base64' => 'nullable|string',
         ]);
 
