@@ -3,7 +3,7 @@
 use App\Http\Controllers\KaryawanMobileController;
 use App\Http\Controllers\LaporanExportController;
 use App\Http\Controllers\PresensiController;
-use Filament\Auth\Pages\Login as FilamentLogin;
+use App\Filament\Pages\Auth\Login as AppLogin;
 use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -24,7 +24,7 @@ Route::get('/', function () {
 $adminPanel = Filament::getPanel('admin', isStrict: false);
 
 if ($adminPanel) {
-    Route::get('/login', FilamentLogin::class)
+    Route::get('/login', AppLogin::class)
         ->middleware($adminPanel->getMiddleware())
         ->name('login');
 } else {

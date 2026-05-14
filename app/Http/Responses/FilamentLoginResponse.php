@@ -25,6 +25,13 @@ class FilamentLoginResponse implements LoginResponseContract
                 ->with('success', 'Selamat datang kembali, ' . $user->nama . '!');
         }
 
-        return redirect()->to($targetUrl);
+        $roleLabel = match ($user?->role) {
+            'admin' => 'Admin',
+            'supervisor' => 'Supervisor',
+            default => ucfirst($user?->role ?? ''),
+        };
+
+        return redirect()->to($targetUrl)
+            ->with('login_success', 'Selamat datang, ' . $roleLabel . ' ' . $user->nama . '!');
     }
 }
