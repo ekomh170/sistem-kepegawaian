@@ -32,12 +32,20 @@ Halaman khusus untuk mengelola penugasan lapangan:
 
 ## 2. Panel Administrasi (Filament v5)
 
-### 2.1 Dashboard
-- **AttendanceRealtimeStatsWidget**: 4 stat card — Hadir (hijau), Terlambat (kuning), Tidak Hadir (merah), Menunggu Verifikasi (biru).
-- **LaporanEvaluasiChartWidget**: Grafik line smooth kehadiran per bulan.
-- **KaryawanQuickAccessWidget**: Akses cepat menu karyawan (admin only).
+### 2.1 Halaman Login (Custom)
+- **Heading**: Nama perusahaan dinamis dari `Setting::get('nama_perusahaan')` — berubah otomatis saat diubah di panel admin.
+- **Subheading**: "Masuk ke akun Anda".
+- **Label form**: Email / Kata Sandi / Ingat saya (ringkas, tanpa "Alamat").
+- **Notifikasi logout**: Muncul toast info "Berhasil keluar" jika user baru saja logout.
+- **Notifikasi login sukses**: Muncul di dashboard setelah login, menyebutkan nama role + nama user.
 
-### 2.2 Form Akun (AkunResource)
+### 2.2 Dashboard
+- **AttendanceRealtimeStatsWidget** (sort=1, polling 15s): 5 stat card — Total Karyawan, Hadir Hari Ini (hijau), Terlambat Hari Ini (kuning), Hadir Bulan Ini, Terlambat Bulan Ini. Query cross-DB (`whereYear`/`whereMonth`).
+- **RekapKehadiranHariIniWidget** (sort=2, polling 30s): Tabel rekap kehadiran hari ini.
+- **ProgressPekerjaanHariIniWidget** (sort=3, polling 30s): Progress tugas hari ini.
+- **LaporanEvaluasiChartWidget** (sort=4): Grafik line smooth kehadiran per bulan.
+
+### 2.3 Form Akun (AkunResource)
 - **Create**: Form dinamis berdasarkan role yang dipilih.
   - Role Admin → muncul section: NIP, Divisi.
   - Role Supervisor → muncul section: Jabatan.
@@ -45,36 +53,36 @@ Halaman khusus untuk mengelola penugasan lapangan:
 - **Edit**: Form yang sama, password opsional (kosongkan jika tidak diubah).
 - **Tabel**: Badge role berwarna (🔴 Admin, 🟡 Supervisor, 🟢 Karyawan).
 
-### 2.3 Form Karyawan (KaryawanResource)
+### 2.4 Form Karyawan (KaryawanResource)
 - **Create**: 3 section (Data Akun + Identitas + Kepegawaian) — otomatis buat User + Karyawan dalam 1 transaksi.
 - **Edit**: Section Data Akun berubah jadi Select (disabled) menampilkan user terhubung.
 - **View**: Infolist 3 section dengan avatar, badge, icon, copyable fields, format Rp.
 
-### 2.4 Form Laporan (LaporanResource)
+### 2.5 Form Laporan (LaporanResource)
 - Tipe: Presensi / Rekap Presensi Bulanan (dengan icon).
 - Jenis: Harian / Bulanan / Tahunan → format periode otomatis berubah.
 - Judul auto-generated (hidden field).
 - Export per record: 3 tombol (CSV, Excel, PDF) di tiap baris tabel.
 
-### 2.5 Form Detail Pekerjaan
+### 2.6 Form Detail Pekerjaan
 - **Map Picker**: Penentuan lokasi visual menggunakan OpenStreetMap.
 - **View**: Infolist 4 section (Karyawan, Jadwal, Lokasi, Detail Tugas) dengan badge status.
 - **Alasan Penolakan**: Hanya muncul jika status = ditolak.
 
-### 2.6 Presensi (Auto-kalkulasi)
+### 2.7 Presensi (Auto-kalkulasi)
 - Live hitung durasi, keterlambatan, dan potongan saat form diisi.
 - Map Picker untuk lokasi GPS check-in.
 
-### 2.7 Verifikasi & Review
+### 2.8 Verifikasi & Review
 - **Menu Verifikasi**: Fokus pada validasi kehadiran harian (jam masuk & lokasi kantor pusat).
 - **Menu Bukti Pekerjaan**: Fokus pada review hasil kerja teknis (foto before/after dan keterangan kerja).
 
-### 2.8 Pengaturan Lokasi Kantor
+### 2.9 Pengaturan Lokasi Kantor
 - Halaman custom `LokasiKantorPage` dengan peta interaktif (MapPicker).
 - Set koordinat kantor pusat + radius geofence.
 - Tersimpan di `tb_setting`: `kantor_lat`, `kantor_lng`, `kantor_radius`.
 
-### 2.9 Hak Akses Supervisor (View Only)
+### 2.10 Hak Akses Supervisor (View Only)
 - Seluruh modul Operasional: tombol Buat, Edit, Hapus, dan Bulk Delete **disembunyikan**.
 - Supervisor hanya bisa melihat data tanpa melakukan perubahan.
 

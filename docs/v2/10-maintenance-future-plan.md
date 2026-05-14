@@ -33,6 +33,11 @@ Jika ingin melakukan perubahan logika, berikut adalah file yang perlu Anda buka:
 | **Tampilan Mobile UI** | `resources/views/karyawan/` |
 | **Konfigurasi Admin Panel** | `app/Filament/Resources/` |
 | **Style / CSS Mobile** | `resources/views/karyawan/layout.blade.php` (Bagian `<style>`) |
+| **Redirect setelah login** | `app/Http/Responses/FilamentLoginResponse.php` |
+| **Redirect setelah logout** | `app/Http/Responses/FilamentLogoutResponse.php` |
+| **Halaman login (custom)** | `app/Filament/Pages/Auth/Login.php` |
+| **Dashboard (notifikasi login)** | `app/Filament/Pages/Dashboard.php` |
+| **Rumus keterlambatan** | `app/Models/Presensi.php` → `hitungPotongan()` |
 
 ---
 

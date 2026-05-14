@@ -1,9 +1,9 @@
 # Dokumentasi Sistem Informasi Kepegawaian
 ## CV Boss Muda Mandiri — Versi 2.0
 
-**Tanggal Generate:** 9 Mei 2026 (Updated)  
+**Tanggal Generate:** 15 Mei 2026 (V2.1)  
 **Framework:** Laravel 12 + Filament v5 + MySQL  
-**Status:** ✅ Stabil — Siap untuk BAB 4
+**Status:** ✅ Stabil — V2.1 Bug Fix & Polish
 
 ---
 
@@ -57,6 +57,9 @@ sistem-kepegawaian/
 │   │   └── LaporanPresensiDetailExport.php # Export presensi harian
 │   ├── Filament/
 │   │   ├── Pages/
+│   │   │   ├── Auth/
+│   │   │   │   └── Login.php               # Custom login — heading dari Setting, flash logout
+│   │   │   ├── Dashboard.php               # Custom dashboard — flash login notification
 │   │   │   └── LokasiKantorPage.php        # Pengaturan lokasi kantor via peta
 │   │   ├── Resources/                  # 12 Filament Resources (CRUD)
 │   │   │   ├── Admins/
@@ -70,17 +73,22 @@ sistem-kepegawaian/
 │   │   │   ├── RekapPresensiBulanans/        # Rekap presensi bulanan gaji
 │   │   │   ├── Supervisors/
 │   │   │   └── Verifikasis/
-│   │   └── Widgets/                    # 3 Dashboard Widgets
-│   │       ├── AttendanceRealtimeStatsWidget.php
-│   │       ├── KaryawanQuickAccessWidget.php
-│   │       └── LaporanEvaluasiChartWidget.php
+│   │   └── Widgets/                    # 5 Dashboard Widgets
+│   │       ├── AttendanceRealtimeStatsWidget.php   # sort=1, poll 15s
+│   │       ├── RekapKehadiranHariIniWidget.php     # sort=2, poll 30s
+│   │       ├── ProgressPekerjaanHariIniWidget.php  # sort=3, poll 30s
+│   │       ├── LaporanEvaluasiChartWidget.php      # sort=4
+│   │       └── KaryawanQuickAccessWidget.php       # admin only
 │   ├── Http/
 │   │   ├── Controllers/
 │   │   │   ├── KaryawanMobileController.php   # Portal karyawan
 │   │   │   ├── PresensiController.php         # API presensi + GPS
 │   │   │   └── LaporanExportController.php    # Export CSV/Excel/PDF
-│   │   └── Middleware/
-│   │       └── RoleMiddleware.php             # RBAC middleware
+│   │   ├── Middleware/
+│   │   │   └── RoleMiddleware.php             # RBAC middleware
+│   │   └── Responses/
+│   │       ├── FilamentLoginResponse.php      # Redirect by role + flash login
+│   │       └── FilamentLogoutResponse.php     # Redirect ke /login + flash logout
 │   └── Models/                         # 12 Eloquent Models
 │       ├── User.php
 │       ├── Admin.php

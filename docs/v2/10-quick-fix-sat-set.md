@@ -101,4 +101,16 @@ Contoh: Ingin tambah field di Penugasan? Edit `DetailPekerjaanForm.php`.
 
 ---
 
+## 7. Buat Jadwal Massal (Range Tanggal)
+
+Di form **Buat Jadwal**, isi field **Tanggal Mulai** dan **Tanggal Akhir** sekaligus. Sistem akan membuat satu jadwal per hari di rentang tersebut, melewati tanggal yang sudah ada (tidak duplikat).
+
+---
+
+## 8. Nama Perusahaan di Halaman Login
+
+Heading halaman `/login` diambil langsung dari `Setting::get('nama_perusahaan')`. Untuk mengubahnya: Panel Admin → **Pengaturan (Sistem)** → edit "Nama Perusahaan". Perubahan langsung berlaku tanpa restart.
+
+---
+
 > **Tips Sat-Set:** Gunakan `CTRL + P` di VS Code lalu ketik nama filenya untuk berpindah antar file dengan cepat.

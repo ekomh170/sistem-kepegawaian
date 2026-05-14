@@ -12,11 +12,12 @@ Sistem menggunakan **dua lapis** kontrol akses:
 
 ### Login & Redirect Flow
 ```
-User login → /login (Filament Login Page)
-    ├── role = 'admin'      → redirect /admin (Panel Filament)
-    ├── role = 'supervisor'  → redirect /admin (Panel Filament, akses terbatas)
-    └── role = 'karyawan'    → redirect /karyawan (Portal Mobile Blade)
+User login → /login (Custom Login Page — App\Filament\Pages\Auth\Login)
+    ├── role = 'admin'      → redirect /admin      (Panel Filament Admin)
+    ├── role = 'supervisor'  → redirect /supervisor (Panel Filament Supervisor)
+    └── role = 'karyawan'    → redirect /karyawan   (Portal Mobile Blade)
 ```
+Ditangani oleh `FilamentLoginResponse` (custom). Setelah logout, `FilamentLogoutResponse` redirect ke `/login` dengan flash notifikasi.
 
 ---
 
@@ -65,9 +66,11 @@ User login → /login (Filament Login Page)
 
 | Widget | Admin | Supervisor | Karyawan |
 |--------|:-----:|:----------:|:--------:|
-| `AttendanceRealtimeStatsWidget` (Statistik real-time hadir/telat/alpa) | ✅ | ✅ | ❌ |
-| `LaporanEvaluasiChartWidget` (Grafik evaluasi kehadiran) | ✅ | ✅ | ❌ |
-| `KaryawanQuickAccessWidget` | ✅ | ❌ | ❌ |
+| `AttendanceRealtimeStatsWidget` (stat card hadir/telat/total) | ✅ | ✅ | ❌ |
+| `RekapKehadiranHariIniWidget` (tabel rekap hari ini) | ✅ | ✅ | ❌ |
+| `ProgressPekerjaanHariIniWidget` (progress tugas hari ini) | ✅ | ✅ | ❌ |
+| `LaporanEvaluasiChartWidget` (grafik kehadiran per bulan) | ✅ | ✅ | ❌ |
+| `KaryawanQuickAccessWidget` (akses cepat menu karyawan) | ✅ | ❌ | ❌ |
 
 ---
 
@@ -120,5 +123,5 @@ public static function canDelete(Model $record): bool {
 | Password Hashing | Menggunakan `bcrypt` via Laravel `'password' => 'hashed'` cast |
 | Session Management | Database-backed sessions |
 | CSRF Protection | Token otomatis pada semua form POST |
-| File Upload Validation | Max 5MB, hanya format image |
+| File Upload Validation | Max 10MB (foto presensi), hanya format image |
 | GPS Spoofing Prevention | Validasi jarak (Haversine Formula) vs radius_meter |
