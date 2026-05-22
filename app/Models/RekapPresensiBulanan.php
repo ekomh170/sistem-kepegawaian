@@ -56,10 +56,6 @@ class RekapPresensiBulanan extends Model
             ->where('status_presensi', 'terlambat')
             ->sum('potongan_terlambat');
 
-        // Ambil gaji pokok dari data karyawan
-        $this->gaji_pokok = $this->karyawan?->gaji_pokok ?? 0;
-        $this->gaji_bersih = $this->gaji_pokok - $this->total_potongan_keterlambatan;
-
         return $this;
     }
 

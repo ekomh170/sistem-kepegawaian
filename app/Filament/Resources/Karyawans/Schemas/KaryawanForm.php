@@ -10,7 +10,6 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Support\RawJs;
 
 class KaryawanForm
 {
@@ -93,7 +92,7 @@ class KaryawanForm
                     ]),
 
                 Section::make('Kepegawaian')
-                    ->description('Status kontrak dan informasi gaji')
+                    ->description('Status kontrak')
                     ->columns(2)
                     ->columnSpanFull()
                     ->schema([
@@ -108,14 +107,6 @@ class KaryawanForm
                                 'tetap' => '✅ Tetap',
                             ])
                             ->required(),
-                        TextInput::make('gaji_pokok')
-                            ->label('Gaji Pokok (Rp)')
-                            ->prefix('Rp')
-                            ->required()
-                            ->default(0)
-                            ->placeholder('3.000.000')
-                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
-                            ->dehydrateStateUsing(fn ($state) => (int) str_replace('.', '', $state ?? '0')),
                     ]),
             ]);
     }

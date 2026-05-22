@@ -36,7 +36,6 @@ class CreateKaryawan extends CreateRecord
                 'alamat' => $data['alamat'] ?? null,
                 'tgl_masuk' => $data['tgl_masuk'],
                 'status_kontrak' => $data['status_kontrak'],
-                'gaji_pokok' => $data['gaji_pokok'] ?? 0,
             ]);
         });
     }

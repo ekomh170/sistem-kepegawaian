@@ -12,8 +12,6 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
-use Filament\Support\RawJs;
-
 class AkunForm
 {
     public static function configure(Schema $schema): Schema
@@ -68,7 +66,6 @@ class AkunForm
                                 $set('karyawan_no_ktp', null);
                                 $set('karyawan_bidang_tugas', null);
                                 $set('karyawan_alamat', null);
-                                $set('karyawan_gaji_pokok', null);
                             }),
                     ]),
 
@@ -153,13 +150,6 @@ class AkunForm
                             ->required(fn (Get $get): bool => $get('role') === 'karyawan')
                             ->maxLength(30)
                             ->placeholder('08XXXXXXXXXX'),
-                        TextInput::make('karyawan_gaji_pokok')
-                            ->label('Gaji Pokok (Rp)')
-                            ->prefix('Rp')
-                            ->required(fn (Get $get): bool => $get('role') === 'karyawan')
-                            ->placeholder('3.000.000')
-                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
-                            ->dehydrateStateUsing(fn ($state) => (int) str_replace('.', '', $state ?? '0')),
                         Textarea::make('karyawan_alamat')
                             ->label('Alamat')
                             ->rows(2)

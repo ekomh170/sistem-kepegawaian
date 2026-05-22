@@ -32,13 +32,6 @@ class RekapPresensiBulanansTable
                     ->label('Potongan')
                     ->money('idr')
                     ->color('danger'),
-                TextColumn::make('gaji_pokok')
-                    ->label('Gaji Pokok')
-                    ->money('idr'),
-                TextColumn::make('gaji_bersih')
-                    ->label('Gaji Bersih')
-                    ->money('idr')
-                    ->color('success'),
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {

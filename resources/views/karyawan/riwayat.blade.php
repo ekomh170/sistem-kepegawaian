@@ -5,25 +5,14 @@
 
 @section('content')
     <section class="card">
-        <h2>Estimasi Gaji — {{ $namaBulan }}</h2>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
-            <div style="background:#f0fdf4;border-radius:8px;padding:10px;">
-                <p class="text-muted" style="margin:0;font-size:0.8em;">Gaji Pokok</p>
-                <p style="margin:4px 0 0;font-weight:700;color:#15803d;">Rp {{ number_format((float)$gajiPokok, 0, ',', '.') }}</p>
-            </div>
-            <div style="background:#fef2f2;border-radius:8px;padding:10px;">
-                <p class="text-muted" style="margin:0;font-size:0.8em;">Total Potongan</p>
-                <p style="margin:4px 0 0;font-weight:700;color:#dc2626;">- Rp {{ number_format((float)$totalPotongan, 0, ',', '.') }}</p>
-            </div>
-        </div>
-        <div style="background:#eff6ff;border-radius:8px;padding:12px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;">
+        <h2>Potongan Keterlambatan — {{ $namaBulan }}</h2>
+        <div style="background:#fef2f2;border-radius:8px;padding:12px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;">
             <div>
-                <p class="text-muted" style="margin:0;font-size:0.8em;">Estimasi Diterima</p>
-                <p style="margin:4px 0 0;font-weight:700;font-size:1.15em;color:#1d4ed8;">Rp {{ number_format((float)$estimasiGaji, 0, ',', '.') }}</p>
+                <p class="text-muted" style="margin:0;font-size:0.8em;">Total Potongan</p>
+                <p style="margin:4px 0 0;font-weight:700;font-size:1.15em;color:#dc2626;">- Rp {{ number_format((float)$totalPotongan, 0, ',', '.') }}</p>
             </div>
             <span class="pill pill-info" style="font-size:0.75em;">{{ $hariHadir }} hari hadir</span>
         </div>
-        <p class="text-muted" style="margin-top:8px;font-size:0.75em;">* Estimasi berdasarkan presensi yang sudah tercatat. Angka final ditentukan oleh admin.</p>
     </section>
 
     <section class="card">

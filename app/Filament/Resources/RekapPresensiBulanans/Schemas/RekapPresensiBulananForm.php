@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\RekapPresensiBulanans\Schemas;
 
-use App\Models\Karyawan;
 use App\Models\Presensi;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -34,17 +33,10 @@ class RekapPresensiBulananForm
         $jumlahTerlambat = $presensis->where('status_presensi', 'terlambat')->count();
         $totalPotongan = (float) $presensis->where('status_presensi', 'terlambat')->sum('potongan_terlambat');
 
-        // Ambil gaji pokok dari data karyawan
-        $karyawan = Karyawan::find($karyawanId);
-        $gajiPokok = (float) ($karyawan?->gaji_pokok ?? 0);
-        $gajiBersih = max(0, $gajiPokok - $totalPotongan);
-
         $set('jumlah_hadir', $jumlahHadir);
         $set('jumlah_tidak_hadir', $jumlahTidakHadir);
         $set('jumlah_terlambat', $jumlahTerlambat);
         $set('total_potongan_keterlambatan', $totalPotongan);
-        $set('gaji_pokok', $gajiPokok);
-        $set('gaji_bersih', $gajiBersih);
     }
 
     public static function configure(Schema $schema): Schema
@@ -107,26 +99,6 @@ class RekapPresensiBulananForm
                     ->formatStateUsing(fn ($state) => $state !== null ? number_format((float) $state, 0, ',', '.') : '0')
                     ->dehydrateStateUsing(fn ($state) => (float) str_replace('.', '', $state ?? '0'))
                     ->helperText('Otomatis dari data presensi'),
-                TextInput::make('gaji_pokok')
-                    ->label('Gaji Pokok (Rp)')
-                    ->required()
-                    ->prefix('Rp')
-                    ->default(0)
-                    ->disabled()
-                    ->dehydrated()
-                    ->formatStateUsing(fn ($state) => $state !== null ? number_format((float) $state, 0, ',', '.') : '0')
-                    ->dehydrateStateUsing(fn ($state) => (float) str_replace('.', '', $state ?? '0'))
-                    ->helperText('Otomatis dari data karyawan'),
-                TextInput::make('gaji_bersih')
-                    ->label('Gaji Bersih (Rp)')
-                    ->required()
-                    ->prefix('Rp')
-                    ->default(0)
-                    ->disabled()
-                    ->dehydrated()
-                    ->formatStateUsing(fn ($state) => $state !== null ? number_format((float) $state, 0, ',', '.') : '0')
-                    ->dehydrateStateUsing(fn ($state) => (float) str_replace('.', '', $state ?? '0'))
-                    ->helperText('Gaji Pokok − Total Potongan (otomatis)'),
                 Textarea::make('catatan')
                     ->columnSpanFull()
                     ->default(null),

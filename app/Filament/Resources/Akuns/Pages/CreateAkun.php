@@ -46,7 +46,6 @@ class CreateAkun extends CreateRecord
                     'no_hp' => $data['karyawan_no_hp'],
                     'bidang_tugas' => $data['karyawan_bidang_tugas'],
                     'alamat' => $data['karyawan_alamat'] ?? null,
-                    'gaji_pokok' => $data['karyawan_gaji_pokok'] ?? 0,
                 ]),
                 default => throw new \InvalidArgumentException('Role akun tidak valid.'),
             };

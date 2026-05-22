@@ -70,7 +70,7 @@ class KaryawanInfolist
                     ]),
 
                 Section::make('Kepegawaian')
-                    ->description('Status kontrak dan gaji')
+                    ->description('Status kontrak')
                     ->columns(3)
                     ->columnSpanFull()
                     ->schema([
@@ -87,10 +87,6 @@ class KaryawanInfolist
                                 default => 'gray',
                             })
                             ->formatStateUsing(fn (string $state): string => ucfirst($state)),
-                        TextEntry::make('gaji_pokok')
-                            ->label('Gaji Pokok')
-                            ->money('IDR')
-                            ->default(0),
                         TextEntry::make('created_at')
                             ->label('Terdaftar Sejak')
                             ->dateTime('d M Y H:i')

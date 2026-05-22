@@ -46,7 +46,6 @@ class EditAkun extends EditRecord
             $data['karyawan_no_hp']           = $k->no_hp;
             $data['karyawan_bidang_tugas']    = $k->bidang_tugas;
             $data['karyawan_alamat']          = $k->alamat;
-            $data['karyawan_gaji_pokok']      = $k->gaji_pokok;
         }
 
         return $data;
@@ -81,7 +80,6 @@ class EditAkun extends EditRecord
                         'no_hp'            => $data['karyawan_no_hp'],
                         'bidang_tugas'     => $data['karyawan_bidang_tugas'],
                         'alamat'           => $data['karyawan_alamat'] ?? null,
-                        'gaji_pokok'       => $data['karyawan_gaji_pokok'] ?? 0,
                     ]
                 ),
                 default => null,

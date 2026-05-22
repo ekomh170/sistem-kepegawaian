@@ -324,15 +324,12 @@ class KaryawanMobileController extends Controller
 
         $totalPotongan = $presensBulanIni->sum('potongan_terlambat');
         $hariHadir     = $presensBulanIni->whereIn('status_presensi', ['hadir', 'terlambat'])->count();
-        $estimasiGaji  = max(0, ($karyawan->gaji_pokok ?? 0) - $totalPotongan);
 
         return view('karyawan.riwayat', [
             'riwayat'          => $riwayat,
             'summary'          => $summary,
             'riwayatPekerjaan' => $riwayatPekerjaan,
-            'gajiPokok'        => $karyawan->gaji_pokok ?? 0,
             'totalPotongan'    => $totalPotongan,
-            'estimasiGaji'     => $estimasiGaji,
             'hariHadir'        => $hariHadir,
             'namaBulan'        => $bulanIni->translatedFormat('F Y'),
         ]);
