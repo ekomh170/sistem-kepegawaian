@@ -1,6 +1,6 @@
 # Sistem Informasi Kepegawaian
 
-Sistem informasi kepegawaian untuk CV Boss Muda Mandiri yang dibangun dengan Laravel 12, Filament v5, dan MySQL. Aplikasi ini dipakai untuk mengelola data karyawan, presensi harian, penugasan, bukti pekerjaan, rekap presensi bulanan, laporan, dan pengaturan lokasi kantor.
+Sistem informasi kepegawaian untuk CV Boss Muda Mandiri yang dibangun dengan Laravel 12, Filament v5, dan MySQL. Aplikasi ini dipakai untuk mengelola data karyawan, presensi harian (GPS + foto), penugasan lapangan, bukti pekerjaan, rekap potongan keterlambatan, laporan (Harian/Mingguan/Bulanan/Tahunan), dan pengaturan lokasi kantor.
 
 Dokumentasi utama ada di [docs/v2](docs/v2), sedangkan referensi dokumentasi lama tetap disimpan di [docs/v1](docs/v1).
 
@@ -12,12 +12,14 @@ Dokumentasi utama ada di [docs/v2](docs/v2), sedangkan referensi dokumentasi lam
 
 ## Fitur Utama
 
-- Manajemen akun, karyawan, presensi, detail pekerjaan, bukti pekerjaan, rekap presensi bulanan, laporan, verifikasi, dan setting.
-- Presensi harian dengan validasi lokasi dan dukungan capture kamera/base64.
-- Portal mobile karyawan untuk beranda, tugas, jadwal, riwayat, dan upload bukti.
-- Export laporan ke CSV, Excel, dan PDF.
-- Pengaturan lokasi kantor berbasis map picker dan geofence radius.
-- Struktur dokumentasi yang sudah dirapikan untuk handoff dev-to-dev.
+- Manajemen akun, karyawan, jadwal, presensi, penugasan lapangan, bukti pekerjaan, rekap presensi bulanan, laporan, verifikasi, dan setting.
+- Presensi harian dengan validasi GPS (Haversine), foto selfie, dan kalkulasi potongan keterlambatan otomatis.
+- Portal mobile karyawan: beranda, presensi masuk/pulang, daftar tugas (terima/tolak), upload bukti, jadwal mingguan, riwayat + potongan.
+- Laporan Harian, **Mingguan**, Bulanan, Tahunan — export CSV, Excel, PDF per record.
+- Pengaturan lokasi kantor berbasis map picker dan geofence radius (disimpan di `tb_setting`).
+- RBAC tiga lapis: panel middleware, route middleware, dan Filament resource policy.
+
+> **V2.2 (Fase 3):** Fitur tampilan gaji (Gaji Pokok, Gaji Bersih, Estimasi Gaji) dihapus dari seluruh UI. Kolom tetap ada di database untuk keperluan histori. Laporan Mingguan diperbaiki.
 
 ## Teknologi
 
@@ -82,11 +84,17 @@ npm run dev
 
 ## Rujukan Dokumentasi
 
-- [docs/progress_report.md](docs/progress_report.md)
-- [docs/v1/FILAMENT_DEVELOPER_PLAYBOOK.md](docs/v1/FILAMENT_DEVELOPER_PLAYBOOK.md)
-- [docs/v2/01-ringkasan-sistem.md](docs/v2/01-ringkasan-sistem.md)
-- [docs/v2/02-database-schema.md](docs/v2/02-database-schema.md)
-- [docs/v2/03-hak-akses-rbac.md](docs/v2/03-hak-akses-rbac.md)
+| File                                                                             | Isi                                             |
+| -------------------------------------------------------------------------------- | ----------------------------------------------- |
+| [docs/v2/01-ringkasan-sistem.md](docs/v2/01-ringkasan-sistem.md)                 | Ringkasan sistem, teknologi, struktur direktori |
+| [docs/v2/02-database-schema.md](docs/v2/02-database-schema.md)                   | Skema tabel, kolom, dan ERD                     |
+| [docs/v2/03-hak-akses-rbac.md](docs/v2/03-hak-akses-rbac.md)                     | Matriks RBAC per modul                          |
+| [docs/v2/04-fitur-alur-bisnis.md](docs/v2/04-fitur-alur-bisnis.md)               | Alur bisnis per aktor dan logika kalkulasi      |
+| [docs/v2/05-api-routes.md](docs/v2/05-api-routes.md)                             | Daftar route web, API, dan export               |
+| [docs/v2/06-seeder-skenario-demo.md](docs/v2/06-seeder-skenario-demo.md)         | Skenario demo dan akun uji                      |
+| [docs/v2/07-antarmuka-ui-ux.md](docs/v2/07-antarmuka-ui-ux.md)                   | Deskripsi UI per halaman                        |
+| [docs/v2/10-maintenance-future-plan.md](docs/v2/10-maintenance-future-plan.md)   | TODO list dan rencana pengembangan              |
+| [docs/v1/FILAMENT_DEVELOPER_PLAYBOOK.md](docs/v1/FILAMENT_DEVELOPER_PLAYBOOK.md) | Referensi arsitektur Filament (masih valid)     |
 
 ## Struktur Ringkas
 

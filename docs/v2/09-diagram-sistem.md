@@ -1,7 +1,8 @@
 # Diagram Sistem (Use Case & ERD)
+
 ## Sistem Informasi Kepegawaian — CV Boss Muda Mandiri
 
-Dokumen ini menyajikan visualisasi arsitektur sistem dalam bentuk Use Case Diagram dan Entity Relationship Diagram (ERD) yang telah disesuaikan dengan *source code* terbaru.
+Dokumen ini menyajikan visualisasi arsitektur sistem dalam bentuk Use Case Diagram dan Entity Relationship Diagram (ERD) yang telah disesuaikan dengan _source code_ terbaru.
 
 ---
 
@@ -88,7 +89,7 @@ erDiagram
         bigint user_id FK
         string nik UK
         string posisi_karyawan
-        decimal gaji_pokok
+        decimal gaji_pokok "tidak ditampilkan di UI"
     }
 
     tb_jadwal {
@@ -156,8 +157,7 @@ erDiagram
         integer jumlah_hadir
         integer jumlah_terlambat
         decimal total_potongan_keterlambatan
-        decimal gaji_pokok
-        decimal gaji_bersih
+        decimal total_potongan_keterlambatan
         enum status "draft/final/dibatalkan"
     }
 
@@ -189,7 +189,7 @@ erDiagram
     tb_karyawan ||--o{ tb_presensi : "logs"
     tb_karyawan ||--o{ tb_detail_pekerjaan : "assigned to"
     tb_karyawan ||--o{ tb_bukti_pekerjaan : "submits"
-    tb_karyawan ||--o{ tb_rekap_presensi_bulanan : "has salary"
+    tb_karyawan ||--o{ tb_rekap_presensi_bulanan : "has rekap"
 
     tb_jadwal ||--o{ tb_detail_pekerjaan : "has tasks"
     tb_jadwal ||--o| tb_presensi : "has presensi"
@@ -206,10 +206,10 @@ erDiagram
 ## 3. Penjelasan Relasi Kunci
 
 1.  **Generalisasi (Role)**: Tabel `tb_user` adalah tabel induk untuk autentikasi, yang terhubung secara One-to-One dengan `tb_admin`, `tb_supervisor`, atau `tb_karyawan`.
-2.  **Pemisahan Absensi & Tugas**: 
+2.  **Pemisahan Absensi & Tugas**:
     - `tb_presensi` mencatat kehadiran harian karyawan di Kantor Pusat.
     - `tb_detail_pekerjaan` mencatat tugas spesifik yang harus diterima/ditolak karyawan.
 3.  **Bukti per Tugas**: Relasi antara `tb_detail_pekerjaan` dan `tb_bukti_pekerjaan` memungkinkan karyawan mengunggah banyak laporan hasil kerja dalam satu hari sesuai jumlah tugas yang diberikan.
 4.  **Verifikasi Berjenjang**: Setiap log presensi harian diverifikasi oleh Supervisor melalui tabel `tb_verifikasi`.
-5.  **Rekap Presensi Bulanan**: Tabel `tb_rekap_presensi_bulanan` menghitung gaji bersih per bulan berdasarkan data presensi (hadir/telat/alpa).
+5.  **Rekap Presensi Bulanan**: Tabel `tb_rekap_presensi_bulanan` merekap potongan keterlambatan per bulan berdasarkan data presensi (hadir/telat/alpa). Kolom `gaji_pokok`/`gaji_bersih` tetap ada di DB namun tidak ditampilkan di UI sejak V2.2.
 6.  **Pengaturan Dinamis**: Tabel `tb_setting` menyimpan konfigurasi sistem secara key-value (lokasi kantor, radius, potongan, dll).

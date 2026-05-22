@@ -1,9 +1,10 @@
 # Dokumentasi Sistem Informasi Kepegawaian
-## CV Boss Muda Mandiri — Versi 2.0
 
-**Tanggal Generate:** 15 Mei 2026 (V2.1)  
+## CV Boss Muda Mandiri — Versi 2.2
+
+**Tanggal Generate:** 22 Mei 2026 (V2.2)  
 **Framework:** Laravel 12 + Filament v5 + MySQL  
-**Status:** ✅ Stabil — V2.1 Bug Fix & Polish
+**Status:** ✅ Stabil — V2.2 Fase 3 (Hapus Fitur Gaji, Fix Laporan Mingguan)
 
 ---
 
@@ -11,39 +12,39 @@
 
 Sistem Informasi Kepegawaian CV Boss Muda Mandiri adalah aplikasi web berbasis Laravel yang dirancang untuk mengelola data karyawan, jadwal kerja, presensi harian (termasuk validasi GPS), verifikasi oleh supervisor, dan pelaporan/penggajian. Sistem ini mendukung **3 aktor utama** dengan antarmuka yang berbeda:
 
-| Aktor | Antarmuka | Akses |
-|-------|-----------|-------|
-| **Admin** | Panel Filament (Desktop) | CRUD penuh semua modul |
+| Aktor          | Antarmuka                | Akses                                        |
+| -------------- | ------------------------ | -------------------------------------------- |
+| **Admin**      | Panel Filament (Desktop) | CRUD penuh semua modul                       |
 | **Supervisor** | Panel Filament (Desktop) | View only operasional, view + export laporan |
-| **Karyawan** | Portal Mobile (Blade) | Presensi masuk/pulang, jadwal, riwayat |
+| **Karyawan**   | Portal Mobile (Blade)    | Presensi masuk/pulang, jadwal, riwayat       |
 
 ---
 
 ## 2. Teknologi & Dependensi
 
-| Komponen | Teknologi | Versi |
-|----------|-----------|-------|
-| Backend Framework | Laravel | 12.x |
-| Admin Panel | Filament | 5.x |
-| Database | MySQL | 8.x |
-| PHP | PHP | 8.2+ |
-| Export Excel | maatwebsite/excel | 3.1 |
-| Export PDF | barryvdh/laravel-dompdf | 3.1 |
-| Map Picker | dotswan/filament-map-picker | 2.3 |
-| Testing | PHPUnit | 11.x |
+| Komponen          | Teknologi                   | Versi |
+| ----------------- | --------------------------- | ----- |
+| Backend Framework | Laravel                     | 12.x  |
+| Admin Panel       | Filament                    | 5.x   |
+| Database          | MySQL                       | 8.x   |
+| PHP               | PHP                         | 8.2+  |
+| Export Excel      | maatwebsite/excel           | 3.1   |
+| Export PDF        | barryvdh/laravel-dompdf     | 3.1   |
+| Map Picker        | dotswan/filament-map-picker | 2.3   |
+| Testing           | PHPUnit                     | 11.x  |
 
 ---
 
 ## 3. Akun Demo (Seeder)
 
-| Role | Email | Password | Nama |
-|------|-------|----------|------|
-| Admin | admin@example.com | password | Budi Santoso |
-| Admin | dela@example.com | password | Dela Maharani |
-| Supervisor | supervisor@example.com | password | Andi Gunawan |
-| Karyawan | karyawan@example.com | password | Rizky Pratama |
-| Karyawan | ekoaryo@example.com | password | Eko Aryo |
-| Karyawan | staf1@example.com s/d staf10@example.com | password | (Random Indonesia) |
+| Role       | Email                                    | Password | Nama               |
+| ---------- | ---------------------------------------- | -------- | ------------------ |
+| Admin      | admin@example.com                        | password | Budi Santoso       |
+| Admin      | dela@example.com                         | password | Dela Maharani      |
+| Supervisor | supervisor@example.com                   | password | Andi Gunawan       |
+| Karyawan   | karyawan@example.com                     | password | Rizky Pratama      |
+| Karyawan   | ekoaryo@example.com                      | password | Eko Aryo           |
+| Karyawan   | staf1@example.com s/d staf10@example.com | password | (Random Indonesia) |
 
 ---
 
@@ -70,7 +71,7 @@ sistem-kepegawaian/
 │   │   │   ├── Karyawans/
 │   │   │   ├── Laporans/              # + Export CSV/Excel/PDF
 │   │   │   ├── Presensis/             # + Auto-kalkulasi + MapPicker
-│   │   │   ├── RekapPresensiBulanans/        # Rekap presensi bulanan gaji
+│   │   │   ├── RekapPresensiBulanans/        # Rekap presensi bulanan (potongan, tanpa gaji)
 │   │   │   ├── Supervisors/
 │   │   │   └── Verifikasis/
 │   │   └── Widgets/                    # 5 Dashboard Widgets
