@@ -152,9 +152,9 @@ class DatabaseSeeder extends Seeder
         // Sesuai BAB 4: 6 hari kerja per minggu, 1 hari libur (Minggu) ditentukan admin,
         // jam kerja 08:00–16:00.
         $semuaKaryawan = Karyawan::all();
-        $tanggalAcuan = \Carbon\Carbon::parse('2026-05-12');
+        $tanggalAcuan = \Carbon\Carbon::parse('2026-05-23');
 
-        // Generate jadwal & presensi sampai 12 Mei 2026
+        // Generate jadwal & presensi sampai 18 Mei 2026
         $startDate = $tanggalAcuan->copy()->subMonths(2)->startOfMonth();
         $endDate = $tanggalAcuan->copy();
 

@@ -24,7 +24,7 @@ class RekapPresensiBulananResource extends Resource
 
     protected static ?string $navigationLabel = 'Rekap Presensi Bulanan';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Keuangan & Laporan';
+    protected static string|\UnitEnum|null $navigationGroup = 'Laporan';
 
     protected static ?int $navigationSort = 7;
 
