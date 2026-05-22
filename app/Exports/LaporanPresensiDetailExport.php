@@ -23,7 +23,14 @@ class LaporanPresensiDetailExport implements FromCollection, WithHeadings, WithM
     {
         return Presensi::query()
             ->with(['karyawan.user'])
-            ->when($this->periode, fn ($q) => $q->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$this->periode]))
+            ->when($this->periode, function ($q) {
+                $periode = (string) $this->periode;
+                if (strlen($periode) === 10) {
+                    $end = Carbon::parse($periode)->addDays(6)->toDateString();
+                    return $q->whereBetween('tanggal', [$periode, $end]);
+                }
+                return $q->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$periode]);
+            })
             ->when($this->karyawan_id, fn ($q) => $q->where('karyawan_id', $this->karyawan_id))
             ->orderBy('tanggal', 'desc')
             ->orderBy('karyawan_id')

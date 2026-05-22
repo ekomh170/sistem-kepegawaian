@@ -38,8 +38,6 @@ class LaporanPresensiExport implements FromCollection, WithHeadings, WithMapping
             'Total Terlambat',
             'Total Tidak Hadir',
             'Total Potongan Keterlambatan',
-            'Gaji Pokok',
-            'Gaji Bersih',
             'Status',
             'Tanggal Generate',
         ];
@@ -54,8 +52,6 @@ class LaporanPresensiExport implements FromCollection, WithHeadings, WithMapping
             $p->jumlah_terlambat,
             $p->jumlah_tidak_hadir,
             (string) $p->total_potongan_keterlambatan,
-            (string) $p->gaji_pokok,
-            (string) $p->gaji_bersih,
             $p->status,
             now()->format('Y-m-d H:i:s'),
         ];

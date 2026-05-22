@@ -118,21 +118,24 @@ class LaporanResource extends Resource
                         // Periode - format berubah sesuai jenis
                         TextInput::make('periode')
                             ->label(fn ($get) => match ($get('jenis')) {
-                                'Harian' => 'Periode (Tanggal)',
-                                'Tahunan' => 'Periode (Tahun)',
-                                default => 'Periode (Bulan)',
+                                'Harian'   => 'Periode (Tanggal)',
+                                'Mingguan' => 'Periode (Tanggal Awal Minggu)',
+                                'Tahunan'  => 'Periode (Tahun)',
+                                default    => 'Periode (Bulan)',
                             })
                             ->required()
                             ->maxLength(20)
                             ->placeholder(fn ($get) => match ($get('jenis')) {
-                                'Harian' => '2026-05-09',
-                                'Tahunan' => '2026',
-                                default => '2026-04',
+                                'Harian'   => '2026-05-09',
+                                'Mingguan' => '2026-05-19',
+                                'Tahunan'  => '2026',
+                                default    => '2026-04',
                             })
                             ->helperText(fn ($get) => match ($get('jenis')) {
-                                'Harian' => 'Format: YYYY-MM-DD (contoh: 2026-05-09)',
-                                'Tahunan' => 'Format: YYYY (contoh: 2026)',
-                                default => 'Format: YYYY-MM (contoh: 2026-04)',
+                                'Harian'   => 'Format: YYYY-MM-DD (contoh: 2026-05-09)',
+                                'Mingguan' => 'Format: YYYY-MM-DD tanggal awal minggu, data diambil 7 hari ke depan (contoh: 2026-05-19)',
+                                'Tahunan'  => 'Format: YYYY (contoh: 2026)',
+                                default    => 'Format: YYYY-MM (contoh: 2026-04)',
                             })
                             ->live(onBlur: true)
                             ->afterStateUpdated(function ($set, $get) {

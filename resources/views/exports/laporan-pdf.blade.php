@@ -38,7 +38,6 @@
                 <th>Terlambat</th>
                 <th>Tidak Hadir</th>
                 <th>Total Potongan</th>
-                <th>Gaji Bersih</th>
             </tr>
         </thead>
         <tbody>
@@ -49,13 +48,12 @@
                 <td>{{ $p->jumlah_hadir }}</td>
                 <td>{{ $p->jumlah_terlambat }}</td>
                 <td>{{ $p->jumlah_tidak_hadir }}</td>
-                <td>Rp {{ number_format($p->total_potongan, 0, ',', '.') }}</td>
-                <td>Rp {{ number_format($p->gaji_bersih, 0, ',', '.') }}</td>
+                <td>Rp {{ number_format($p->total_potongan_keterlambatan, 0, ',', '.') }}</td>
             </tr>
             @endforeach
             @if($penggajians->isEmpty())
             <tr>
-                <td colspan="7" style="text-align: center;">Tidak ada data laporan.</td>
+                <td colspan="6" style="text-align: center;">Tidak ada data laporan.</td>
             </tr>
             @endif
         </tbody>

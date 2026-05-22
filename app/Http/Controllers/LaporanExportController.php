@@ -35,8 +35,6 @@ class LaporanExportController extends Controller
                 'Total Terlambat',
                 'Total Tidak Hadir',
                 'Total Potongan Keterlambatan',
-                'Gaji Pokok',
-                'Gaji Bersih',
                 'Status',
                 'Tanggal Generate',
             ]);
@@ -49,8 +47,6 @@ class LaporanExportController extends Controller
                     $p->jumlah_terlambat,
                     $p->jumlah_tidak_hadir,
                     (string) $p->total_potongan_keterlambatan,
-                    (string) $p->gaji_pokok,
-                    (string) $p->gaji_bersih,
                     $p->status,
                     now()->format('Y-m-d H:i:s'),
                 ]);
@@ -109,7 +105,14 @@ class LaporanExportController extends Controller
 
         return \App\Models\Presensi::query()
             ->with(['karyawan.user'])
-            ->when($request->filled('periode'), fn ($q) => $q->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$request->string('periode')]))
+            ->when($request->filled('periode'), function ($q) use ($request) {
+                $periode = (string) $request->string('periode');
+                if (strlen($periode) === 10) {
+                    $end = \Carbon\Carbon::parse($periode)->addDays(6)->toDateString();
+                    return $q->whereBetween('tanggal', [$periode, $end]);
+                }
+                return $q->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$periode]);
+            })
             ->when($request->filled('karyawan_id'), fn ($q) => $q->where('karyawan_id', $request->integer('karyawan_id')))
             ->orderBy('tanggal', 'desc')
             ->orderBy('karyawan_id')
@@ -201,10 +204,14 @@ class LaporanExportController extends Controller
         return DetailPekerjaan::query()
             ->with(['karyawan.user', 'jadwal', 'buktiPekerjaans'])
             ->join('tb_jadwal', 'tb_jadwal.id', '=', 'tb_detail_pekerjaan.jadwal_id')
-            ->when(
-                $request->filled('periode'),
-                fn ($q) => $q->whereRaw("DATE_FORMAT(tb_jadwal.tanggal_kerja, '%Y-%m') = ?", [$request->string('periode')])
-            )
+            ->when($request->filled('periode'), function ($q) use ($request) {
+                $periode = (string) $request->string('periode');
+                if (strlen($periode) === 10) {
+                    $end = \Carbon\Carbon::parse($periode)->addDays(6)->toDateString();
+                    return $q->whereBetween('tb_jadwal.tanggal_kerja', [$periode, $end]);
+                }
+                return $q->whereRaw("DATE_FORMAT(tb_jadwal.tanggal_kerja, '%Y-%m') = ?", [$periode]);
+            })
             ->when($request->filled('karyawan_id'), fn ($q) => $q->where('tb_detail_pekerjaan.karyawan_id', $request->integer('karyawan_id')))
             ->orderByDesc('tb_jadwal.tanggal_kerja')
             ->orderBy('tb_detail_pekerjaan.karyawan_id')
