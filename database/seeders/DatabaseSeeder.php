@@ -285,68 +285,140 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // ========== AUTO-GENERATE REKAP PRESENSI BULANAN PERIODE MARET SAJA ==========
-        $periodeLaporan = $tanggalAcuan->copy()->subMonths(2)->format('Y-m');
+        // ========== AUTO-GENERATE REKAP PRESENSI BULANAN (SEMUA BULAN LENGKAP) ==========
+        // Kumpulkan semua bulan yang sudah selesai dalam range data (tidak termasuk bulan berjalan)
+        $periodeSelesai = [];
+        $tempBulan = $startDate->copy()->startOfMonth();
+        while ($tempBulan->lt($tanggalAcuan->copy()->startOfMonth())) {
+            $periodeSelesai[] = $tempBulan->format('Y-m');
+            $tempBulan->addMonth();
+        }
 
-        foreach ($semuaKaryawan as $kr) {
-            $presensis = Presensi::where('karyawan_id', $kr->id)
-                ->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$periodeLaporan])
-                ->get();
+        foreach ($periodeSelesai as $periodeLaporan) {
+            [$tahun, $bulan] = explode('-', $periodeLaporan);
 
-            $jumlahHadir = $presensis->whereIn('status_presensi', ['hadir', 'terlambat'])->count();
-            $jumlahTidakHadir = $presensis->where('status_presensi', 'tidak_hadir')->count();
-            $jumlahTerlambat = $presensis->where('status_presensi', 'terlambat')->count();
-            $totalPotongan = (float) $presensis->where('status_presensi', 'terlambat')->sum('potongan_terlambat');
-            $gajiPokok = (float) ($kr->gaji_pokok ?? 5000000);
-            $gajiBersih = max(0, $gajiPokok - $totalPotongan);
+            foreach ($semuaKaryawan as $kr) {
+                $presensis = Presensi::where('karyawan_id', $kr->id)
+                    ->whereYear('tanggal', $tahun)
+                    ->whereMonth('tanggal', $bulan)
+                    ->get();
 
-            \App\Models\RekapPresensiBulanan::updateOrCreate(
+                $jumlahHadir = $presensis->whereIn('status_presensi', ['hadir', 'terlambat'])->count();
+                $jumlahTidakHadir = $presensis->where('status_presensi', 'tidak_hadir')->count();
+                $jumlahTerlambat = $presensis->where('status_presensi', 'terlambat')->count();
+                $totalPotongan = (float) $presensis->where('status_presensi', 'terlambat')->sum('potongan_terlambat');
+                $gajiPokok = (float) ($kr->gaji_pokok ?? 5000000);
+                $gajiBersih = max(0, $gajiPokok - $totalPotongan);
+
+                \App\Models\RekapPresensiBulanan::updateOrCreate(
+                    [
+                        'karyawan_id' => $kr->id,
+                        'periode' => $periodeLaporan,
+                    ],
+                    [
+                        'admin_id' => $admin->id,
+                        'jumlah_hadir' => $jumlahHadir,
+                        'jumlah_tidak_hadir' => $jumlahTidakHadir,
+                        'jumlah_terlambat' => $jumlahTerlambat,
+                        'total_potongan_keterlambatan' => $totalPotongan,
+                        'gaji_pokok' => $gajiPokok,
+                        'gaji_bersih' => $gajiBersih,
+                        'catatan' => "Rekap presensi bulan {$periodeLaporan}",
+                        'status' => 'final',
+                    ]
+                );
+            }
+        }
+
+        // ========== LAPORAN DATA (HARIAN, MINGGUAN, BULANAN) ==========
+
+        // -- 1. Laporan Bulanan: semua bulan selesai + bulan berjalan --
+        $semuaPeriodeBulanan = array_merge($periodeSelesai, [$tanggalAcuan->format('Y-m')]);
+
+        foreach ($semuaPeriodeBulanan as $periodeLaporan) {
+            $isBulanBerjalan = $periodeLaporan === $tanggalAcuan->format('Y-m');
+            $tglGenerate = $isBulanBerjalan
+                ? $tanggalAcuan->copy()->subDays(1)->format('Y-m-d') . ' 17:00:00'
+                : $periodeLaporan . '-28 18:00:00';
+
+            Laporan::updateOrCreate(
+                ['judul' => "Laporan Presensi Bulanan {$periodeLaporan}", 'periode' => $periodeLaporan],
                 [
-                    'karyawan_id' => $kr->id,
-                    'periode' => $periodeLaporan,
-                ],
+                    'jenis' => 'Bulanan',
+                    'filter' => json_encode(['karyawan_id' => 'all']),
+                    'file_path' => null,
+                    'generated_by' => $adminUser->id,
+                    'tgl_generate' => $tglGenerate,
+                ]
+            );
+
+            Laporan::updateOrCreate(
+                ['judul' => "Laporan Rekap Presensi Bulanan {$periodeLaporan}", 'periode' => $periodeLaporan],
                 [
-                    'admin_id' => $admin->id,
-                    'jumlah_hadir' => $jumlahHadir,
-                    'jumlah_tidak_hadir' => $jumlahTidakHadir,
-                    'jumlah_terlambat' => $jumlahTerlambat,
-                    'total_potongan_keterlambatan' => $totalPotongan,
-                    'gaji_pokok' => $gajiPokok,
-                    'gaji_bersih' => $gajiBersih,
-                    'catatan' => "Rekap presensi bulan {$periodeLaporan}",
-                    'status' => 'final',
+                    'jenis' => 'Bulanan',
+                    'filter' => json_encode(['karyawan_id' => 'all']),
+                    'file_path' => null,
+                    'generated_by' => $adminUser->id,
+                    'tgl_generate' => $isBulanBerjalan
+                        ? $tanggalAcuan->copy()->subDays(1)->format('Y-m-d') . ' 18:00:00'
+                        : $periodeLaporan . '-28 19:00:00',
+                ]
+            );
+
+            Laporan::updateOrCreate(
+                ['judul' => "Laporan Rekap Pekerjaan Bulanan {$periodeLaporan}", 'periode' => $periodeLaporan],
+                [
+                    'jenis' => 'Bulanan',
+                    'filter' => json_encode(['karyawan_id' => 'all']),
+                    'file_path' => null,
+                    'generated_by' => $adminUser->id,
+                    'tgl_generate' => $isBulanBerjalan
+                        ? $tanggalAcuan->copy()->subDays(1)->format('Y-m-d') . ' 19:00:00'
+                        : $periodeLaporan . '-28 20:00:00',
                 ]
             );
         }
 
-        // ========== LAPORAN DATA (AUTO-GENERATE PERIODE MARET SAJA) ==========
-        Laporan::updateOrCreate(
-            [
-                'judul' => "Laporan Presensi Bulanan {$periodeLaporan}",
-                'periode' => $periodeLaporan,
-            ],
-            [
-                'jenis' => 'Bulanan',
-                'filter' => json_encode(['karyawan_id' => 'all']),
-                'file_path' => "laporan/{$periodeLaporan}-presensi.pdf",
-                'generated_by' => $adminUser->id,
-                'tgl_generate' => \Carbon\Carbon::parse($periodeLaporan . '-28 18:00:00'),
-            ]
-        );
+        // -- 2. Laporan Mingguan: 4 minggu terakhir --
+        $weekStart = $tanggalAcuan->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
+        for ($w = 0; $w < 4; $w++) {
+            $ws = $weekStart->copy()->subWeeks($w);
+            $periodeMingguan = $ws->toDateString();
+            $tglGenerateMingguan = $ws->copy()->addDays(6)->format('Y-m-d') . ' 17:00:00';
 
-        Laporan::updateOrCreate(
-            [
-                'judul' => "Laporan Rekap Presensi Bulanan {$periodeLaporan}",
-                'periode' => $periodeLaporan,
-            ],
-            [
-                'jenis' => 'Bulanan',
-                'filter' => json_encode(['karyawan_id' => 'all']),
-                'file_path' => "laporan/{$periodeLaporan}-rekap-presensi-bulanan.pdf",
-                'generated_by' => $adminUser->id,
-                'tgl_generate' => \Carbon\Carbon::parse($periodeLaporan . '-28 19:00:00'),
-            ]
-        );
+            Laporan::updateOrCreate(
+                ['judul' => "Laporan Presensi Mingguan {$periodeMingguan}", 'periode' => $periodeMingguan],
+                [
+                    'jenis' => 'Mingguan',
+                    'filter' => json_encode(['karyawan_id' => 'all']),
+                    'file_path' => null,
+                    'generated_by' => $adminUser->id,
+                    'tgl_generate' => $tglGenerateMingguan,
+                ]
+            );
+        }
+
+        // -- 3. Laporan Harian: 5 hari kerja terakhir (skip Minggu) --
+        $hariCheck = $tanggalAcuan->copy();
+        $countHari = 0;
+        while ($countHari < 5) {
+            if (!$hariCheck->isSunday()) {
+            $periodeHarian = $hariCheck->toDateString();
+
+                Laporan::updateOrCreate(
+                    ['judul' => "Laporan Presensi Harian {$periodeHarian}", 'periode' => $periodeHarian],
+                    [
+                        'jenis' => 'Harian',
+                        'filter' => json_encode(['karyawan_id' => 'all']),
+                        'file_path' => null,
+                        'generated_by' => $adminUser->id,
+                        'tgl_generate' => $periodeHarian . ' 17:00:00',
+                    ]
+                );
+                $countHari++;
+            }
+            $hariCheck->subDay();
+        }
 
         // ========== SETTING DATA ==========
         $settings = [

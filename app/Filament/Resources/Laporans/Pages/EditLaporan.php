@@ -31,11 +31,12 @@ class EditLaporan extends EditRecord
         $tipe = $data['tipe_laporan'] ?? 'presensi';
         $tipeName = match ($tipe) {
             'rekap_presensi_bulanan' => 'Laporan Rekap Presensi Bulanan',
-            default => 'Laporan Presensi',
+            'rekap_pekerjaan'        => 'Laporan Rekap Pekerjaan',
+            default                  => 'Laporan Presensi',
         };
         $jenis = $data['jenis'] ?? '';
         $periode = $data['periode'] ?? '';
 
-        return "{$tipeName} {$jenis} {$periode}";
+        return trim("{$tipeName} {$jenis} {$periode}");
     }
 }

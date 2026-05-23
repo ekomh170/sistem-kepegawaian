@@ -97,7 +97,6 @@ class LaporanResource extends Resource
                             ->afterStateUpdated(function ($set, $get) {
                                 self::generateJudul($set, $get);
                             })
-                            ->dehydrated(false)
                             ->columnSpanFull(),
 
                         Select::make('jenis')
