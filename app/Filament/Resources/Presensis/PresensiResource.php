@@ -48,22 +48,22 @@ class PresensiResource extends Resource
 
     public static function canCreate(): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return Auth::user()?->role === 'admin';
     }
 
     public static function canEdit(Model $record): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return Auth::user()?->role === 'admin';
     }
 
     public static function canDelete(Model $record): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return Auth::user()?->role === 'admin';
     }
 
     public static function canDeleteAny(): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return Auth::user()?->role === 'admin';
     }
 
     public static function form(Schema $schema): Schema
@@ -422,14 +422,14 @@ class PresensiResource extends Resource
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make()
-                    ->visible(fn () => in_array(Auth::user()?->role, ['admin', 'supervisor'], true)),
+                    ->visible(fn () => Auth::user()?->role === 'admin'),
                 DeleteAction::make()
-                    ->visible(fn () => in_array(Auth::user()?->role, ['admin', 'supervisor'], true)),
+                    ->visible(fn () => Auth::user()?->role === 'admin'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                ])->visible(fn () => in_array(Auth::user()?->role, ['admin', 'supervisor'], true)),
+                ])->visible(fn () => Auth::user()?->role === 'admin'),
             ]);
     }
 

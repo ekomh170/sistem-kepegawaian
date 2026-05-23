@@ -51,17 +51,17 @@ class LaporanResource extends Resource
 
     public static function canEdit(Model $record): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return Auth::user()?->role === 'admin';
     }
 
     public static function canDelete(Model $record): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return Auth::user()?->role === 'admin';
     }
 
     public static function canDeleteAny(): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return Auth::user()?->role === 'admin';
     }
 
     public static function form(Schema $schema): Schema
@@ -316,14 +316,14 @@ class LaporanResource extends Resource
                     ->url(fn (Laporan $record): string => self::resolveExportRoute($record, 'pdf'),
                         shouldOpenInNewTab: true),
                 EditAction::make()
-                    ->visible(fn () => in_array(Auth::user()?->role, ['admin', 'supervisor'], true)),
+                    ->visible(fn () => Auth::user()?->role === 'admin'),
                 DeleteAction::make()
-                    ->visible(fn () => in_array(Auth::user()?->role, ['admin', 'supervisor'], true)),
+                    ->visible(fn () => Auth::user()?->role === 'admin'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                ])->visible(fn () => in_array(Auth::user()?->role, ['admin', 'supervisor'], true)),
+                ])->visible(fn () => Auth::user()?->role === 'admin'),
             ]);
     }
 

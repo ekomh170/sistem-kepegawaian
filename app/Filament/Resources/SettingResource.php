@@ -11,6 +11,8 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class SettingResource extends Resource
 {
@@ -20,6 +22,26 @@ class SettingResource extends Resource
     protected static string|\UnitEnum|null $navigationGroup = 'Sistem';
     protected static ?string $pluralLabel = 'Pengaturan';
     protected static ?int $navigationSort = 9;
+
+    public static function canViewAny(): bool
+    {
+        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->role === 'admin';
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return Auth::user()?->role === 'admin';
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return Auth::user()?->role === 'admin';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -60,6 +82,7 @@ class SettingResource extends Resource
             ])
             ->recordActions([
                 EditAction::make()
+                    ->visible(fn () => Auth::user()?->role === 'admin')
                     ->after(fn () => Setting::clearCache()),
             ])
             ->bulkActions([

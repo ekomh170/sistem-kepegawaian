@@ -89,7 +89,8 @@ class LokasiKantorPage extends Page implements HasForms
                             ->helperText('Jarak maksimal karyawan dari titik kantor untuk presensi'),
                     ]),
             ])
-            ->statePath('data');
+            ->statePath('data')
+            ->disabled(Auth::user()?->role !== 'admin');
     }
 
     public function save(): void
@@ -110,6 +111,6 @@ class LokasiKantorPage extends Page implements HasForms
 
     public static function canAccess(): bool
     {
-        return Auth::user()?->role === 'admin';
+        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
     }
 }

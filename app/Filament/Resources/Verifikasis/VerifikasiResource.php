@@ -38,27 +38,27 @@ class VerifikasiResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return Auth::user()?->role === 'supervisor';
     }
 
     public static function canCreate(): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return Auth::user()?->role === 'supervisor';
     }
 
     public static function canEdit(Model $record): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return Auth::user()?->role === 'supervisor';
     }
 
     public static function canDelete(Model $record): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return Auth::user()?->role === 'supervisor';
     }
 
     public static function canDeleteAny(): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return Auth::user()?->role === 'supervisor';
     }
 
     public static function form(Schema $schema): Schema
@@ -137,14 +137,14 @@ class VerifikasiResource extends Resource
             ->filters([])
             ->recordActions([
                 EditAction::make()
-                    ->visible(fn () => in_array(Auth::user()?->role, ['admin', 'supervisor'], true)),
+                    ->visible(fn () => Auth::user()?->role === 'supervisor'),
                 DeleteAction::make()
-                    ->visible(fn () => in_array(Auth::user()?->role, ['admin', 'supervisor'], true)),
+                    ->visible(fn () => Auth::user()?->role === 'supervisor'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                ])->visible(fn () => in_array(Auth::user()?->role, ['admin', 'supervisor'], true)),
+                ])->visible(fn () => Auth::user()?->role === 'supervisor'),
             ]);
     }
 
