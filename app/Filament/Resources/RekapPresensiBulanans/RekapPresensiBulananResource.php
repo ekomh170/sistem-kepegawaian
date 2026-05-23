@@ -35,22 +35,22 @@ class RekapPresensiBulananResource extends Resource
 
     public static function canCreate(): bool
     {
-        return Auth::user()?->role === 'admin';
+        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
     }
 
     public static function canEdit(Model $record): bool
     {
-        return Auth::user()?->role === 'admin';
+        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
     }
 
     public static function canDelete(Model $record): bool
     {
-        return Auth::user()?->role === 'admin';
+        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
     }
 
     public static function canDeleteAny(): bool
     {
-        return Auth::user()?->role === 'admin';
+        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
     }
 
     public static function form(Schema $schema): Schema

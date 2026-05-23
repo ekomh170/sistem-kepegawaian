@@ -15,6 +15,25 @@
                     Silakan lakukan presensi pulang.
                 @endunless
             </div>
+
+            @if ($presensiHariIni->foto_masuk)
+                <div style="margin-bottom:16px; text-align:center;">
+                    <p style="font-size:0.85em; color:#666; margin-bottom:6px;">📸 Foto Masuk</p>
+                    <img src="{{ asset('storage/' . $presensiHariIni->foto_masuk) }}"
+                         alt="Foto Masuk"
+                         style="width:100%; max-width:320px; border-radius:10px; border:2px solid #10b981; object-fit:cover;">
+                </div>
+            @endif
+
+            @if ($presensiHariIni->foto_keluar)
+                <div style="margin-bottom:16px; text-align:center;">
+                    <p style="font-size:0.85em; color:#666; margin-bottom:6px;">📸 Foto Keluar</p>
+                    <img src="{{ asset('storage/' . $presensiHariIni->foto_keluar) }}"
+                         alt="Foto Keluar"
+                         style="width:100%; max-width:320px; border-radius:10px; border:2px solid #3b82f6; object-fit:cover;">
+                </div>
+            @endif
+
             @unless ($presensiHariIni->jam_keluar)
                 <a href="{{ route('karyawan.presensi.pulang') }}" class="btn btn-secondary" style="width:100%;margin-top:8px;">Presensi Pulang</a>
             @endunless

@@ -18,23 +18,23 @@
                     $badgeClass = match ($statusTugas) {
                         'disetujui' => ($statusBukti ? match($statusBukti) {
                             'disetujui' => 'pill-success',
-                            'ditolak' => 'pill-danger',
-                            'pending' => 'pill-warning',
-                            default => 'pill-info',
+                            'ditolak'   => 'pill-danger',
+                            'pending'   => 'pill-warning',
+                            default     => 'pill-info',
                         } : 'pill-success'),
                         'ditolak' => 'pill-danger',
-                        default => 'pill-info', // pending
+                        default   => 'pill-info',
                     };
 
                     $badgeText = match ($statusTugas) {
                         'disetujui' => ($statusBukti ? match($statusBukti) {
                             'disetujui' => 'BUKTI DISETUJUI',
-                            'ditolak' => 'BUKTI DITOLAK',
-                            'pending' => 'BUKTI PENDING',
-                            default => 'BELUM UPLOAD',
+                            'ditolak'   => 'BUKTI DITOLAK',
+                            'pending'   => 'MENUNGGU REVIEW',
+                            default     => 'BELUM UPLOAD',
                         } : 'DITERIMA'),
                         'ditolak' => 'DITOLAK',
-                        default => 'MENUNGGU RESPON',
+                        default   => 'MENUNGGU RESPON',
                     };
                 @endphp
 
@@ -100,10 +100,24 @@
                     {{-- STATUS: DITERIMA — Bisa upload bukti --}}
                     @elseif ($statusTugas === 'disetujui')
                         @if ($bukti)
-                            <div style="margin-top: 10px; padding: 10px; background-color: #ecfdf5; border-radius: 8px; border: 1px solid #a7f3d0;">
-                                <strong>✅ Bukti Diupload:</strong> {{ optional($bukti->uploaded_at)->format('d M Y H:i') }}<br>
-                                <span class="text-muted" style="font-size:0.85em;">{{ $bukti->keterangan ?? '-' }}</span>
+                            @php
+                                $buktiStyle = match ($bukti->status) {
+                                    'disetujui' => ['bg' => '#ecfdf5', 'border' => '#a7f3d0', 'text' => '#065f46', 'icon' => '✅', 'label' => 'Bukti Disetujui'],
+                                    'ditolak'   => ['bg' => '#fef2f2', 'border' => '#fca5a5', 'text' => '#b91c1c', 'icon' => '❌', 'label' => 'Bukti Ditolak'],
+                                    default     => ['bg' => '#fffbeb', 'border' => '#fcd34d', 'text' => '#92400e', 'icon' => '⏳', 'label' => 'Menunggu Review Admin'],
+                                };
+                            @endphp
+                            <div style="margin-top:10px;padding:10px;background:{{ $buktiStyle['bg'] }};border-radius:8px;border:1px solid {{ $buktiStyle['border'] }};">
+                                <strong style="color:{{ $buktiStyle['text'] }};">{{ $buktiStyle['icon'] }} {{ $buktiStyle['label'] }}</strong><br>
+                                <span class="text-muted" style="font-size:0.82em;">
+                                    Dikirim: {{ optional($bukti->uploaded_at)->format('d M Y H:i') }}
+                                </span>
                             </div>
+                            <a href="{{ route('karyawan.tugas.bukti.detail', ['detail_pekerjaan_id' => $tugas->id]) }}"
+                               class="btn btn-secondary"
+                               style="display:block;text-align:center;margin-top:8px;padding:9px;font-size:0.9em;">
+                                🔍 Lihat Detail Bukti
+                            </a>
                         @else
                             <a class="btn btn-primary" style="margin-top:10px;display:block;text-align:center;padding:10px;" href="{{ route('karyawan.tugas.upload', ['detail_pekerjaan_id' => $tugas->id]) }}">
                                 📤 Upload Bukti Pekerjaan

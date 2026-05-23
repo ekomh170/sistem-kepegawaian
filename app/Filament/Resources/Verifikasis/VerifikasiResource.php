@@ -43,22 +43,22 @@ class VerifikasiResource extends Resource
 
     public static function canCreate(): bool
     {
-        return Auth::user()?->role === 'admin';
+        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
     }
 
     public static function canEdit(Model $record): bool
     {
-        return Auth::user()?->role === 'admin';
+        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
     }
 
     public static function canDelete(Model $record): bool
     {
-        return Auth::user()?->role === 'admin';
+        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
     }
 
     public static function canDeleteAny(): bool
     {
-        return Auth::user()?->role === 'admin';
+        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
     }
 
     public static function form(Schema $schema): Schema
@@ -78,11 +78,25 @@ class VerifikasiResource extends Resource
                             ->unique(ignoreRecord: true),
                         Select::make('supervisor_id')
                             ->label('Supervisor')
-                            ->relationship('supervisor', 'nik')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nik} - " . ($record->user?->nama ?? 'Unknown'))
-                            ->searchable(['nik'])
-                            ->preload()
-                            ->required(),
+                            ->searchable()
+                            ->getSearchResultsUsing(fn (string $search) => \App\Models\Supervisor::with('user')
+                                ->when(filled($search), fn ($q) => $q->where(fn ($inner) => $inner
+                                    ->where('nik', 'like', "%{$search}%")
+                                    ->orWhereHas('user', fn ($u) => $u->where('nama', 'like', "%{$search}%"))
+                                ))
+                                ->limit(20)
+                                ->get()
+                                ->mapWithKeys(fn ($s) => [$s->id => "{$s->nik} - " . ($s->user?->nama ?? '-')])
+                                ->all()
+                            )
+                            ->getOptionLabelUsing(fn ($value) => ($s = \App\Models\Supervisor::with('user')->find($value))
+                                ? "{$s->nik} - " . ($s->user?->nama ?? '-')
+                                : $value
+                            )
+                            ->required()
+                            ->default(fn () => \App\Models\Supervisor::where('user_id', Auth::id())->first()?->id)
+                            ->disabled(fn () => Auth::user()?->role === 'supervisor')
+                            ->dehydrated(),
                         Select::make('status')
                             ->options([
                                 'pending' => 'Pending',
@@ -123,14 +137,14 @@ class VerifikasiResource extends Resource
             ->filters([])
             ->recordActions([
                 EditAction::make()
-                    ->visible(fn () => Auth::user()?->role === 'admin'),
+                    ->visible(fn () => in_array(Auth::user()?->role, ['admin', 'supervisor'], true)),
                 DeleteAction::make()
-                    ->visible(fn () => Auth::user()?->role === 'admin'),
+                    ->visible(fn () => in_array(Auth::user()?->role, ['admin', 'supervisor'], true)),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                ])->visible(fn () => Auth::user()?->role === 'admin'),
+                ])->visible(fn () => in_array(Auth::user()?->role, ['admin', 'supervisor'], true)),
             ]);
     }
 

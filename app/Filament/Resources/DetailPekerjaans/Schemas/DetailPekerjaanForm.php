@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\DetailPekerjaans\Schemas;
 
 use App\Models\Jadwal;
+use App\Models\Karyawan;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
@@ -17,10 +18,21 @@ class DetailPekerjaanForm
             ->components([
                 Select::make('karyawan_id')
                     ->label('Karyawan')
-                    ->relationship('karyawan', 'nik')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nik} - " . ($record->user?->nama ?? 'Unknown'))
-                    ->searchable(['nik'])
-                    ->preload()
+                    ->searchable()
+                    ->getSearchResultsUsing(fn (string $search) => Karyawan::with('user')
+                        ->when(filled($search), fn ($q) => $q->where(fn ($inner) => $inner
+                            ->where('nik', 'like', "%{$search}%")
+                            ->orWhereHas('user', fn ($u) => $u->where('nama', 'like', "%{$search}%"))
+                        ))
+                        ->limit(50)
+                        ->get()
+                        ->mapWithKeys(fn ($k) => [$k->id => "{$k->nik} - " . ($k->user?->nama ?? '-')])
+                        ->all()
+                    )
+                    ->getOptionLabelUsing(fn ($value) => ($k = Karyawan::with('user')->find($value))
+                        ? "{$k->nik} - " . ($k->user?->nama ?? '-')
+                        : $value
+                    )
                     ->required()
                     ->live(),
                 Select::make('jadwal_id')
@@ -41,10 +53,8 @@ class DetailPekerjaanForm
                             ])
                             ->toArray();
                     })
-                    ->searchable()
-                    ->preload()
                     ->required()
-                    ->helperText('Pilih jadwal kerja untuk detail pekerjaan ini. Hanya jadwal non-libur yang muncul.'),
+                    ->helperText('Pilih karyawan terlebih dahulu, lalu pilih jadwal kerja (hanya jadwal non-libur yang muncul).'),
                 TextInput::make('nama_lokasi')
                     ->required()
                     ->live(onBlur: true)

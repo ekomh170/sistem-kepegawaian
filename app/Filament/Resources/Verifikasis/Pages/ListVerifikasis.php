@@ -14,7 +14,7 @@ class ListVerifikasis extends ListRecords
     {
         return [
             CreateAction::make()
-                ->visible(fn () => \Illuminate\Support\Facades\Auth::user()?->role === 'admin'),
+                ->visible(fn () => in_array(\Illuminate\Support\Facades\Auth::user()?->role, ['admin', 'supervisor'], true)),
         ];
     }
 }

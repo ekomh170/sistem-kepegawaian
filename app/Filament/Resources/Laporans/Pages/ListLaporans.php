@@ -16,7 +16,7 @@ class ListLaporans extends ListRecords
     {
         return [
             CreateAction::make()
-                ->visible(fn (): bool => Auth::user()?->role === 'admin'),
+                ->visible(fn (): bool => in_array(Auth::user()?->role, ['admin', 'supervisor'], true)),
         ];
     }
 

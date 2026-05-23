@@ -6,6 +6,7 @@ use App\Filament\Resources\Presensis\Pages\CreatePresensi;
 use App\Filament\Resources\Presensis\Pages\EditPresensi;
 use App\Filament\Resources\Presensis\Pages\ListPresensis;
 use App\Filament\Resources\Presensis\Pages\ViewPresensi;
+use App\Models\Karyawan;
 use App\Models\Presensi;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
@@ -47,22 +48,22 @@ class PresensiResource extends Resource
 
     public static function canCreate(): bool
     {
-        return Auth::user()?->role === 'admin';
+        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
     }
 
     public static function canEdit(Model $record): bool
     {
-        return Auth::user()?->role === 'admin';
+        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
     }
 
     public static function canDelete(Model $record): bool
     {
-        return Auth::user()?->role === 'admin';
+        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
     }
 
     public static function canDeleteAny(): bool
     {
-        return Auth::user()?->role === 'admin';
+        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
     }
 
     public static function form(Schema $schema): Schema
@@ -75,10 +76,21 @@ class PresensiResource extends Resource
                     ->schema([
                         Select::make('karyawan_id')
                             ->label('Karyawan')
-                            ->relationship('karyawan', 'nik')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nik} - " . ($record->user?->nama ?? 'Unknown'))
-                            ->searchable(['nik'])
-                            ->preload()
+                            ->searchable()
+                            ->getSearchResultsUsing(fn (string $search) => Karyawan::with('user')
+                                ->when(filled($search), fn ($q) => $q->where(fn ($inner) => $inner
+                                    ->where('nik', 'like', "%{$search}%")
+                                    ->orWhereHas('user', fn ($u) => $u->where('nama', 'like', "%{$search}%"))
+                                ))
+                                ->limit(50)
+                                ->get()
+                                ->mapWithKeys(fn ($k) => [$k->id => "{$k->nik} - " . ($k->user?->nama ?? '-')])
+                                ->all()
+                            )
+                            ->getOptionLabelUsing(fn ($value) => ($k = Karyawan::with('user')->find($value))
+                                ? "{$k->nik} - " . ($k->user?->nama ?? '-')
+                                : $value
+                            )
                             ->required()
                             ->columnSpanFull(),
 
@@ -410,14 +422,14 @@ class PresensiResource extends Resource
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make()
-                    ->visible(fn () => Auth::user()?->role === 'admin'),
+                    ->visible(fn () => in_array(Auth::user()?->role, ['admin', 'supervisor'], true)),
                 DeleteAction::make()
-                    ->visible(fn () => Auth::user()?->role === 'admin'),
+                    ->visible(fn () => in_array(Auth::user()?->role, ['admin', 'supervisor'], true)),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                ])->visible(fn () => Auth::user()?->role === 'admin'),
+                ])->visible(fn () => in_array(Auth::user()?->role, ['admin', 'supervisor'], true)),
             ]);
     }
 

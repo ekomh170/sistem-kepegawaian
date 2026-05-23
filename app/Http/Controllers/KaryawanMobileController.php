@@ -64,11 +64,8 @@ class KaryawanMobileController extends Controller
             ->where('tanggal', $today)
             ->first();
 
-        if ($presensiHariIni && $presensiHariIni->jam_masuk) {
-            if (!$presensiHariIni->jam_keluar) {
-                return redirect()->route('karyawan.presensi.pulang');
-            }
-            return redirect()->route('karyawan.beranda');
+        if ($presensiHariIni && $presensiHariIni->jam_masuk && !$presensiHariIni->jam_keluar) {
+            return redirect()->route('karyawan.presensi.pulang');
         }
 
         return view('karyawan.presensi-masuk', [
@@ -221,6 +218,32 @@ class KaryawanMobileController extends Controller
             report($exception);
             return back()->withInput()->with('error', 'Terjadi kendala: ' . $exception->getMessage());
         }
+    }
+
+    /**
+     * Halaman detail bukti pekerjaan yang sudah diupload
+     */
+    public function detailBukti(int $detail_pekerjaan_id): View|RedirectResponse
+    {
+        $karyawan = $this->resolveKaryawan();
+
+        $tugas = DetailPekerjaan::with('jadwal')
+            ->where('id', $detail_pekerjaan_id)
+            ->where('karyawan_id', $karyawan->id)
+            ->firstOrFail();
+
+        $bukti = BuktiPekerjaan::where('detail_pekerjaan_id', $detail_pekerjaan_id)
+            ->where('karyawan_id', $karyawan->id)
+            ->first();
+
+        if (!$bukti) {
+            return redirect()->route('karyawan.tugas')->with('error', 'Bukti pekerjaan belum diupload.');
+        }
+
+        return view('karyawan.detail-bukti', [
+            'tugas' => $tugas,
+            'bukti' => $bukti,
+        ]);
     }
 
     /**

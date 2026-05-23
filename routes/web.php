@@ -83,6 +83,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/tugas', [KaryawanMobileController::class, 'daftarTugas'])->name('tugas');
             Route::get('/tugas/upload', [KaryawanMobileController::class, 'formUploadBukti'])->name('tugas.upload');
             Route::post('/tugas/upload', [KaryawanMobileController::class, 'submitUploadBukti'])->name('tugas.upload.submit');
+            Route::get('/tugas/bukti/{detail_pekerjaan_id}', [KaryawanMobileController::class, 'detailBukti'])->name('tugas.bukti.detail');
             Route::post('/tugas/terima', [KaryawanMobileController::class, 'terimaTugas'])->name('tugas.terima');
             Route::post('/tugas/tolak', [KaryawanMobileController::class, 'tolakTugas'])->name('tugas.tolak');
             Route::get('/jadwal', [KaryawanMobileController::class, 'jadwalMingguan'])->name('jadwal');

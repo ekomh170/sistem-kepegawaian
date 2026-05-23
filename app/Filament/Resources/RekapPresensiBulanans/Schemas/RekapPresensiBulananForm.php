@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\RekapPresensiBulanans\Schemas;
 
+use App\Models\Admin;
+use App\Models\Karyawan;
 use App\Models\Presensi;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -44,22 +46,44 @@ class RekapPresensiBulananForm
         return $schema
             ->components([
                 Select::make('karyawan_id')
-                    ->relationship('karyawan', 'nik')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nik} - " . ($record->user?->nama ?? 'Unknown'))
-                    ->searchable(['nik'])
-                    ->preload()
+                    ->searchable()
+                    ->getSearchResultsUsing(fn (string $search) => Karyawan::with('user')
+                        ->when(filled($search), fn ($q) => $q->where(fn ($inner) => $inner
+                            ->where('nik', 'like', "%{$search}%")
+                            ->orWhereHas('user', fn ($u) => $u->where('nama', 'like', "%{$search}%"))
+                        ))
+                        ->limit(50)
+                        ->get()
+                        ->mapWithKeys(fn ($k) => [$k->id => "{$k->nik} - " . ($k->user?->nama ?? '-')])
+                        ->all()
+                    )
+                    ->getOptionLabelUsing(fn ($value) => ($k = Karyawan::with('user')->find($value))
+                        ? "{$k->nik} - " . ($k->user?->nama ?? '-')
+                        : $value
+                    )
                     ->required()
                     ->live()
                     ->afterStateUpdated(function ($set, $get) {
                         self::hitungRekap($set, $get);
                     }),
                 Select::make('admin_id')
-                    ->relationship('admin', 'nik')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nik} - " . ($record->user?->nama ?? 'Unknown'))
-                    ->searchable(['nik'])
-                    ->preload()
                     ->label('Admin Pembuat')
-                    ->default(fn () => \App\Models\Admin::where('user_id', Auth::id())->first()?->id),
+                    ->searchable()
+                    ->getSearchResultsUsing(fn (string $search) => Admin::with('user')
+                        ->when(filled($search), fn ($q) => $q->where(fn ($inner) => $inner
+                            ->where('nik', 'like', "%{$search}%")
+                            ->orWhereHas('user', fn ($u) => $u->where('nama', 'like', "%{$search}%"))
+                        ))
+                        ->limit(20)
+                        ->get()
+                        ->mapWithKeys(fn ($a) => [$a->id => "{$a->nik} - " . ($a->user?->nama ?? '-')])
+                        ->all()
+                    )
+                    ->getOptionLabelUsing(fn ($value) => ($a = Admin::with('user')->find($value))
+                        ? "{$a->nik} - " . ($a->user?->nama ?? '-')
+                        : $value
+                    )
+                    ->default(fn () => Admin::where('user_id', Auth::id())->first()?->id),
                 TextInput::make('periode')
                     ->required()
                     ->placeholder('Contoh: 2026-05')

@@ -49,12 +49,12 @@ class RekapPresensiBulanansTable
             ])
             ->recordActions([
                 EditAction::make()
-                    ->visible(fn () => Auth::user()?->role === 'admin'),
+                    ->visible(fn () => in_array(Auth::user()?->role, ['admin', 'supervisor'], true)),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                ])->visible(fn () => Auth::user()?->role === 'admin'),
+                ])->visible(fn () => in_array(Auth::user()?->role, ['admin', 'supervisor'], true)),
             ]);
     }
 }

@@ -19,10 +19,21 @@ class BuktiPekerjaanForm
                     ->required(),
                 \Filament\Forms\Components\Select::make('karyawan_id')
                     ->label('Karyawan')
-                    ->relationship('karyawan', 'nik')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nik} - " . ($record->user?->nama ?? 'Unknown'))
-                    ->searchable(['nik'])
-                    ->preload()
+                    ->searchable()
+                    ->getSearchResultsUsing(fn (string $search) => \App\Models\Karyawan::with('user')
+                        ->when(filled($search), fn ($q) => $q->where(fn ($inner) => $inner
+                            ->where('nik', 'like', "%{$search}%")
+                            ->orWhereHas('user', fn ($u) => $u->where('nama', 'like', "%{$search}%"))
+                        ))
+                        ->limit(50)
+                        ->get()
+                        ->mapWithKeys(fn ($k) => [$k->id => "{$k->nik} - " . ($k->user?->nama ?? '-')])
+                        ->all()
+                    )
+                    ->getOptionLabelUsing(fn ($value) => ($k = \App\Models\Karyawan::with('user')->find($value))
+                        ? "{$k->nik} - " . ($k->user?->nama ?? '-')
+                        : $value
+                    )
                     ->required(),
                 \Filament\Forms\Components\FileUpload::make('foto_before')
                     ->image()

@@ -26,10 +26,10 @@ class JadwalForm
                             ->label('Karyawan')
                             ->searchable()
                             ->getSearchResultsUsing(fn (string $search) => Karyawan::with('user')
-                                ->where(function ($q) use ($search) {
-                                    $q->where('nik', 'like', "%{$search}%")
-                                      ->orWhereHas('user', fn ($u) => $u->where('nama', 'like', "%{$search}%"));
-                                })
+                                ->when(filled($search), fn ($q) => $q->where(fn ($inner) => $inner
+                                    ->where('nik', 'like', "%{$search}%")
+                                    ->orWhereHas('user', fn ($u) => $u->where('nama', 'like', "%{$search}%"))
+                                ))
                                 ->limit(50)
                                 ->get()
                                 ->mapWithKeys(fn ($k) => [$k->id => "{$k->nik} - " . ($k->user?->nama ?? '-')])
@@ -45,10 +45,10 @@ class JadwalForm
                             ->label('Admin Pembuat')
                             ->searchable()
                             ->getSearchResultsUsing(fn (string $search) => Admin::with('user')
-                                ->where(function ($q) use ($search) {
-                                    $q->where('nik', 'like', "%{$search}%")
-                                      ->orWhereHas('user', fn ($u) => $u->where('nama', 'like', "%{$search}%"));
-                                })
+                                ->when(filled($search), fn ($q) => $q->where(fn ($inner) => $inner
+                                    ->where('nik', 'like', "%{$search}%")
+                                    ->orWhereHas('user', fn ($u) => $u->where('nama', 'like', "%{$search}%"))
+                                ))
                                 ->limit(20)
                                 ->get()
                                 ->mapWithKeys(fn ($a) => [$a->id => "{$a->nik} - " . ($a->user?->nama ?? '-')])
