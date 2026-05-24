@@ -108,8 +108,8 @@ npm run dev
 | [docs/v2/08-kesesuaian-bab4.md](docs/v2/08-kesesuaian-bab4.md)                   | Matriks kesesuaian Class Diagram & BAB 4        |
 | [docs/v2/09-diagram-sistem.md](docs/v2/09-diagram-sistem.md)                     | Use Case Diagram & ERD                          |
 | [docs/v2/10-maintenance-future-plan.md](docs/v2/10-maintenance-future-plan.md)   | TODO list dan rencana pengembangan              |
-| [docs/v2/10-quick-fix-sat-set.md](docs/v2/10-quick-fix-sat-set.md)               | Cheat sheet quick-fix parameter sistem          |
-| [docs/v2/11-flow-penggunaan-karyawan.md](docs/v2/11-flow-penggunaan-karyawan.md) | Panduan penggunaan portal karyawan              |
+| [docs/v2/11-quick-fix-sat-set.md](docs/v2/11-quick-fix-sat-set.md)               | Cheat sheet quick-fix parameter sistem          |
+| [docs/v2/12-flow-penggunaan-karyawan.md](docs/v2/12-flow-penggunaan-karyawan.md) | Panduan penggunaan portal karyawan              |
 | [docs/progress_report.md](docs/progress_report.md)                               | Progress report per rilis (V2.1 → V2.3)         |
 | [docs/v1/FILAMENT_DEVELOPER_PLAYBOOK.md](docs/v1/FILAMENT_DEVELOPER_PLAYBOOK.md) | Referensi arsitektur Filament (masih valid)     |
 
