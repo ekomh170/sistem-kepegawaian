@@ -26,7 +26,8 @@
     </style>
 </head>
 <body>
-    <h2>Laporan Presensi Karyawan</h2>
+    <h2>Laporan Jumlah Presensi Per Karyawan</h2>
+    <p><strong>Jenis Laporan:</strong> {{ $jenis ?? 'Bulanan' }}</p>
     <p><strong>Periode:</strong> {{ $periode }}</p>
 
     <table>

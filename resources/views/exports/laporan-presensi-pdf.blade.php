@@ -21,7 +21,7 @@
 </head>
 <body>
     <h2>CV Boss Muda Mandiri</h2>
-    <p class="sub">Laporan Presensi Harian - Periode: {{ $periode }}</p>
+    <p class="sub">Laporan Presensi {{ $jenis ?? 'Harian' }} - Periode: {{ $periode }}</p>
 
     <table>
         <thead>

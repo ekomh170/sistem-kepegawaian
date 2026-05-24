@@ -76,6 +76,7 @@ class LaporanExportController extends Controller
     {
         $request->validate([
             'periode' => 'nullable|string|max:20',
+            'jenis' => 'nullable|string|max:20',
             'karyawan_id' => 'nullable|integer|exists:tb_karyawan,id',
         ]);
 
@@ -88,10 +89,11 @@ class LaporanExportController extends Controller
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.laporan-pdf', [
             'penggajians' => $rekapPresensiBulanans,
-            'periode' => $request->string('periode') ?: 'Semua Periode'
+            'periode' => $request->string('periode') ?: 'Semua Periode',
+            'jenis' => $request->string('jenis') ?: 'Bulanan',
         ]);
 
-        return $pdf->download('laporan-rekap-presensi-bulanan-' . now()->format('Ymd-His') . '.pdf');
+        return $pdf->download('laporan-jumlah-presensi-per-karyawan-' . now()->format('Ymd-His') . '.pdf');
     }
 
     // ========== EXPORT PRESENSI HARIAN ==========
@@ -187,6 +189,7 @@ class LaporanExportController extends Controller
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.laporan-presensi-pdf', [
             'presensis' => $presensis,
             'periode' => $request->string('periode') ?: 'Semua Periode',
+            'jenis' => $request->string('jenis') ?: 'Harian',
         ]);
 
         return $pdf->download('laporan-presensi-' . now()->format('Ymd-His') . '.pdf');
@@ -284,6 +287,7 @@ class LaporanExportController extends Controller
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.laporan-pekerjaan-pdf', [
             'pekerjaans' => $data,
             'periode' => $request->string('periode') ?: 'Semua Periode',
+            'jenis' => $request->string('jenis') ?: 'Bulanan',
         ]);
 
         return $pdf->download('laporan-rekap-pekerjaan-' . now()->format('Ymd-His') . '.pdf');

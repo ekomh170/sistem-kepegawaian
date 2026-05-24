@@ -21,7 +21,7 @@
 </head>
 <body>
     <h2>CV Boss Muda Mandiri</h2>
-    <p class="sub">Rekap Pekerjaan - Periode: {{ $periode }}</p>
+    <p class="sub">Rekap Pekerjaan {{ $jenis ?? 'Bulanan' }} - Periode: {{ $periode }}</p>
 
     <table>
         <thead>
