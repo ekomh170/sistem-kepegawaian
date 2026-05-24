@@ -31,7 +31,7 @@ class BuktiPekerjaanResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return Auth::user()?->role === 'admin';
     }
 
     public static function canCreate(): bool

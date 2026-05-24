@@ -22,7 +22,7 @@ class RekapPresensiBulananResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
 
-    protected static ?string $navigationLabel = 'Rekap Presensi Bulanan';
+    protected static ?string $navigationLabel = 'Laporan Jumlah Presensi Per Karyawan';
 
     protected static string|\UnitEnum|null $navigationGroup = 'Laporan';
 

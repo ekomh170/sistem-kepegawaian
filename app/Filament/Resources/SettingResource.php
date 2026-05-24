@@ -25,7 +25,7 @@ class SettingResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return Auth::user()?->role === 'admin';
     }
 
     public static function canCreate(): bool
@@ -55,7 +55,7 @@ class SettingResource extends Resource
                     ->disabled()
                     ->required(),
                 Textarea::make('value')
-                    ->label('Nilai')
+                    ->label('Keterangan')
                     ->required()
                     ->columnSpanFull(),
                 TextInput::make('group')
@@ -71,7 +71,7 @@ class SettingResource extends Resource
                     ->label('Pengaturan')
                     ->searchable(),
                 TextColumn::make('value')
-                    ->label('Nilai')
+                    ->label('Keterangan')
                     ->limit(50),
                 TextColumn::make('group')
                     ->badge()
