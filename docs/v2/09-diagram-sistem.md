@@ -19,11 +19,11 @@ flowchart LR
     subgraph PanelAdminSupervisor["Panel Admin & Supervisor (Filament)"]
         UC1["Kelola Akun & Data Master"]
         UC2["Kelola Penugasan (Detail Pekerjaan)"]
-        UC3["Monitoring Presensi Real-Time"]
+        UC3["Monitoring & Kelola Presensi"]
         UC4["Verifikasi Presensi Karyawan"]
         UC5["Review Bukti Pekerjaan"]
-        UC6["Kelola Rekap Presensi Bulanan"]
-        UC7["Export Laporan (CSV/Excel/PDF)"]
+        UC6["Kelola Laporan Jumlah Presensi Per Karyawan"]
+        UC7["Generate & Export Laporan (CSV/Excel/PDF)"]
     end
 
     subgraph PortalKaryawan["Portal Mobile Karyawan (Blade)"]
@@ -37,13 +37,13 @@ flowchart LR
     Admin --> UC1
     Admin --> UC2
     Admin --> UC3
-    Admin --> UC4
     Admin --> UC5
     Admin --> UC6
     Admin --> UC7
 
     Supervisor --> UC3
-    Supervisor --> UC5
+    Supervisor --> UC4
+    Supervisor --> UC6
     Supervisor --> UC7
 
     Karyawan --> UC8
@@ -211,5 +211,5 @@ erDiagram
     - `tb_detail_pekerjaan` mencatat tugas spesifik yang harus diterima/ditolak karyawan.
 3.  **Bukti per Tugas**: Relasi antara `tb_detail_pekerjaan` dan `tb_bukti_pekerjaan` memungkinkan karyawan mengunggah banyak laporan hasil kerja dalam satu hari sesuai jumlah tugas yang diberikan.
 4.  **Verifikasi Berjenjang**: Setiap log presensi harian diverifikasi oleh Supervisor melalui tabel `tb_verifikasi`.
-5.  **Rekap Presensi Bulanan**: Tabel `tb_rekap_presensi_bulanan` merekap potongan keterlambatan per bulan berdasarkan data presensi (hadir/telat/alpa). Kolom `gaji_pokok`/`gaji_bersih` tetap ada di DB namun tidak ditampilkan di UI sejak V2.2.
+5.  **Laporan Jumlah Presensi Per Karyawan**: Tabel `tb_rekap_presensi_bulanan` merekap potongan keterlambatan per bulan berdasarkan data presensi (hadir/telat/alpa). Nama UI direname dari "Rekap Presensi Bulanan" → **"Laporan Jumlah Presensi Per Karyawan"** sejak V2.3 (nama tabel di DB tetap). Kolom `gaji_pokok`/`gaji_bersih` tetap ada di DB namun tidak ditampilkan di UI sejak V2.2.
 6.  **Pengaturan Dinamis**: Tabel `tb_setting` menyimpan konfigurasi sistem secara key-value (lokasi kantor, radius, potongan, dll).

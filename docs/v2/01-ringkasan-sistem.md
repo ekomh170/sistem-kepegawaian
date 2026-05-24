@@ -1,10 +1,21 @@
 # Dokumentasi Sistem Informasi Kepegawaian
 
-## CV Boss Muda Mandiri — Versi 2.2
+## CV Boss Muda Mandiri — Versi 2.3
 
-**Tanggal Generate:** 22 Mei 2026 (V2.2)  
+**Tanggal Generate:** 24 Mei 2026 (V2.3)  
 **Framework:** Laravel 12 + Filament v5 + MySQL  
-**Status:** ✅ Stabil — V2.2 Fase 3 (Hapus Fitur Gaji, Fix Laporan Mingguan)
+**Status:** ✅ Stabil — V2.3 (Perampingan Hak Akses Supervisor, Rename Rekap, PDF Spesifikasi Jenis, Foto Masuk Tampil Setelah Check-out, Potongan Tanpa Cap)
+
+### Perubahan V2.3 (Ringkas)
+
+1. **Hak akses Supervisor** dirampingkan ke 4 modul: **Presensi (view)**, **Laporan (generate + export)**, **Verifikasi (CRUD)**, dan **Laporan Jumlah Presensi Per Karyawan (view-only tabel)**.
+2. **Jadwal & Detail Pekerjaan** default filter **hari ini** agar pekerjaan tidak menumpuk di tabel admin.
+3. **Urutan tabel Laporan** default by `tgl_generate` desc (terbaru paling atas).
+4. **Tipe `Laporan Jumlah Presensi Per Karyawan`** dikunci hanya jenis **Bulanan** (Harian/Mingguan/Tahunan tidak tersedia untuk tipe ini).
+5. **Rename** `Rekap Presensi Bulanan` → **`Laporan Jumlah Presensi Per Karyawan`** (di sidebar, form, badge, PDF, filter).
+6. **PDF Laporan** menampilkan **spesifikasi jenis** (Harian/Mingguan/Bulanan/Tahunan) di header — berlaku untuk ketiga template export.
+7. **Foto Masuk** hanya tampil setelah karyawan check-out (`jam_keluar` terisi) — berlaku di admin infolist & portal karyawan.
+8. **Potongan keterlambatan** = **Rp 10.000 / 10 menit**, flat cap Rp 20.000 untuk >30 menit **dihapus** (rumus murni tanpa batas atas).
 
 ---
 
@@ -12,11 +23,11 @@
 
 Sistem Informasi Kepegawaian CV Boss Muda Mandiri adalah aplikasi web berbasis Laravel yang dirancang untuk mengelola data karyawan, jadwal kerja, presensi harian (termasuk validasi GPS), verifikasi oleh supervisor, dan pelaporan/penggajian. Sistem ini mendukung **3 aktor utama** dengan antarmuka yang berbeda:
 
-| Aktor          | Antarmuka                | Akses                                        |
-| -------------- | ------------------------ | -------------------------------------------- |
-| **Admin**      | Panel Filament (Desktop) | CRUD penuh semua modul                       |
-| **Supervisor** | Panel Filament (Desktop) | View only operasional, view + export laporan |
-| **Karyawan**   | Portal Mobile (Blade)    | Presensi masuk/pulang, jadwal, riwayat       |
+| Aktor          | Antarmuka                | Akses                                                                                                            |
+| -------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| **Admin**      | Panel Filament (Desktop) | CRUD penuh semua modul                                                                                           |
+| **Supervisor** | Panel Filament (Desktop) | View presensi + Generate/Export laporan + Verifikasi presensi + View Laporan Jumlah Presensi Per Karyawan (V2.3) |
+| **Karyawan**   | Portal Mobile (Blade)    | Presensi masuk/pulang, jadwal, riwayat                                                                           |
 
 ---
 

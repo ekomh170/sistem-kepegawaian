@@ -8,22 +8,22 @@
 
 Sistem menggunakan **14 tabel migrasi** dengan prefiks `tb_` pada tabel bisnis utama.
 
-| No  | Nama Tabel                  | Deskripsi                                                   | Model                  |
-| --- | --------------------------- | ----------------------------------------------------------- | ---------------------- |
-| 1   | `tb_user`                   | Data autentikasi & profil semua pengguna                    | `User`                 |
-| 2   | `tb_admin`                  | Data tambahan admin (NIK, no_hp)                            | `Admin`                |
-| 3   | `tb_supervisor`             | Data tambahan supervisor (NIK, no_hp)                       | `Supervisor`           |
-| 4   | `tb_karyawan`               | Data lengkap karyawan (NIK, posisi, kontrak)                | `Karyawan`             |
-| 5   | `tb_jadwal`                 | Jadwal kerja per karyawan per tanggal                       | `Jadwal`               |
-| 6   | `tb_detail_pekerjaan`       | Daftar tugas per jadwal                                     | `DetailPekerjaan`      |
-| 7   | `tb_presensi`               | Catatan presensi harian (1x per hari)                       | `Presensi`             |
-| 8   | `tb_verifikasi`             | Hasil verifikasi supervisor terhadap presensi               | `Verifikasi`           |
-| 9   | `tb_bukti_pekerjaan`        | Foto before/after hasil kerja per tugas                     | `BuktiPekerjaan`       |
-| 10  | `tb_rekap_presensi_bulanan` | Rekap presensi bulanan (potongan keterlambatan) per periode | `RekapPresensiBulanan` |
-| 11  | `tb_laporan`                | Metadata laporan yang di-generate                           | `Laporan`              |
-| 12  | `tb_setting`                | Pengaturan sistem (key-value)                               | `Setting`              |
-| 13  | `sessions`                  | Session management Laravel                                  | -                      |
-| 14  | `cache`                     | Cache framework                                             | -                      |
+| No  | Nama Tabel                  | Deskripsi                                                                                                                                 | Model                  |
+| --- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| 1   | `tb_user`                   | Data autentikasi & profil semua pengguna                                                                                                  | `User`                 |
+| 2   | `tb_admin`                  | Data tambahan admin (NIK, no_hp)                                                                                                          | `Admin`                |
+| 3   | `tb_supervisor`             | Data tambahan supervisor (NIK, no_hp)                                                                                                     | `Supervisor`           |
+| 4   | `tb_karyawan`               | Data lengkap karyawan (NIK, posisi, kontrak)                                                                                              | `Karyawan`             |
+| 5   | `tb_jadwal`                 | Jadwal kerja per karyawan per tanggal                                                                                                     | `Jadwal`               |
+| 6   | `tb_detail_pekerjaan`       | Daftar tugas per jadwal                                                                                                                   | `DetailPekerjaan`      |
+| 7   | `tb_presensi`               | Catatan presensi harian (1x per hari)                                                                                                     | `Presensi`             |
+| 8   | `tb_verifikasi`             | Hasil verifikasi supervisor terhadap presensi                                                                                             | `Verifikasi`           |
+| 9   | `tb_bukti_pekerjaan`        | Foto before/after hasil kerja per tugas                                                                                                   | `BuktiPekerjaan`       |
+| 10  | `tb_rekap_presensi_bulanan` | Rekap presensi bulanan (potongan keterlambatan) per periode — di UI ditampilkan sebagai **"Laporan Jumlah Presensi Per Karyawan"** (V2.3) | `RekapPresensiBulanan` |
+| 11  | `tb_laporan`                | Metadata laporan yang di-generate                                                                                                         | `Laporan`              |
+| 12  | `tb_setting`                | Pengaturan sistem (key-value)                                                                                                             | `Setting`              |
+| 13  | `sessions`                  | Session management Laravel                                                                                                                | -                      |
+| 14  | `cache`                     | Cache framework                                                                                                                           | -                      |
 
 ---
 

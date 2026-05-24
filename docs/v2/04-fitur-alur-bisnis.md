@@ -69,24 +69,29 @@ _Dilakukan untuk setiap tugas yang diberikan Admin._
 
 ## 3. AKTOR: SUPERVISOR
 
-Supervisor bertugas melakukan **monitoring dan pengawasan** terhadap kinerja karyawan di lapangan. Supervisor **hanya memiliki akses view** (tanpa tombol Buat, Edit, atau Hapus) di seluruh modul Operasional.
+Supervisor bertugas **mengelola presensi karyawan, generate laporan, melakukan verifikasi presensi, dan memantau Laporan Jumlah Presensi Per Karyawan**. Sejak V2.3, hak akses supervisor diperketat menjadi 4 modul inti — modul Karyawan, Jadwal, Detail Pekerjaan, Bukti Pekerjaan, dan Setting tidak tampil di sidebar supervisor.
 
-### 3.1 Monitoring Kehadiran (View Only)
+### 3.1 Kelola Presensi (View Only)
 
 - Melihat daftar presensi harian karyawan (jam masuk, jam pulang, status, potongan).
-- Melihat detail verifikasi yang sudah dilakukan.
-- **Tidak bisa** membuat, mengedit, atau menghapus data presensi maupun verifikasi.
+- **Tidak bisa** membuat, mengedit, atau menghapus data presensi.
 
-### 3.2 Monitoring Penugasan (View Only)
+### 3.2 Generate Laporan (Create + Export)
 
-- Melihat daftar tugas (Detail Pekerjaan) yang dibuat oleh admin.
-- Melihat bukti pekerjaan (foto before/after) yang diunggah karyawan.
-- **Tidak bisa** membuat tugas baru, mengedit, atau menghapus data.
+- Membuat laporan baru (Presensi Harian / Laporan Jumlah Presensi Per Karyawan / Rekap Pekerjaan).
+- Melakukan export per laporan (CSV / Excel / PDF) — PDF menampilkan **spesifikasi jenis laporan** (Harian/Mingguan/Bulanan/Tahunan) di header.
+- **Tidak bisa** mengedit atau menghapus laporan yang sudah dibuat (hanya admin).
 
-### 3.3 Laporan (View + Export)
+### 3.3 Verifikasi Presensi (Full CRUD)
 
-- Melihat daftar laporan dan melakukan export (CSV/Excel/PDF).
-- **Tidak bisa** membuat atau mengedit laporan.
+- Membuat record verifikasi (Disetujui / Ditolak) terhadap presensi karyawan.
+- Mengedit catatan & alasan tolak.
+- Menghapus record verifikasi.
+
+### 3.4 Laporan Jumlah Presensi Per Karyawan (View Only)
+
+- Melihat tabel rekap kehadiran per karyawan per periode (jumlah hadir, telat, alpa, total potongan).
+- **Tidak bisa** membuat, mengedit, atau menghapus rekap — tombol Create/Edit/Delete/BulkDelete disembunyikan untuk supervisor.
 
 ---
 
@@ -139,8 +144,15 @@ Sistem memvalidasi koordinat karyawan terhadap titik pusat:
 
 - **Jam Standar**: 08:00 WIB.
 - **Toleransi**: 10 Menit (Hingga 08:10).
-- **Potongan**: Rp 10.000 setiap kelipatan 10 menit keterlambatan. Flat Rp 20.000 jika >30 menit.
+- **Potongan**: **Rp 10.000 per blok 10 menit keterlambatan**, dihitung setelah toleransi. **Tidak ada batas atas** — semakin telat semakin besar potongan.
+    - 0–10 menit → Rp 0 (toleransi).
+    - 11–20 menit → Rp 10.000.
+    - 21–30 menit → Rp 20.000.
+    - 31–40 menit → Rp 30.000.
+    - 41–50 menit → Rp 40.000, dan seterusnya tanpa cap.
 - Potongan dicatat di `presensi.potongan_terlambat` dan diakumulasi di rekap bulanan. **Fitur tampilan gaji tidak aktif sejak V2.2.**
+
+> **Catatan V2.3:** Flat cap Rp 20.000 untuk keterlambatan >30 menit telah dihapus. Rumus murni Rp 10.000/10 menit tanpa batas atas.
 
 ### 5.3 Status Pekerjaan
 

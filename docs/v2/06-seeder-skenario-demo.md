@@ -40,12 +40,17 @@ Skenario ini mencakup alur lengkap dari penugasan hingga verifikasi akhir.
 4. Isi keterangan: "Pemasangan kabel selesai dan area dibersihkan".
 5. Klik **Kirim**.
 
-### Skenario 5: Supervisor Memverifikasi
+### Skenario 5: Supervisor Memverifikasi & Generate Laporan (V2.3)
 
 1. Login sebagai `supervisor@example.com`.
-2. Buka menu **Verifikasi** untuk menyetujui absensi harian karyawan.
-3. Buka menu **Bukti Pekerjaan** untuk me-review hasil kerja (foto before/after).
-4. Supervisor memberikan status **Disetujui** pada bukti kerja yang valid.
+2. Sidebar berisi 4 modul: **Presensi**, **Laporan**, **Verifikasi**, **Laporan Jumlah Presensi Per Karyawan**.
+3. Buka menu **Verifikasi** untuk menyetujui absensi harian karyawan (CRUD).
+4. Buka menu **Presensi** untuk melihat detail kehadiran harian (view-only, tidak bisa edit).
+5. Buka menu **Laporan** → klik **Create New** → pilih tipe (Presensi Harian / Laporan Jumlah Presensi Per Karyawan / Rekap Pekerjaan) → tentukan jenis & periode → **Save**.
+6. Pada baris laporan yang baru dibuat, klik tombol **PDF** untuk download — header PDF menampilkan spesifikasi jenis laporan.
+7. Buka menu **Laporan Jumlah Presensi Per Karyawan** untuk memantau tabel rekap kehadiran per karyawan per periode — view-only (tombol Create/Edit/Delete disembunyikan).
+
+> **Catatan V2.3:** Menu **Bukti Pekerjaan** tidak lagi diakses Supervisor — sekarang hanya admin yang me-review bukti pekerjaan. Menu **Laporan Jumlah Presensi Per Karyawan** dibuka kembali untuk Supervisor dengan akses view-only sejak revisi V2.3.
 
 ---
 

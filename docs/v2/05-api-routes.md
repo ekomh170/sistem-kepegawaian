@@ -27,14 +27,19 @@
 
 ## 2. Route Export (Admin & Supervisor)
 
-| Method | URI                              | Name                            | Controller                                    | Deskripsi                              |
-| ------ | -------------------------------- | ------------------------------- | --------------------------------------------- | -------------------------------------- |
-| GET    | `/laporan/export/csv`            | `laporan.export.csv`            | `LaporanExportController@exportCsv`           | Export rekap presensi bulanan ke CSV   |
-| GET    | `/laporan/export/excel`          | `laporan.export.excel`          | `LaporanExportController@exportExcel`         | Export rekap presensi bulanan ke Excel |
-| GET    | `/laporan/export/pdf`            | `laporan.export.pdf`            | `LaporanExportController@exportPdf`           | Export rekap presensi bulanan ke PDF   |
-| GET    | `/laporan/export-presensi/csv`   | `laporan.export-presensi.csv`   | `LaporanExportController@exportPresensiCsv`   | Export presensi harian ke CSV          |
-| GET    | `/laporan/export-presensi/excel` | `laporan.export-presensi.excel` | `LaporanExportController@exportPresensiExcel` | Export presensi harian ke Excel        |
-| GET    | `/laporan/export-presensi/pdf`   | `laporan.export-presensi.pdf`   | `LaporanExportController@exportPresensiPdf`   | Export presensi harian ke PDF          |
+Semua endpoint export menerima query param `?periode=...&jenis=...` — `jenis` (Harian/Mingguan/Bulanan/Tahunan) ditampilkan di header PDF sejak V2.3.
+
+| Method | URI                               | Name                             | Controller                                     | Deskripsi                                                |
+| ------ | --------------------------------- | -------------------------------- | ---------------------------------------------- | -------------------------------------------------------- |
+| GET    | `/laporan/export/csv`             | `laporan.export.csv`             | `LaporanExportController@exportCsv`            | Export Laporan Jumlah Presensi Per Karyawan ke CSV       |
+| GET    | `/laporan/export/excel`           | `laporan.export.excel`           | `LaporanExportController@exportExcel`          | Export Laporan Jumlah Presensi Per Karyawan ke Excel     |
+| GET    | `/laporan/export/pdf`             | `laporan.export.pdf`             | `LaporanExportController@exportPdf`            | Export Laporan Jumlah Presensi Per Karyawan ke PDF       |
+| GET    | `/laporan/export-presensi/csv`    | `laporan.export-presensi.csv`    | `LaporanExportController@exportPresensiCsv`    | Export presensi harian ke CSV                            |
+| GET    | `/laporan/export-presensi/excel`  | `laporan.export-presensi.excel`  | `LaporanExportController@exportPresensiExcel`  | Export presensi harian ke Excel                          |
+| GET    | `/laporan/export-presensi/pdf`    | `laporan.export-presensi.pdf`    | `LaporanExportController@exportPresensiPdf`    | Export presensi harian ke PDF (header tampilkan `jenis`) |
+| GET    | `/laporan/export-pekerjaan/csv`   | `laporan.export-pekerjaan.csv`   | `LaporanExportController@exportPekerjaanCsv`   | Export rekap pekerjaan ke CSV                            |
+| GET    | `/laporan/export-pekerjaan/excel` | `laporan.export-pekerjaan.excel` | `LaporanExportController@exportPekerjaanExcel` | Export rekap pekerjaan ke Excel                          |
+| GET    | `/laporan/export-pekerjaan/pdf`   | `laporan.export-pekerjaan.pdf`   | `LaporanExportController@exportPekerjaanPdf`   | Export rekap pekerjaan ke PDF (header tampilkan `jenis`) |
 
 ---
 
@@ -61,7 +66,7 @@ Akses melalui `/admin/...` dikendalikan secara otomatis oleh Filament untuk mode
 - `PresensiResource` (Log Harian + Auto-kalkulasi)
 - `VerifikasiResource` (Review)
 - `BuktiPekerjaanResource` (Review Hasil Kerja)
-- `RekapPresensiBulananResource` (Rekap Presensi Bulanan — potongan keterlambatan)
+- `RekapPresensiBulananResource` (Navigation label: **"Laporan Jumlah Presensi Per Karyawan"** sejak V2.3 — potongan keterlambatan)
 - `LaporanResource` (+ Export per record)
 - `SettingResource` (Key-Value)
 - `LokasiKantorPage` (Custom Page + MapPicker)

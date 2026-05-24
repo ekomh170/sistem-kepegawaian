@@ -78,11 +78,14 @@ Halaman khusus untuk mengelola penugasan lapangan:
 
 ### 2.6 Form Laporan (LaporanResource)
 
-- Tipe: Presensi Harian / Rekap Presensi Bulanan / Rekap Pekerjaan.
+- Tipe: Presensi Harian / **Laporan Jumlah Presensi Per Karyawan** / Rekap Pekerjaan.
 - Jenis: Harian / **Mingguan** / Bulanan / Tahunan → format periode otomatis berubah.
     - Mingguan: input tanggal awal minggu (YYYY-MM-DD), data diambil 7 hari ke depan.
+    - **Pengecualian (V2.3):** Saat tipe = `Laporan Jumlah Presensi Per Karyawan`, pilihan jenis dikunci hanya ke **Bulanan** (Harian / Mingguan / Tahunan tidak tersedia untuk tipe ini).
+- Tabel laporan **default sort by `tgl_generate` desc** — laporan terbaru tampil paling atas.
 - Judul auto-generated (hidden field).
 - Export per record: 3 tombol (CSV, Excel, PDF) di tiap baris tabel.
+- **PDF (V2.3):** Header PDF menampilkan **spesifikasi jenis laporan** (Harian / Mingguan / Bulanan / Tahunan) di samping periode.
 - Kolom **Gaji Pokok** dan **Gaji Bersih** dihapus dari semua format export sejak V2.2.
 
 ### 2.6 Form Detail Pekerjaan
@@ -90,27 +93,37 @@ Halaman khusus untuk mengelola penugasan lapangan:
 - **Map Picker**: Penentuan lokasi visual menggunakan OpenStreetMap.
 - **View**: Infolist 4 section (Karyawan, Jadwal, Lokasi, Detail Tugas) dengan badge status.
 - **Alasan Penolakan**: Hanya muncul jika status = ditolak.
+- **Tabel (V2.3):** Default filter tanggal jadwal = **hari ini** agar tidak menumpuk pekerjaan lama. Admin bisa hapus filter untuk lihat semua tanggal.
 
-### 2.7 Presensi (Auto-kalkulasi)
+### 2.7 Jadwal (Default Filter Hari Ini)
+
+- **Tabel (V2.3):** Default filter `tanggal_kerja = today()` agar fokus pada jadwal kerja hari ini saja. Admin dapat menghapus filter untuk melihat seluruh tanggal.
+
+### 2.8 Presensi (Auto-kalkulasi)
 
 - Live hitung durasi, keterlambatan, dan potongan saat form diisi.
 - Map Picker untuk lokasi GPS check-in.
+- **Foto Masuk (V2.3):** Pada halaman View (infolist admin) maupun portal karyawan, **foto masuk hanya tampil setelah karyawan melakukan check-out** (`jam_keluar` terisi). Sebelum check-out, hanya bukti tekstual (jam, lokasi) yang muncul untuk menjaga konsistensi visual dengan foto keluar.
 
-### 2.8 Verifikasi & Review
+### 2.9 Verifikasi & Review
 
-- **Menu Verifikasi**: Fokus pada validasi kehadiran harian (jam masuk & lokasi kantor pusat).
-- **Menu Bukti Pekerjaan**: Fokus pada review hasil kerja teknis (foto before/after dan keterangan kerja).
+- **Menu Verifikasi**: Fokus pada validasi kehadiran harian (jam masuk & lokasi kantor pusat). **Khusus role Supervisor** — admin tidak melihat menu ini.
+- **Menu Bukti Pekerjaan**: Fokus pada review hasil kerja teknis (foto before/after dan keterangan kerja). **Khusus role Admin** (V2.3 — supervisor tidak lagi mengakses menu ini).
 
-### 2.9 Pengaturan Lokasi Kantor
+### 2.10 Pengaturan Lokasi Kantor
 
 - Halaman custom `LokasiKantorPage` dengan peta interaktif (MapPicker).
 - Set koordinat kantor pusat + radius geofence.
 - Tersimpan di `tb_setting`: `kantor_lat`, `kantor_lng`, `kantor_radius`.
 
-### 2.10 Hak Akses Supervisor (View Only)
+### 2.11 Hak Akses Supervisor (V2.3)
 
-- Seluruh modul Operasional: tombol Buat, Edit, Hapus, dan Bulk Delete **disembunyikan**.
-- Supervisor hanya bisa melihat data tanpa melakukan perubahan.
+- Sidebar supervisor berisi 4 modul inti:
+    - **Presensi** (view-only)
+    - **Laporan** (generate + export)
+    - **Verifikasi** (full CRUD)
+    - **Laporan Jumlah Presensi Per Karyawan** (view-only tabel — tombol Create/Edit/Delete/BulkDelete disembunyikan)
+- Modul Karyawan, Jadwal, Detail Pekerjaan, Bukti Pekerjaan, dan Pengaturan **tidak tampil** di sidebar supervisor.
 
 ---
 
