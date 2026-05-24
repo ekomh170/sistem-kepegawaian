@@ -76,7 +76,7 @@ class LaporanResource extends Resource
                             ->label('Tipe Laporan')
                             ->options([
                                 'presensi' => '📋 Laporan Presensi (Detail Harian)',
-                                'rekap_presensi_bulanan' => '💰 Laporan Rekap Presensi Bulanan',
+                                'rekap_presensi_bulanan' => '📊 Laporan Jumlah Presensi Per Karyawan',
                                 'rekap_pekerjaan' => '📦 Rekap Pekerjaan',
                             ])
                             ->required()
@@ -87,7 +87,12 @@ class LaporanResource extends Resource
                                     $judul = strtolower($record->judul);
                                     if (str_contains($judul, 'pekerjaan')) {
                                         $set('tipe_laporan', 'rekap_pekerjaan');
-                                    } elseif (str_contains($judul, 'rekap') || str_contains($judul, 'bulanan') || str_contains($judul, 'potongan')) {
+                                    } elseif (
+                                        str_contains($judul, 'jumlah presensi') ||
+                                        str_contains($judul, 'rekap') ||
+                                        str_contains($judul, 'bulanan') ||
+                                        str_contains($judul, 'potongan')
+                                    ) {
                                         $set('tipe_laporan', 'rekap_presensi_bulanan');
                                     } else {
                                         $set('tipe_laporan', 'presensi');
@@ -95,21 +100,31 @@ class LaporanResource extends Resource
                                 }
                             })
                             ->afterStateUpdated(function ($set, $get) {
+                                if ($get('tipe_laporan') === 'rekap_presensi_bulanan') {
+                                    $set('jenis', 'Bulanan');
+                                }
                                 self::generateJudul($set, $get);
                             })
                             ->columnSpanFull(),
 
                         Select::make('jenis')
                             ->label('Jenis Laporan')
-                            ->options([
-                                'Harian' => '📅 Harian',
-                                'Mingguan' => '📆 Mingguan',
-                                'Bulanan' => '📊 Bulanan',
-                                'Tahunan' => '📈 Tahunan',
-                            ])
+                            ->options(fn ($get) => $get('tipe_laporan') === 'rekap_presensi_bulanan'
+                                ? ['Bulanan' => '📊 Bulanan']
+                                : [
+                                    'Harian' => '📅 Harian',
+                                    'Mingguan' => '📆 Mingguan',
+                                    'Bulanan' => '📊 Bulanan',
+                                    'Tahunan' => '📈 Tahunan',
+                                ]
+                            )
                             ->required()
                             ->default('Bulanan')
                             ->live()
+                            ->helperText(fn ($get) => $get('tipe_laporan') === 'rekap_presensi_bulanan'
+                                ? 'Laporan jumlah presensi per karyawan hanya tersedia untuk periode Bulanan.'
+                                : null
+                            )
                             ->afterStateUpdated(function ($set, $get) {
                                 self::generateJudul($set, $get);
                             }),
@@ -173,8 +188,8 @@ class LaporanResource extends Resource
         if (str_contains($judul, 'pekerjaan')) {
             return 'Rekap Pekerjaan';
         }
-        if (str_contains($judul, 'rekap') || str_contains($judul, 'bulanan')) {
-            return 'Rekap Presensi Bulanan';
+        if (str_contains($judul, 'jumlah presensi') || str_contains($judul, 'rekap') || str_contains($judul, 'bulanan')) {
+            return 'Jumlah Presensi Per Karyawan';
         }
         return 'Presensi Harian';
     }
@@ -182,15 +197,17 @@ class LaporanResource extends Resource
     private static function resolveExportRoute(Laporan $record, string $format): string
     {
         $judul = strtolower($record->judul);
-        $params = ['periode' => $record->periode];
+        $params = ['periode' => $record->periode, 'jenis' => $record->jenis];
 
         if (str_contains($judul, 'pekerjaan')) {
             return route("laporan.export-pekerjaan.{$format}", $params);
         }
 
         if (str_contains($judul, 'presensi')) {
-            $isBulanan = str_contains($judul, 'rekap') || str_contains($judul, 'bulanan');
-            return $isBulanan
+            $isRekapBulanan = str_contains($judul, 'jumlah presensi') ||
+                              str_contains($judul, 'rekap') ||
+                              str_contains($judul, 'bulanan');
+            return $isRekapBulanan
                 ? route("laporan.export.{$format}", $params)
                 : route("laporan.export-presensi.{$format}", $params);
         }
@@ -210,7 +227,7 @@ class LaporanResource extends Resource
 
         $tipeName = match ($tipe) {
             'presensi' => 'Laporan Presensi',
-            'rekap_presensi_bulanan' => 'Laporan Rekap Presensi Bulanan',
+            'rekap_presensi_bulanan' => 'Laporan Jumlah Presensi Per Karyawan',
             'rekap_pekerjaan' => 'Laporan Rekap Pekerjaan',
             default => 'Laporan',
         };
@@ -233,10 +250,10 @@ class LaporanResource extends Resource
                     ->badge()
                     ->state(fn (Laporan $record): string => self::resolveTipeLabel($record->judul))
                     ->color(fn (string $state): string => match ($state) {
-                        'Presensi Harian'          => 'info',
-                        'Rekap Presensi Bulanan'   => 'success',
-                        'Rekap Pekerjaan'          => 'warning',
-                        default                    => 'gray',
+                        'Presensi Harian'                => 'info',
+                        'Jumlah Presensi Per Karyawan'   => 'success',
+                        'Rekap Pekerjaan'                => 'warning',
+                        default                          => 'gray',
                     }),
                 TextColumn::make('jenis')
                     ->badge()
@@ -264,18 +281,19 @@ class LaporanResource extends Resource
                     ->label('Tipe Laporan')
                     ->options([
                         'presensi'               => 'Presensi Harian',
-                        'rekap_presensi_bulanan' => 'Rekap Presensi Bulanan',
+                        'rekap_presensi_bulanan' => 'Laporan Jumlah Presensi Per Karyawan',
                         'rekap_pekerjaan'        => 'Rekap Pekerjaan',
                     ])
                     ->query(fn (Builder $query, array $data): Builder => match ($data['value'] ?? null) {
                         'rekap_pekerjaan'        => $query->where('judul', 'like', '%pekerjaan%'),
                         'rekap_presensi_bulanan' => $query->where(fn ($q) => $q
-                            ->where('judul', 'like', '%rekap%')
-                            ->orWhere('judul', 'like', '%bulanan%')
+                            ->where('judul', 'like', '%jumlah presensi%')
+                            ->orWhere('judul', 'like', '%rekap%')
+                            ->orWhere('judul', 'like', '%potongan%')
                         )->where('judul', 'not like', '%pekerjaan%'),
                         'presensi'               => $query->where('judul', 'like', '%presensi%')
+                            ->where('judul', 'not like', '%jumlah presensi%')
                             ->where('judul', 'not like', '%rekap%')
-                            ->where('judul', 'not like', '%bulanan%')
                             ->where('judul', 'not like', '%pekerjaan%'),
                         default                  => $query,
                     }),
