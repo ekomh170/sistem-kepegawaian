@@ -6,8 +6,11 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class DetailPekerjaansTable
 {
@@ -51,7 +54,24 @@ class DetailPekerjaansTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([])
+            ->filters([
+                Filter::make('tanggal_jadwal')
+                    ->label('Tanggal Jadwal')
+                    ->form([
+                        DatePicker::make('tanggal')
+                            ->label('Tanggal Jadwal')
+                            ->default(today()),
+                    ])
+                    ->query(fn (Builder $query, array $data): Builder =>
+                        $query->when($data['tanggal'], fn ($q, $tgl) =>
+                            $q->whereHas('jadwal', fn ($j) => $j->whereDate('tanggal_kerja', $tgl))
+                        )
+                    )
+                    ->default(['tanggal' => today()->toDateString()])
+                    ->indicateUsing(fn (array $data): ?string =>
+                        $data['tanggal'] ? 'Tanggal: ' . \Carbon\Carbon::parse($data['tanggal'])->format('d M Y') : null
+                    ),
+            ])
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make()
