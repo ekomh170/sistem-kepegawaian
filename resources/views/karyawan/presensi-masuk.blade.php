@@ -16,7 +16,7 @@
                 @endunless
             </div>
 
-            @if ($presensiHariIni->foto_masuk)
+            @if ($presensiHariIni->jam_keluar && $presensiHariIni->foto_masuk)
                 <div style="margin-bottom:16px; text-align:center;">
                     <p style="font-size:0.85em; color:#666; margin-bottom:6px;">📸 Foto Masuk</p>
                     <img src="{{ asset('storage/' . $presensiHariIni->foto_masuk) }}"

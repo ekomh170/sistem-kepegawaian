@@ -50,15 +50,6 @@
                 </p>
             </div>
 
-            @if ($presensiHariIni->foto_masuk)
-                <div style="margin-bottom:16px; text-align:center;">
-                    <p style="font-size:0.85em; color:#666; margin-bottom:6px;">📸 Foto Masuk</p>
-                    <img src="{{ asset('storage/' . $presensiHariIni->foto_masuk) }}"
-                         alt="Foto Masuk"
-                         style="width:100%; max-width:320px; border-radius:10px; border:2px solid #10b981; object-fit:cover;">
-                </div>
-            @endif
-
             <form method="POST" action="{{ route('karyawan.presensi.pulang.submit') }}" enctype="multipart/form-data">
                 @csrf
 

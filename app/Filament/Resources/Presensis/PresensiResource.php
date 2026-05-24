@@ -163,7 +163,7 @@ class PresensiResource extends Resource
                             ->dehydrated()
                             ->formatStateUsing(fn ($state) => $state !== null ? number_format((float) $state, 0, ',', '.') : '0')
                             ->dehydrateStateUsing(fn ($state) => (float) str_replace('.', '', $state ?? '0'))
-                            ->helperText('Toleransi 10 menit, Rp 10.000 per blok 10 menit, Rp 20.000 jika >30 menit'),
+                            ->helperText('Toleransi 10 menit pertama, Rp 10.000 per 10 menit keterlambatan'),
                     ]),
 
                 Section::make('Foto & Lokasi Masuk')
@@ -301,7 +301,8 @@ class PresensiResource extends Resource
                             ->label('Foto Masuk')
                             ->disk('public')
                             ->height(200)
-                            ->placeholder('Belum ada foto masuk'),
+                            ->placeholder('Belum ada foto masuk')
+                            ->visible(fn ($record) => $record?->jam_keluar !== null),
                         ImageEntry::make('foto_keluar')
                             ->label('Foto Keluar')
                             ->disk('public')
