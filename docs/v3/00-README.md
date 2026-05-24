@@ -11,7 +11,7 @@
 
 ## Tentang Folder Ini
 
-Folder `docs/v3/` berisi **dokumen perencanaan migrasi** dari arsitektur V2 (12 tabel) ke V3 (6 tabel inti + 1 pendukung). Semua dokumen di sini adalah **rencana**, bukan dokumentasi sistem yang sudah jalan. Untuk dokumentasi sistem live, lihat [docs/v2/](../v2/).
+Folder `docs/v3/` berisi **dokumen perencanaan dan spesifikasi** arsitektur V3 — 6 tabel inti + 1 tabel pendukung. Semua dokumen di sini menjelaskan target struktur V3 (DB schema, class diagram OOP, RBAC, alur bisnis, migration plan, refactor plan, trade-off, dan checklist implementasi). Mulai pembelajaran dari [01-ringkasan-perubahan.md](01-ringkasan-perubahan.md).
 
 ERD V3 lahir dari kebutuhan **menyederhanakan skema database** tanpa mengubah fitur — bukan rewrite total, hanya restrukturisasi tabel agar konsisten dan ramping.
 

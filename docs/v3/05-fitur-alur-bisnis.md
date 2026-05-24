@@ -6,9 +6,9 @@
 
 ## 1. Catatan Penting
 
-**Tidak ada perubahan fitur dari V2.3.** Dokumen ini hanya menulis ulang alur bisnis dengan **referensi tabel/class V3** (mis. `tb_jadwal_pekerjaan` bukan `tb_jadwal`, `user_id` bukan `karyawan_id`, dll).
+Dokumen ini menjelaskan alur bisnis **target arsitektur V3** dengan referensi tabel/class V3 (mis. `tb_jadwal_pekerjaan`, `user_id`, `tb_laporan_presensi`, dll). Semua flow di sini self-contained — tidak perlu cross-reference ke dokumen lain.
 
-Untuk dokumentasi alur V2.3 yang masih akurat secara fungsional, lihat [docs/v2/04-fitur-alur-bisnis.md](../v2/04-fitur-alur-bisnis.md).
+Untuk skema database lengkap, lihat [02-database-schema.md](02-database-schema.md). Untuk class diagram OOP, lihat [03-class-diagram-oop.md](03-class-diagram-oop.md).
 
 ---
 

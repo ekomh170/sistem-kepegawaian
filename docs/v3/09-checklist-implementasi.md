@@ -264,11 +264,11 @@ Login sebagai 3 role, lakukan operasi end-to-end:
 
 ## 13. Fase 11 — Update Dokumentasi
 
-- [ ] Update [docs/v2/01-ringkasan-sistem.md](../v2/01-ringkasan-sistem.md) → tandai versi sebagai "superseded by V3"
+- [ ] Arsipkan dokumentasi versi sebelumnya (tandai `superseded by V3` di header masing-masing file dokumentasi versi lama yang masih ada di repo).
 - [ ] Update [README.md](../../README.md):
     - [ ] Bump versi ke V3
-    - [ ] Update deskripsi 12 tabel → 7 tabel
-    - [ ] Tambah link ke docs/v3/
+    - [ ] Update deskripsi jumlah tabel → 7 tabel (6 inti + 1 pendukung)
+    - [ ] Tambah link ke folder `docs/v3/` sebagai dokumentasi aktif
 - [ ] Update [CLAUDE.md](../../CLAUDE.md):
     - [ ] Konvensi database: tabel V3 (7 tabel)
     - [ ] Helper: `User::karyawan()->get()` instead of `Karyawan::all()`
