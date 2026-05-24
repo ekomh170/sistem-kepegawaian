@@ -1,0 +1,3094 @@
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>
+            Tabel Class Diagram &amp; ERD v3 — Sistem Kepegawaian CV Boss Muda
+            Mandiri
+        </title>
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+        <style>
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            body {
+                font-family: "Segoe UI", Arial, sans-serif;
+                font-size: 13px;
+                color: #1e293b;
+                background: #f1f5f9;
+                padding: 32px 24px;
+            }
+            .cover {
+                background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+                color: #fff;
+                border-radius: 12px;
+                padding: 36px 40px;
+                margin-bottom: 32px;
+                box-shadow: 0 4px 24px rgba(37, 99, 235, 0.25);
+            }
+            .cover h1 {
+                font-size: 22px;
+                font-weight: 700;
+                margin-bottom: 6px;
+            }
+            .cover h2 {
+                font-size: 15px;
+                font-weight: 400;
+                opacity: 0.85;
+                margin-bottom: 16px;
+            }
+            .cover .meta {
+                display: flex;
+                gap: 24px;
+                flex-wrap: wrap;
+            }
+            .cover .meta span {
+                background: rgba(255, 255, 255, 0.15);
+                border-radius: 6px;
+                padding: 4px 12px;
+                font-size: 12px;
+            }
+            .section {
+                margin-bottom: 48px;
+            }
+            .section-title {
+                font-size: 16px;
+                font-weight: 700;
+                color: #1e3a5f;
+                border-left: 4px solid #2563eb;
+                padding-left: 12px;
+                margin-bottom: 16px;
+            }
+            .section-subtitle {
+                font-size: 13px;
+                font-weight: 600;
+                color: #475569;
+                margin: 24px 0 10px;
+                padding: 6px 10px;
+                background: #e2e8f0;
+                border-radius: 6px;
+                display: inline-block;
+            }
+            .tbl-wrap {
+                overflow-x: auto;
+                border-radius: 10px;
+                box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+                margin-bottom: 8px;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                background: #fff;
+            }
+            thead tr {
+                background: #1e3a5f;
+                color: #fff;
+            }
+            thead th {
+                padding: 11px 14px;
+                text-align: left;
+                font-size: 12px;
+                font-weight: 600;
+                letter-spacing: 0.04em;
+                white-space: nowrap;
+            }
+            tbody tr:nth-child(even) {
+                background: #f8fafc;
+            }
+            tbody tr:hover {
+                background: #eff6ff;
+            }
+            tbody td {
+                padding: 10px 14px;
+                vertical-align: top;
+                border-bottom: 1px solid #e2e8f0;
+                line-height: 1.55;
+            }
+            tbody tr:last-child td {
+                border-bottom: none;
+            }
+            .col-no {
+                width: 42px;
+                text-align: center;
+                font-weight: 600;
+                color: #64748b;
+            }
+            .col-class {
+                width: 150px;
+            }
+            .col-kard {
+                width: 100px;
+                text-align: center;
+            }
+            .col-tbl {
+                width: 170px;
+            }
+            .badge {
+                display: inline-block;
+                border-radius: 4px;
+                padding: 1px 7px;
+                font-size: 10.5px;
+                font-weight: 700;
+                letter-spacing: 0.03em;
+                white-space: nowrap;
+                vertical-align: middle;
+            }
+            .badge-pk {
+                background: #fef9c3;
+                color: #92400e;
+                border: 1px solid #fcd34d;
+            }
+            .badge-fk {
+                background: #dbeafe;
+                color: #1d4ed8;
+                border: 1px solid #93c5fd;
+            }
+            .badge-at {
+                background: #f0fdf4;
+                color: #166534;
+                border: 1px solid #86efac;
+            }
+            .badge-uk {
+                background: #fce7f3;
+                color: #9d174d;
+                border: 1px solid #f9a8d4;
+            }
+            .badge-enum {
+                background: #f3e8ff;
+                color: #6b21a8;
+                border: 1px solid #c4b5fd;
+            }
+            .badge-new {
+                background: #ecfeff;
+                color: #155e75;
+                border: 1px solid #67e8f9;
+            }
+            .badge-keep {
+                background: #fef3c7;
+                color: #b45309;
+                border: 1px solid #fcd34d;
+            }
+            .badge-1n {
+                background: #fff7ed;
+                color: #9a3412;
+                border: 1px solid #fb923c;
+                font-size: 12px;
+            }
+            .badge-11 {
+                background: #ecfdf5;
+                color: #065f46;
+                border: 1px solid #6ee7b7;
+                font-size: 12px;
+            }
+            .field-list {
+                margin: 0;
+                padding: 0;
+                list-style: none;
+            }
+            .field-list li {
+                margin-bottom: 4px;
+            }
+            .field-name {
+                font-weight: 600;
+                font-family: "Consolas", monospace;
+                font-size: 11.5px;
+            }
+            .field-type {
+                color: #64748b;
+                font-family: "Consolas", monospace;
+                font-size: 11px;
+            }
+            .method-list {
+                margin: 0;
+                padding: 0;
+                list-style: none;
+            }
+            .method-list li {
+                margin-bottom: 3px;
+                font-family: "Consolas", monospace;
+                font-size: 11px;
+                color: #0f172a;
+            }
+            .method-sig {
+                color: #1d4ed8;
+                font-weight: 600;
+            }
+            .method-ret {
+                color: #7c3aed;
+            }
+            .method-note {
+                color: #9ca3af;
+                font-style: italic;
+                font-size: 10.5px;
+            }
+            .legend {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                padding: 12px 16px;
+                background: #fff;
+                border-radius: 8px;
+                box-shadow: 0 1px 6px rgba(0, 0, 0, 0.07);
+                margin-bottom: 20px;
+                font-size: 11.5px;
+            }
+            .legend-item {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+            .diagram-wrap {
+                background: #fff;
+                border-radius: 10px;
+                box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+                padding: 24px 20px;
+                margin-bottom: 8px;
+                overflow-x: auto;
+            }
+            .diagram-wrap .mermaid {
+                min-width: 600px;
+                display: flex;
+                justify-content: center;
+            }
+            .diagram-caption {
+                font-size: 11.5px;
+                color: #64748b;
+                text-align: center;
+                margin-top: 12px;
+                font-style: italic;
+            }
+            .note-box {
+                margin-top: 16px;
+                padding: 14px 18px;
+                background: #fff;
+                border-radius: 8px;
+                border-left: 3px solid #2563eb;
+                font-size: 12px;
+                color: #475569;
+                line-height: 1.7;
+            }
+            .note-box.success {
+                border-left-color: #16a34a;
+            }
+            .note-box.warning {
+                border-left-color: #d97706;
+            }
+            .note-box.danger {
+                border-left-color: #dc2626;
+            }
+            .note-box h4 {
+                font-size: 13px;
+                font-weight: 700;
+                color: #1e3a5f;
+                margin-bottom: 8px;
+            }
+            .note-box ul {
+                padding-left: 20px;
+                margin-top: 6px;
+            }
+            .note-box ul li {
+                margin-bottom: 4px;
+            }
+            .pros-cons {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+                margin: 16px 0;
+            }
+            .pros,
+            .cons {
+                padding: 16px;
+                border-radius: 8px;
+                background: #fff;
+                box-shadow: 0 1px 6px rgba(0, 0, 0, 0.07);
+            }
+            .pros {
+                border-left: 4px solid #16a34a;
+            }
+            .cons {
+                border-left: 4px solid #dc2626;
+            }
+            .pros h4 {
+                color: #166534;
+                font-size: 13px;
+                font-weight: 700;
+                margin-bottom: 8px;
+            }
+            .cons h4 {
+                color: #991b1b;
+                font-size: 13px;
+                font-weight: 700;
+                margin-bottom: 8px;
+            }
+            .pros ul,
+            .cons ul {
+                padding-left: 18px;
+                margin: 0;
+            }
+            .pros li,
+            .cons li {
+                margin-bottom: 6px;
+                font-size: 12px;
+                line-height: 1.6;
+            }
+            @media print {
+                body {
+                    background: #fff;
+                    padding: 12px;
+                    font-size: 11px;
+                }
+                .cover {
+                    border-radius: 4px;
+                    padding: 20px;
+                    margin-bottom: 24px;
+                }
+                .tbl-wrap {
+                    box-shadow: none;
+                    border: 1px solid #e2e8f0;
+                }
+                thead tr {
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                tbody tr:nth-child(even) {
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                .diagram-wrap {
+                    box-shadow: none;
+                    border: 1px solid #e2e8f0;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="cover">
+            <h1>Tabel Penjelasan Class Diagram &amp; ERD — v3</h1>
+            <h2>
+                Sistem Informasi Kepegawaian CV Boss Muda Mandiri<br />
+                Berbasis Framework Laravel 12 + Filament v5 dengan Presensi GPS
+            </h2>
+            <div class="meta">
+                <span>&#128196; Laravel 12 + Filament v5</span>
+                <span>&#128204; 6 Tabel Inti + 1 Tabel Pendukung</span>
+                <span>&#128200; Class Diagram + ERD (Mermaid)</span>
+                <span>&#128197; 2026</span>
+            </div>
+        </div>
+
+        <div class="note-box success">
+            <h4>Perubahan utama dari v2 ke v3</h4>
+            &#9679; <strong>Konsolidasi User</strong> — tabel
+            <code>tb_admin</code>, <code>tb_supervisor</code>, dan
+            <code>tb_karyawan</code> dihapus; seluruh atribut (nik, no_hp,
+            posisi) dipindah ke <code>tb_user</code>. Peran tetap dibedakan via
+            kolom <em>role</em>.<br />
+            &#9679; <strong>Verifikasi inline</strong> — tabel
+            <code>tb_verifikasi</code> dihapus; data verifikasi
+            (status_verifikasi, diverifikasi_oleh, catatan_verifikasi,
+            tgl_verifikasi) di-inline ke <code>tb_presensi</code> karena
+            relasinya memang 1:1.<br />
+            &#9679; <strong>Penyatuan Laporan &amp; Rekap</strong> — tabel
+            <code>tb_rekap_presensi_bulanan</code> +
+            <code>tb_laporan</code> digabung menjadi
+            <code>tb_laporan_presensi</code> dengan kolom <em>jenis</em> dan
+            <em>file_path</em>.<br />
+            &#9679; <strong>Penamaan konsisten</strong> — semua FK ke user
+            memakai <code>user_id</code> (V2 sebelumnya campur
+            <code>karyawan_id</code
+            >/<code>admin_id</code>/<code>supervisor_id</code>).<br />
+            &#9679; <strong>Rename Jadwal</strong> —
+            <code>tb_jadwal</code> &rarr; <code>tb_jadwal_pekerjaan</code> agar
+            lebih deskriptif.<br />
+            &#9679; <strong>6 tabel inti</strong> sesuai ERD v3: tb_user,
+            tb_jadwal_pekerjaan, tb_detail_pekerjaan, tb_presensi,
+            tb_bukti_pekerjaan, tb_laporan_presensi. Tabel
+            <code>tb_setting</code> tetap dipertahankan sebagai tabel pendukung
+            (konfigurasi sistem).
+        </div>
+
+        <div class="note-box warning">
+            <h4>
+                ⚠ Field critical yang dipertahankan untuk backward compatibility
+            </h4>
+            Gambar ERD V3 yang menjadi rujukan tidak menampilkan beberapa field
+            yang dipakai fitur V2 saat ini. Agar fitur tidak rusak, field
+            berikut <strong>tetap dipertahankan</strong> di schema akhir
+            (ditandai badge <span class="badge badge-keep">KEEP</span>):
+            <ul>
+                <li>
+                    <code>tb_presensi.foto_masuk</code>,
+                    <code>foto_keluar</code> — fitur upload selfie
+                    check-in/check-out
+                </li>
+                <li>
+                    <code>tb_presensi.latitude_masuk</code>,
+                    <code>longitude_masuk</code>, <code>latitude_keluar</code>,
+                    <code>longitude_keluar</code> — audit GPS check-in/out
+                </li>
+                <li>
+                    <code>tb_detail_pekerjaan.alamat_lokasi</code>,
+                    <code>alasan_tolak</code> — alamat tekstual lokasi tugas
+                    &amp; alasan tolak tugas
+                </li>
+                <li>
+                    <code>tb_bukti_pekerjaan.keterangan</code> — konteks
+                    tekstual upload bukti
+                </li>
+                <li>
+                    <code>tb_setting</code> (tabel pendukung) — konfigurasi
+                    runtime (geofence, identitas perusahaan) yang dulu dipakai
+                    di V2
+                </li>
+            </ul>
+            Field gaji (gaji_pokok, total_potongan, gaji_bersih) yang muncul di
+            gambar ERD V3 untuk <code>tb_laporan_presensi</code>
+            <strong>tidak diadopsi</strong> — karena fitur tampilan gaji sudah
+            dihapus sejak V2.2. Hanya <code>total_potongan</code> yang
+            dipertahankan (untuk rekap keterlambatan).
+        </div>
+
+        <div class="legend">
+            <strong style="margin-right: 4px">Keterangan:</strong>
+            <div class="legend-item">
+                <span class="badge badge-pk">PK</span> Primary Key
+            </div>
+            <div class="legend-item">
+                <span class="badge badge-fk">FK</span> Foreign Key
+            </div>
+            <div class="legend-item">
+                <span class="badge badge-at">AT</span> Atribut Biasa
+            </div>
+            <div class="legend-item">
+                <span class="badge badge-uk">UK</span> Unique Key
+            </div>
+            <div class="legend-item">
+                <span class="badge badge-enum">ENUM</span> Enumerasi
+            </div>
+            <div class="legend-item">
+                <span class="badge badge-new">NEW</span> Baru di V3
+            </div>
+            <div class="legend-item">
+                <span class="badge badge-keep">KEEP</span> Field critical dari
+                V2
+            </div>
+            <div class="legend-item">
+                <span class="badge badge-1n">1:N</span> One-to-Many
+            </div>
+            <div class="legend-item">
+                <span class="badge badge-11">1:1</span> One-to-One
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════ -->
+        <!--  TABEL 1 — CLASS DIAGRAM                        -->
+        <!-- ═══════════════════════════════════════════════ -->
+        <div class="section">
+            <div class="section-title">Tabel 1. Penjelasan Class Diagram</div>
+            <div class="tbl-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="col-no">No</th>
+                            <th class="col-class">Class</th>
+                            <th style="width: 300px">Atribut</th>
+                            <th style="width: 290px">Method / Operasi</th>
+                            <th>Deskripsi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 1. User -->
+                        <tr>
+                            <td class="col-no">1</td>
+                            <td>
+                                <strong>User</strong><br /><span
+                                    style="font-size: 11px; color: #64748b"
+                                    >tb_user</span
+                                >
+                            </td>
+                            <td>
+                                <ul class="field-list">
+                                    <li>
+                                        <span class="badge badge-pk">PK</span>
+                                        <span class="field-name">id</span>
+                                        <span class="field-type">bigint</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name">nama</span>
+                                        <span class="field-type">string</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-uk">UK</span>
+                                        <span class="field-name">email</span>
+                                        <span class="field-type">string</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name">password</span>
+                                        <span class="field-type"
+                                            >string (hashed)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-new">NEW</span>
+                                        <span class="field-name">nik</span>
+                                        <span class="field-type"
+                                            >string, null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-new">NEW</span>
+                                        <span class="field-name">no_hp</span>
+                                        <span class="field-type"
+                                            >string, null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-new">NEW</span>
+                                        <span class="field-name">posisi</span>
+                                        <span class="field-type"
+                                            >string, null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-enum"
+                                            >ENUM</span
+                                        >
+                                        <span class="field-name">role</span>
+                                        <span class="field-type"
+                                            >karyawan|admin|supervisor</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >is_active</span
+                                        >
+                                        <span class="field-type">boolean</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >remember_token</span
+                                        >
+                                        <span class="field-type"
+                                            >string, null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >created_at</span
+                                        >
+                                        <span class="field-type"
+                                            >timestamp</span
+                                        >
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                <ul class="method-list">
+                                    <li>
+                                        <span class="method-sig"
+                                            >canAccessPanel</span
+                                        >(Panel):
+                                        <span class="method-ret">bool</span>
+                                    </li>
+                                    <li>
+                                        <span class="method-sig">isAdmin</span
+                                        >():
+                                        <span class="method-ret">bool</span>
+                                    </li>
+                                    <li>
+                                        <span class="method-sig"
+                                            >isSupervisor</span
+                                        >():
+                                        <span class="method-ret">bool</span>
+                                    </li>
+                                    <li>
+                                        <span class="method-sig"
+                                            >isKaryawan</span
+                                        >():
+                                        <span class="method-ret">bool</span>
+                                    </li>
+                                    <li>
+                                        <span class="method-sig">jadwals</span
+                                        >():
+                                        <span class="method-ret">HasMany</span>
+                                    </li>
+                                    <li>
+                                        <span class="method-sig">presensis</span
+                                        >():
+                                        <span class="method-ret">HasMany</span>
+                                    </li>
+                                    <li>
+                                        <span class="method-sig"
+                                            >laporanPresensis</span
+                                        >():
+                                        <span class="method-ret">HasMany</span>
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                Entitas tunggal untuk seluruh pengguna sistem.
+                                Menggantikan kombinasi
+                                <em>User+Admin+Supervisor+Karyawan</em> dari V2.
+                                Atribut profil (nik, no_hp, posisi) dipindahkan
+                                ke sini sehingga tidak perlu JOIN untuk dapat
+                                data lengkap user. Peran dibedakan oleh kolom
+                                <em>role</em>.
+                            </td>
+                        </tr>
+
+                        <!-- 2. JadwalPekerjaan -->
+                        <tr>
+                            <td class="col-no">2</td>
+                            <td>
+                                <strong>JadwalPekerjaan</strong><br /><span
+                                    style="font-size: 11px; color: #64748b"
+                                    >tb_jadwal_pekerjaan</span
+                                >
+                            </td>
+                            <td>
+                                <ul class="field-list">
+                                    <li>
+                                        <span class="badge badge-pk">PK</span>
+                                        <span class="field-name">id</span>
+                                        <span class="field-type">bigint</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-fk">FK</span>
+                                        <span class="field-name">user_id</span>
+                                        <span class="field-type"
+                                            >&rarr; tb_user (karyawan)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-fk">FK</span>
+                                        <span class="field-name"
+                                            >dibuat_oleh</span
+                                        >
+                                        <span class="field-type"
+                                            >&rarr; tb_user (admin), null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >tanggal_kerja</span
+                                        >
+                                        <span class="field-type">date</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >jam_masuk</span
+                                        >
+                                        <span class="field-type"
+                                            >time (def. 08:00)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >jam_pulang</span
+                                        >
+                                        <span class="field-type"
+                                            >time (def. 16:00)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >hari_libur</span
+                                        >
+                                        <span class="field-type">boolean</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-enum"
+                                            >ENUM</span
+                                        >
+                                        <span class="field-name">status</span>
+                                        <span class="field-type"
+                                            >aktif|dibatalkan</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-uk">UK</span>
+                                        <span class="field-name">UNIQUE</span>
+                                        <span class="field-type"
+                                            >(user_id, tanggal_kerja)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >created_at</span
+                                        >
+                                        <span class="field-type"
+                                            >timestamp</span
+                                        >
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                <ul class="method-list">
+                                    <li>
+                                        <span class="method-sig">user</span>():
+                                        <span class="method-ret"
+                                            >BelongsTo</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="method-sig"
+                                            >pembuatJadwal</span
+                                        >():
+                                        <span class="method-ret"
+                                            >BelongsTo</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="method-sig"
+                                            >detailPekerjaans</span
+                                        >():
+                                        <span class="method-ret">HasMany</span>
+                                    </li>
+                                    <li>
+                                        <span class="method-sig">presensi</span
+                                        >():
+                                        <span class="method-ret">HasOne</span>
+                                    </li>
+                                    <li>
+                                        <span class="method-sig"
+                                            >isHariLibur</span
+                                        >():
+                                        <span class="method-ret">bool</span>
+                                    </li>
+                                    <li>
+                                        <span class="method-sig"
+                                            >getJadwalHarian</span
+                                        >(int, string):
+                                        <span class="method-ret">?self</span>
+                                        <span class="method-note">static</span>
+                                    </li>
+                                    <li>
+                                        <span class="method-sig"
+                                            >getJadwalBulanan</span
+                                        >(int, string):
+                                        <span class="method-ret"
+                                            >Collection</span
+                                        >
+                                        <span class="method-note">static</span>
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                Jadwal kerja harian per karyawan (rename dari
+                                <em>tb_jadwal</em> menjadi
+                                <em>tb_jadwal_pekerjaan</em> agar lebih
+                                deskriptif). Mendefinisikan jam masuk/pulang dan
+                                penanda hari libur. Presensi otomatis ditolak
+                                jika <em>hari_libur=true</em>. Unique constraint
+                                pada <em>(user_id, tanggal_kerja)</em>.
+                            </td>
+                        </tr>
+
+                        <!-- 3. DetailPekerjaan -->
+                        <tr>
+                            <td class="col-no">3</td>
+                            <td>
+                                <strong>Detail&shy;Pekerjaan</strong><br /><span
+                                    style="font-size: 11px; color: #64748b"
+                                    >tb_detail_pekerjaan</span
+                                >
+                            </td>
+                            <td>
+                                <ul class="field-list">
+                                    <li>
+                                        <span class="badge badge-pk">PK</span>
+                                        <span class="field-name">id</span>
+                                        <span class="field-type">bigint</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-fk">FK</span>
+                                        <span class="field-name"
+                                            >jadwal_id</span
+                                        >
+                                        <span class="field-type"
+                                            >&rarr; tb_jadwal_pekerjaan</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-fk">FK</span>
+                                        <span class="field-name">user_id</span>
+                                        <span class="field-type"
+                                            >&rarr; tb_user (karyawan)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >nama_lokasi</span
+                                        >
+                                        <span class="field-type">string</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-keep"
+                                            >KEEP</span
+                                        >
+                                        <span class="field-name"
+                                            >alamat_lokasi</span
+                                        >
+                                        <span class="field-type"
+                                            >text, null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name">latitude</span>
+                                        <span class="field-type"
+                                            >decimal(10,7), null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >longitude</span
+                                        >
+                                        <span class="field-type"
+                                            >decimal(10,7), null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >radius_meter</span
+                                        >
+                                        <span class="field-type"
+                                            >int (def. 50)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >keterangan_pekerjaan</span
+                                        >
+                                        <span class="field-type"
+                                            >text, null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-enum"
+                                            >ENUM</span
+                                        >
+                                        <span class="field-name">status</span>
+                                        <span class="field-type"
+                                            >pending|disetujui|ditolak</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-keep"
+                                            >KEEP</span
+                                        >
+                                        <span class="field-name"
+                                            >alasan_tolak</span
+                                        >
+                                        <span class="field-type"
+                                            >text, null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >created_at</span
+                                        >
+                                        <span class="field-type"
+                                            >timestamp</span
+                                        >
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                <ul class="method-list">
+                                    <li>
+                                        <span class="method-sig">jadwal</span
+                                        >():
+                                        <span class="method-ret"
+                                            >BelongsTo</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="method-sig">user</span>():
+                                        <span class="method-ret"
+                                            >BelongsTo</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="method-sig"
+                                            >buktiPekerjaans</span
+                                        >():
+                                        <span class="method-ret">HasMany</span>
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                Rincian pekerjaan lapangan yang ditugaskan
+                                kepada karyawan dalam satu jadwal harian. Field
+                                <em>alamat_lokasi</em> dan
+                                <em>alasan_tolak</em> dipertahankan dari V2
+                                untuk fitur tolak tugas dengan alasan dan alamat
+                                tekstual lokasi.
+                            </td>
+                        </tr>
+
+                        <!-- 4. Presensi -->
+                        <tr>
+                            <td class="col-no">4</td>
+                            <td>
+                                <strong>Presensi</strong><br /><span
+                                    style="font-size: 11px; color: #64748b"
+                                    >tb_presensi</span
+                                >
+                            </td>
+                            <td>
+                                <ul class="field-list">
+                                    <li>
+                                        <span class="badge badge-pk">PK</span>
+                                        <span class="field-name">id</span>
+                                        <span class="field-type">bigint</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-fk">FK</span>
+                                        <span class="field-name">user_id</span>
+                                        <span class="field-type"
+                                            >&rarr; tb_user (karyawan)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-fk">FK</span>
+                                        <span class="field-name"
+                                            >jadwal_id</span
+                                        >
+                                        <span class="field-type"
+                                            >&rarr; tb_jadwal_pekerjaan,
+                                            null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name">tanggal</span>
+                                        <span class="field-type">date</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >jam_masuk</span
+                                        >
+                                        <span class="field-type"
+                                            >datetime, null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >jam_keluar</span
+                                        >
+                                        <span class="field-type"
+                                            >datetime, null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-keep"
+                                            >KEEP</span
+                                        >
+                                        <span class="field-name"
+                                            >foto_masuk</span
+                                        >
+                                        <span class="field-type"
+                                            >string, null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-keep"
+                                            >KEEP</span
+                                        >
+                                        <span class="field-name"
+                                            >foto_keluar</span
+                                        >
+                                        <span class="field-type"
+                                            >string, null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-keep"
+                                            >KEEP</span
+                                        >
+                                        <span class="field-name"
+                                            >latitude_masuk</span
+                                        >
+                                        <span class="field-type"
+                                            >decimal(10,7), null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-keep"
+                                            >KEEP</span
+                                        >
+                                        <span class="field-name"
+                                            >longitude_masuk</span
+                                        >
+                                        <span class="field-type"
+                                            >decimal(10,7), null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-keep"
+                                            >KEEP</span
+                                        >
+                                        <span class="field-name"
+                                            >latitude_keluar</span
+                                        >
+                                        <span class="field-type"
+                                            >decimal(10,7), null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-keep"
+                                            >KEEP</span
+                                        >
+                                        <span class="field-name"
+                                            >longitude_keluar</span
+                                        >
+                                        <span class="field-type"
+                                            >decimal(10,7), null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >menit_terlambat</span
+                                        >
+                                        <span class="field-type"
+                                            >int unsigned</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >potongan_terlambat</span
+                                        >
+                                        <span class="field-type"
+                                            >decimal(10,2)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-enum"
+                                            >ENUM</span
+                                        >
+                                        <span class="field-name"
+                                            >status_presensi</span
+                                        >
+                                        <span class="field-type"
+                                            >hadir|terlambat|tidak_hadir|izin</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-new">NEW</span
+                                        ><span class="badge badge-enum"
+                                            >ENUM</span
+                                        >
+                                        <span class="field-name"
+                                            >status_verifikasi</span
+                                        >
+                                        <span class="field-type"
+                                            >pending|disetujui|ditolak</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-new">NEW</span
+                                        ><span class="badge badge-fk">FK</span>
+                                        <span class="field-name"
+                                            >diverifikasi_oleh</span
+                                        >
+                                        <span class="field-type"
+                                            >&rarr; tb_user (supervisor),
+                                            null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-new">NEW</span>
+                                        <span class="field-name"
+                                            >catatan_verifikasi</span
+                                        >
+                                        <span class="field-type"
+                                            >text, null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-new">NEW</span>
+                                        <span class="field-name"
+                                            >tgl_verifikasi</span
+                                        >
+                                        <span class="field-type"
+                                            >datetime, null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >created_at</span
+                                        >
+                                        <span class="field-type"
+                                            >timestamp</span
+                                        >
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                <ul class="method-list">
+                                    <li>
+                                        <span class="method-sig">user</span>():
+                                        <span class="method-ret"
+                                            >BelongsTo</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="method-sig">jadwal</span
+                                        >():
+                                        <span class="method-ret"
+                                            >BelongsTo</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="method-sig"
+                                            >verifikator</span
+                                        >():
+                                        <span class="method-ret"
+                                            >BelongsTo</span
+                                        >
+                                        <span class="method-note"
+                                            >// ke tb_user</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="method-sig"
+                                            >hitungKeterlambatan</span
+                                        >(string, string):
+                                        <span class="method-ret">int</span>
+                                        <span class="method-note">static</span>
+                                    </li>
+                                    <li>
+                                        <span class="method-sig"
+                                            >hitungPotongan</span
+                                        >(int):
+                                        <span class="method-ret">float</span>
+                                        <span class="method-note">static</span>
+                                    </li>
+                                    <li>
+                                        <span class="method-sig"
+                                            >getStatusPresensi</span
+                                        >():
+                                        <span class="method-ret">string</span>
+                                    </li>
+                                    <li>
+                                        <span class="method-sig"
+                                            >getRiwayatBulanan</span
+                                        >(int, string):
+                                        <span class="method-ret"
+                                            >Collection</span
+                                        >
+                                        <span class="method-note">static</span>
+                                    </li>
+                                    <li>
+                                        <span class="method-sig"
+                                            >verifikasi</span
+                                        >(User, string, string):
+                                        <span class="method-ret">self</span>
+                                        <span class="method-note"
+                                            >// helper inline</span
+                                        >
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                Catatan kehadiran harian dengan validasi GPS via
+                                formula Haversine. <strong>V3</strong>: data
+                                verifikasi (sebelumnya di tabel
+                                <em>tb_verifikasi</em>) di-inline ke sini
+                                melalui kolom <em>status_verifikasi</em>,
+                                <em>diverifikasi_oleh</em>,
+                                <em>catatan_verifikasi</em>,
+                                <em>tgl_verifikasi</em>. Foto &amp; koordinat
+                                GPS check-in/out dipertahankan dari V2. Potongan
+                                keterlambatan: Rp 10.000 per blok 10 menit tanpa
+                                batas atas (V2.3).
+                            </td>
+                        </tr>
+
+                        <!-- 5. BuktiPekerjaan -->
+                        <tr>
+                            <td class="col-no">5</td>
+                            <td>
+                                <strong>Bukti&shy;Pekerjaan</strong><br /><span
+                                    style="font-size: 11px; color: #64748b"
+                                    >tb_bukti_pekerjaan</span
+                                >
+                            </td>
+                            <td>
+                                <ul class="field-list">
+                                    <li>
+                                        <span class="badge badge-pk">PK</span>
+                                        <span class="field-name">id</span>
+                                        <span class="field-type">bigint</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-fk">FK</span>
+                                        <span class="field-name"
+                                            >detail_pekerjaan_id</span
+                                        >
+                                        <span class="field-type"
+                                            >&rarr; tb_detail_pekerjaan</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-fk">FK</span>
+                                        <span class="field-name">user_id</span>
+                                        <span class="field-type"
+                                            >&rarr; tb_user (karyawan)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >foto_before</span
+                                        >
+                                        <span class="field-type">string</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >foto_after</span
+                                        >
+                                        <span class="field-type">string</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-keep"
+                                            >KEEP</span
+                                        >
+                                        <span class="field-name"
+                                            >keterangan</span
+                                        >
+                                        <span class="field-type"
+                                            >text, null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-enum"
+                                            >ENUM</span
+                                        >
+                                        <span class="field-name">status</span>
+                                        <span class="field-type"
+                                            >pending|disetujui|ditolak</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >uploaded_at</span
+                                        >
+                                        <span class="field-type">datetime</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >created_at</span
+                                        >
+                                        <span class="field-type"
+                                            >timestamp</span
+                                        >
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                <ul class="method-list">
+                                    <li>
+                                        <span class="method-sig"
+                                            >detailPekerjaan</span
+                                        >():
+                                        <span class="method-ret"
+                                            >BelongsTo</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="method-sig">user</span>():
+                                        <span class="method-ret"
+                                            >BelongsTo</span
+                                        >
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                Bukti hasil kerja per tugas berupa foto sebelum
+                                (foto_before) dan sesudah (foto_after)
+                                pengerjaan. Field
+                                <em>keterangan</em> dipertahankan dari V2 agar
+                                karyawan tetap bisa menambahkan konteks tekstual
+                                saat upload bukti.
+                            </td>
+                        </tr>
+
+                        <!-- 6. LaporanPresensi -->
+                        <tr>
+                            <td class="col-no">6</td>
+                            <td>
+                                <strong>LaporanPresensi</strong><br /><span
+                                    style="font-size: 11px; color: #64748b"
+                                    >tb_laporan_presensi</span
+                                >
+                            </td>
+                            <td>
+                                <ul class="field-list">
+                                    <li>
+                                        <span class="badge badge-pk">PK</span>
+                                        <span class="field-name">id</span>
+                                        <span class="field-type">bigint</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-fk">FK</span>
+                                        <span class="field-name">user_id</span>
+                                        <span class="field-type"
+                                            >&rarr; tb_user (karyawan),
+                                            null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-fk">FK</span>
+                                        <span class="field-name"
+                                            >generated_by</span
+                                        >
+                                        <span class="field-type"
+                                            >&rarr; tb_user
+                                            (admin/supervisor)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name">judul</span>
+                                        <span class="field-type">string</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name">periode</span>
+                                        <span class="field-type"
+                                            >string (YYYY / YYYY-MM /
+                                            YYYY-MM-DD)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-enum"
+                                            >ENUM</span
+                                        >
+                                        <span class="field-name">jenis</span>
+                                        <span class="field-type"
+                                            >Harian|Mingguan|Bulanan|Tahunan</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >jumlah_hadir</span
+                                        >
+                                        <span class="field-type"
+                                            >int unsigned, null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >jumlah_terlambat</span
+                                        >
+                                        <span class="field-type"
+                                            >int unsigned, null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >jumlah_tidak_hadir</span
+                                        >
+                                        <span class="field-type"
+                                            >int unsigned, null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >total_potongan</span
+                                        >
+                                        <span class="field-type"
+                                            >decimal(12,2), null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >file_path</span
+                                        >
+                                        <span class="field-type"
+                                            >string, null</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >tgl_generate</span
+                                        >
+                                        <span class="field-type">datetime</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >created_at</span
+                                        >
+                                        <span class="field-type"
+                                            >timestamp</span
+                                        >
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                <ul class="method-list">
+                                    <li>
+                                        <span class="method-sig">karyawan</span
+                                        >():
+                                        <span class="method-ret"
+                                            >BelongsTo</span
+                                        >
+                                        <span class="method-note"
+                                            >// user_id</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="method-sig">generator</span
+                                        >():
+                                        <span class="method-ret"
+                                            >BelongsTo</span
+                                        >
+                                        <span class="method-note"
+                                            >// generated_by</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="method-sig"
+                                            >hitungRekap</span
+                                        >(string):
+                                        <span class="method-ret">self</span>
+                                    </li>
+                                    <li>
+                                        <span class="method-sig"
+                                            >generateFile</span
+                                        >(string):
+                                        <span class="method-ret">string</span>
+                                        <span class="method-note"
+                                            >// path file CSV/Excel/PDF</span
+                                        >
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                Penyatuan dari <em>tb_laporan</em> (metadata
+                                laporan) dan
+                                <em>tb_rekap_presensi_bulanan</em> (rekap
+                                kalkulasi). Kolom <em>jenis</em> menentukan tipe
+                                periode laporan. Kolom <em>jumlah_*</em> dan
+                                <em>total_potongan</em> diisi ketika tipe
+                                laporan adalah rekap per karyawan (Bulanan).
+                                Kolom <em>file_path</em> berisi link file export
+                                yang sudah di-generate. Field gaji
+                                <strong>tidak diadopsi</strong> mengikuti
+                                penghapusan fitur gaji di V2.2.
+                            </td>
+                        </tr>
+
+                        <!-- 7. Setting (Pendukung) -->
+                        <tr>
+                            <td class="col-no">7</td>
+                            <td>
+                                <strong>Setting</strong><br /><span
+                                    style="font-size: 10.5px; color: #94a3b8"
+                                    >(supporting)</span
+                                ><br /><span
+                                    style="font-size: 11px; color: #64748b"
+                                    >tb_setting</span
+                                >
+                            </td>
+                            <td>
+                                <ul class="field-list">
+                                    <li>
+                                        <span class="badge badge-pk">PK</span>
+                                        <span class="field-name">id</span>
+                                        <span class="field-type">bigint</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-uk">UK</span>
+                                        <span class="field-name">key</span>
+                                        <span class="field-type">string</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name">value</span>
+                                        <span class="field-type">text</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name">group</span>
+                                        <span class="field-type"
+                                            >string
+                                            (geofence|identitas|...)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name">label</span>
+                                        <span class="field-type">string</span>
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                <ul class="method-list">
+                                    <li>
+                                        <span class="method-sig">get</span>(key,
+                                        default):
+                                        <span class="method-ret">mixed</span>
+                                        <span class="method-note">static</span>
+                                    </li>
+                                    <li>
+                                        <span class="method-sig">set</span>(key,
+                                        value):
+                                        <span class="method-ret">Setting</span>
+                                        <span class="method-note">static</span>
+                                    </li>
+                                    <li>
+                                        <span class="method-sig"
+                                            >clearCache</span
+                                        >():
+                                        <span class="method-ret">void</span>
+                                        <span class="method-note">static</span>
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                Tabel pendukung untuk konfigurasi sistem
+                                runtime: koordinat kantor (kantor_lat,
+                                kantor_lng), radius geofence (kantor_radius),
+                                toleransi keterlambatan (toleransi_menit),
+                                nama_perusahaan, alamat_perusahaan.
+                                Dipertahankan dari V2 — tidak masuk gambar ERD
+                                V3 tapi tetap esensial untuk konfigurasi runtime
+                                via Filament panel.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════ -->
+        <!--  CLASS DIAGRAM MERMAID                          -->
+        <!-- ═══════════════════════════════════════════════ -->
+        <div class="section">
+            <div class="section-title">Diagram 1. Class Diagram (Mermaid)</div>
+            <div class="diagram-wrap">
+                <pre class="mermaid">
+classDiagram
+    direction LR
+
+    class User {
+        +bigint id
+        +string nama
+        +string email
+        +string password
+        +string nik
+        +string no_hp
+        +string posisi
+        +string role
+        +boolean is_active
+        +timestamp created_at
+        +canAccessPanel(Panel) bool
+        +isAdmin() bool
+        +isSupervisor() bool
+        +isKaryawan() bool
+        +jadwals() HasMany
+        +presensis() HasMany
+        +laporanPresensis() HasMany
+    }
+
+    class JadwalPekerjaan {
+        +bigint id
+        +bigint user_id
+        +bigint dibuat_oleh
+        +date tanggal_kerja
+        +time jam_masuk
+        +time jam_pulang
+        +boolean hari_libur
+        +string status
+        +timestamp created_at
+        +user() BelongsTo
+        +pembuatJadwal() BelongsTo
+        +detailPekerjaans() HasMany
+        +presensi() HasOne
+        +isHariLibur() bool
+        +getJadwalHarian(int, string) JadwalPekerjaan
+        +getJadwalBulanan(int, string) Collection
+    }
+
+    class DetailPekerjaan {
+        +bigint id
+        +bigint jadwal_id
+        +bigint user_id
+        +string nama_lokasi
+        +text alamat_lokasi
+        +decimal latitude
+        +decimal longitude
+        +int radius_meter
+        +text keterangan_pekerjaan
+        +string status
+        +text alasan_tolak
+        +timestamp created_at
+        +jadwal() BelongsTo
+        +user() BelongsTo
+        +buktiPekerjaans() HasMany
+    }
+
+    class Presensi {
+        +bigint id
+        +bigint user_id
+        +bigint jadwal_id
+        +date tanggal
+        +datetime jam_masuk
+        +datetime jam_keluar
+        +string foto_masuk
+        +string foto_keluar
+        +decimal latitude_masuk
+        +decimal longitude_masuk
+        +decimal latitude_keluar
+        +decimal longitude_keluar
+        +int menit_terlambat
+        +decimal potongan_terlambat
+        +string status_presensi
+        +string status_verifikasi
+        +bigint diverifikasi_oleh
+        +text catatan_verifikasi
+        +datetime tgl_verifikasi
+        +timestamp created_at
+        +user() BelongsTo
+        +jadwal() BelongsTo
+        +verifikator() BelongsTo
+        +hitungKeterlambatan(string, string) int
+        +hitungPotongan(int) float
+        +getStatusPresensi() string
+        +getRiwayatBulanan(int, string) Collection
+        +verifikasi(User, string, string) self
+    }
+
+    class BuktiPekerjaan {
+        +bigint id
+        +bigint detail_pekerjaan_id
+        +bigint user_id
+        +string foto_before
+        +string foto_after
+        +text keterangan
+        +string status
+        +datetime uploaded_at
+        +timestamp created_at
+        +detailPekerjaan() BelongsTo
+        +user() BelongsTo
+    }
+
+    class LaporanPresensi {
+        +bigint id
+        +bigint user_id
+        +bigint generated_by
+        +string judul
+        +string periode
+        +string jenis
+        +int jumlah_hadir
+        +int jumlah_terlambat
+        +int jumlah_tidak_hadir
+        +decimal total_potongan
+        +string file_path
+        +datetime tgl_generate
+        +timestamp created_at
+        +karyawan() BelongsTo
+        +generator() BelongsTo
+        +hitungRekap(string) self
+        +generateFile(string) string
+    }
+
+    class Setting {
+        +bigint id
+        +string key
+        +text value
+        +string group
+        +string label
+        +get(key, default)$ mixed
+        +set(key, value)$ Setting
+        +clearCache()$ void
+    }
+
+    User "1" --> "0..*" JadwalPekerjaan : punya jadwal (user_id)
+    User "1" --> "0..*" JadwalPekerjaan : buat jadwal (dibuat_oleh)
+    User "1" --> "0..*" DetailPekerjaan : ditugaskan
+    User "1" --> "0..*" Presensi : melakukan presensi
+    User "1" --> "0..*" Presensi : memverifikasi (diverifikasi_oleh)
+    User "1" --> "0..*" BuktiPekerjaan : mengunggah
+    User "1" --> "0..*" LaporanPresensi : subjek rekap (user_id)
+    User "1" --> "0..*" LaporanPresensi : pembuat (generated_by)
+    JadwalPekerjaan "1" --> "0..*" DetailPekerjaan : memuat tugas
+    JadwalPekerjaan "1" --> "0..1" Presensi : dihadiri
+    DetailPekerjaan "1" --> "0..*" BuktiPekerjaan : memiliki bukti
+    </pre
+                >
+                <div class="diagram-caption">
+                    Diagram 1. Class Diagram V3 — Sistem Informasi Kepegawaian
+                    CV Boss Muda Mandiri. Tabel <em>Setting</em> ditampilkan
+                    sebagai entitas terpisah tanpa relasi karena bersifat
+                    konfigurasi runtime.
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════ -->
+        <!--  TABEL 2 — ERD                                  -->
+        <!-- ═══════════════════════════════════════════════ -->
+        <div class="section">
+            <div class="section-title">
+                Tabel 2. Penjelasan Entity Relationship Diagram (ERD)
+            </div>
+
+            <div class="section-subtitle">A. Penjelasan Tabel (Entitas)</div>
+            <div class="tbl-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="col-no">No</th>
+                            <th class="col-tbl">Nama Tabel</th>
+                            <th style="width: 440px">Field dan Tipe Data</th>
+                            <th>Deskripsi Tabel</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="col-no">1</td>
+                            <td><strong>tb_user</strong></td>
+                            <td>
+                                <ul class="field-list">
+                                    <li>
+                                        <span class="badge badge-pk">PK</span>
+                                        <span class="field-name">id</span>
+                                        <span class="field-type"
+                                            >bigint unsigned, AI</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name">nama</span>
+                                        <span class="field-type"
+                                            >varchar(255), NOT NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-uk">UK</span>
+                                        <span class="field-name">email</span>
+                                        <span class="field-type"
+                                            >varchar(255), UNIQUE</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name">password</span>
+                                        <span class="field-type"
+                                            >varchar(255), NOT NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-new">NEW</span>
+                                        <span class="field-name">nik</span>
+                                        <span class="field-type"
+                                            >varchar(255), NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-new">NEW</span>
+                                        <span class="field-name">no_hp</span>
+                                        <span class="field-type"
+                                            >varchar(255), NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-new">NEW</span>
+                                        <span class="field-name">posisi</span>
+                                        <span class="field-type"
+                                            >varchar(255), NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-enum"
+                                            >ENUM</span
+                                        >
+                                        <span class="field-name">role</span>
+                                        <span class="field-type"
+                                            >'karyawan'|'admin'|'supervisor',
+                                            default 'karyawan'</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >is_active</span
+                                        >
+                                        <span class="field-type"
+                                            >tinyint(1), default 1</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >remember_token</span
+                                        >
+                                        <span class="field-type"
+                                            >varchar(100), NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >created_at</span
+                                        >
+                                        <span class="field-type"
+                                            >timestamp</span
+                                        >
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                Tabel tunggal untuk autentikasi + profil
+                                pengguna sistem. V3 menggabungkan
+                                <em
+                                    >tb_user + tb_admin + tb_supervisor +
+                                    tb_karyawan</em
+                                >
+                                dari V2. Kolom <em>role</em> menentukan hak
+                                akses ke panel Filament. Field <em>nik</em>,
+                                <em>no_hp</em>, <em>posisi</em> baru di V3
+                                (sebelumnya tersebar di tabel role-specific).
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="col-no">2</td>
+                            <td><strong>tb_jadwal_pekerjaan</strong></td>
+                            <td>
+                                <ul class="field-list">
+                                    <li>
+                                        <span class="badge badge-pk">PK</span>
+                                        <span class="field-name">id</span>
+                                        <span class="field-type"
+                                            >bigint unsigned, AI</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-fk">FK</span>
+                                        <span class="field-name">user_id</span>
+                                        <span class="field-type"
+                                            >bigint unsigned &rarr; tb_user
+                                            (cascade)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-fk">FK</span>
+                                        <span class="field-name"
+                                            >dibuat_oleh</span
+                                        >
+                                        <span class="field-type"
+                                            >bigint unsigned, NULL &rarr;
+                                            tb_user (set null)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >tanggal_kerja</span
+                                        >
+                                        <span class="field-type">date</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >jam_masuk</span
+                                        >
+                                        <span class="field-type"
+                                            >time, default '08:00:00'</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >jam_pulang</span
+                                        >
+                                        <span class="field-type"
+                                            >time, default '16:00:00'</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >hari_libur</span
+                                        >
+                                        <span class="field-type"
+                                            >tinyint(1), default 0</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-enum"
+                                            >ENUM</span
+                                        >
+                                        <span class="field-name">status</span>
+                                        <span class="field-type"
+                                            >'aktif'|'dibatalkan', default
+                                            'aktif'</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-uk">UK</span>
+                                        <span class="field-name">UNIQUE</span>
+                                        <span class="field-type"
+                                            >(user_id, tanggal_kerja)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >created_at</span
+                                        >
+                                        <span class="field-type"
+                                            >timestamp</span
+                                        >
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                Tabel jadwal kerja harian per karyawan. Direname
+                                dari <em>tb_jadwal</em> agar lebih deskriptif.
+                                FK <em>user_id</em> = karyawan,
+                                <em>dibuat_oleh</em> = admin pembuat. Unique
+                                constraint pada (user_id, tanggal_kerja) untuk
+                                mencegah duplikasi.
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="col-no">3</td>
+                            <td><strong>tb_detail_pekerjaan</strong></td>
+                            <td>
+                                <ul class="field-list">
+                                    <li>
+                                        <span class="badge badge-pk">PK</span>
+                                        <span class="field-name">id</span>
+                                        <span class="field-type"
+                                            >bigint unsigned, AI</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-fk">FK</span>
+                                        <span class="field-name"
+                                            >jadwal_id</span
+                                        >
+                                        <span class="field-type"
+                                            >bigint unsigned &rarr;
+                                            tb_jadwal_pekerjaan (cascade)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-fk">FK</span>
+                                        <span class="field-name">user_id</span>
+                                        <span class="field-type"
+                                            >bigint unsigned &rarr; tb_user
+                                            (cascade)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >nama_lokasi</span
+                                        >
+                                        <span class="field-type"
+                                            >varchar(255)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-keep"
+                                            >KEEP</span
+                                        >
+                                        <span class="field-name"
+                                            >alamat_lokasi</span
+                                        >
+                                        <span class="field-type"
+                                            >text, NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name">latitude</span>
+                                        <span class="field-type"
+                                            >decimal(10,7), NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >longitude</span
+                                        >
+                                        <span class="field-type"
+                                            >decimal(10,7), NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >radius_meter</span
+                                        >
+                                        <span class="field-type"
+                                            >int, default 50</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >keterangan_pekerjaan</span
+                                        >
+                                        <span class="field-type"
+                                            >text, NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-enum"
+                                            >ENUM</span
+                                        >
+                                        <span class="field-name">status</span>
+                                        <span class="field-type"
+                                            >'pending'|'disetujui'|'ditolak',
+                                            default 'pending'</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-keep"
+                                            >KEEP</span
+                                        >
+                                        <span class="field-name"
+                                            >alasan_tolak</span
+                                        >
+                                        <span class="field-type"
+                                            >text, NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >created_at</span
+                                        >
+                                        <span class="field-type"
+                                            >timestamp</span
+                                        >
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                Tabel detail pekerjaan lapangan per jadwal. FK
+                                <em>user_id</em> ke <em>tb_user</em> (karyawan).
+                                Karyawan menerima/menolak tugas via portal
+                                mobile; jika menolak, alasan disimpan di
+                                <em>alasan_tolak</em>.
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="col-no">4</td>
+                            <td><strong>tb_presensi</strong></td>
+                            <td>
+                                <ul class="field-list">
+                                    <li>
+                                        <span class="badge badge-pk">PK</span>
+                                        <span class="field-name">id</span>
+                                        <span class="field-type"
+                                            >bigint unsigned, AI</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-fk">FK</span>
+                                        <span class="field-name">user_id</span>
+                                        <span class="field-type"
+                                            >bigint unsigned &rarr; tb_user
+                                            (cascade)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-fk">FK</span>
+                                        <span class="field-name"
+                                            >jadwal_id</span
+                                        >
+                                        <span class="field-type"
+                                            >bigint unsigned, NULL &rarr;
+                                            tb_jadwal_pekerjaan (set null)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name">tanggal</span>
+                                        <span class="field-type">date</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >jam_masuk</span
+                                        >
+                                        <span class="field-type"
+                                            >datetime, NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >jam_keluar</span
+                                        >
+                                        <span class="field-type"
+                                            >datetime, NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-keep"
+                                            >KEEP</span
+                                        >
+                                        <span class="field-name"
+                                            >foto_masuk</span
+                                        >
+                                        <span class="field-type"
+                                            >varchar(255), NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-keep"
+                                            >KEEP</span
+                                        >
+                                        <span class="field-name"
+                                            >foto_keluar</span
+                                        >
+                                        <span class="field-type"
+                                            >varchar(255), NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-keep"
+                                            >KEEP</span
+                                        >
+                                        <span class="field-name"
+                                            >latitude_masuk /
+                                            longitude_masuk</span
+                                        >
+                                        <span class="field-type"
+                                            >decimal(10,7), NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-keep"
+                                            >KEEP</span
+                                        >
+                                        <span class="field-name"
+                                            >latitude_keluar /
+                                            longitude_keluar</span
+                                        >
+                                        <span class="field-type"
+                                            >decimal(10,7), NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >menit_terlambat</span
+                                        >
+                                        <span class="field-type"
+                                            >int unsigned, default 0</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >potongan_terlambat</span
+                                        >
+                                        <span class="field-type"
+                                            >decimal(10,2), default 0</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-enum"
+                                            >ENUM</span
+                                        >
+                                        <span class="field-name"
+                                            >status_presensi</span
+                                        >
+                                        <span class="field-type"
+                                            >'hadir'|'terlambat'|'tidak_hadir'|'izin'</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-new">NEW</span
+                                        ><span class="badge badge-enum"
+                                            >ENUM</span
+                                        >
+                                        <span class="field-name"
+                                            >status_verifikasi</span
+                                        >
+                                        <span class="field-type"
+                                            >'pending'|'disetujui'|'ditolak',
+                                            default 'pending'</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-new">NEW</span
+                                        ><span class="badge badge-fk">FK</span>
+                                        <span class="field-name"
+                                            >diverifikasi_oleh</span
+                                        >
+                                        <span class="field-type"
+                                            >bigint unsigned, NULL &rarr;
+                                            tb_user (set null)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-new">NEW</span>
+                                        <span class="field-name"
+                                            >catatan_verifikasi</span
+                                        >
+                                        <span class="field-type"
+                                            >text, NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-new">NEW</span>
+                                        <span class="field-name"
+                                            >tgl_verifikasi</span
+                                        >
+                                        <span class="field-type"
+                                            >datetime, NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >created_at</span
+                                        >
+                                        <span class="field-type"
+                                            >timestamp</span
+                                        >
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                Tabel kehadiran harian + verifikasi inline. V3
+                                menghapus tabel <em>tb_verifikasi</em>; data
+                                verifikasi (4 kolom NEW) di-merge ke sini karena
+                                relasinya selalu 1:1. Foto &amp; GPS koordinat
+                                masuk/keluar dipertahankan untuk fitur upload
+                                selfie + audit lokasi check-in.
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="col-no">5</td>
+                            <td><strong>tb_bukti_pekerjaan</strong></td>
+                            <td>
+                                <ul class="field-list">
+                                    <li>
+                                        <span class="badge badge-pk">PK</span>
+                                        <span class="field-name">id</span>
+                                        <span class="field-type"
+                                            >bigint unsigned, AI</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-fk">FK</span>
+                                        <span class="field-name"
+                                            >detail_pekerjaan_id</span
+                                        >
+                                        <span class="field-type"
+                                            >bigint unsigned &rarr;
+                                            tb_detail_pekerjaan (cascade)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-fk">FK</span>
+                                        <span class="field-name">user_id</span>
+                                        <span class="field-type"
+                                            >bigint unsigned &rarr; tb_user
+                                            (cascade)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >foto_before</span
+                                        >
+                                        <span class="field-type"
+                                            >varchar(255)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >foto_after</span
+                                        >
+                                        <span class="field-type"
+                                            >varchar(255)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-keep"
+                                            >KEEP</span
+                                        >
+                                        <span class="field-name"
+                                            >keterangan</span
+                                        >
+                                        <span class="field-type"
+                                            >text, NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-enum"
+                                            >ENUM</span
+                                        >
+                                        <span class="field-name">status</span>
+                                        <span class="field-type"
+                                            >'pending'|'disetujui'|'ditolak',
+                                            default 'pending'</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >uploaded_at</span
+                                        >
+                                        <span class="field-type">datetime</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >created_at</span
+                                        >
+                                        <span class="field-type"
+                                            >timestamp</span
+                                        >
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                Tabel bukti hasil kerja per tugas. Foto sebelum
+                                + foto sesudah pengerjaan. Field
+                                <em>keterangan</em> dipertahankan untuk konteks
+                                tekstual.
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="col-no">6</td>
+                            <td><strong>tb_laporan_presensi</strong></td>
+                            <td>
+                                <ul class="field-list">
+                                    <li>
+                                        <span class="badge badge-pk">PK</span>
+                                        <span class="field-name">id</span>
+                                        <span class="field-type"
+                                            >bigint unsigned, AI</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-fk">FK</span>
+                                        <span class="field-name">user_id</span>
+                                        <span class="field-type"
+                                            >bigint unsigned, NULL &rarr;
+                                            tb_user (cascade)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-fk">FK</span>
+                                        <span class="field-name"
+                                            >generated_by</span
+                                        >
+                                        <span class="field-type"
+                                            >bigint unsigned &rarr; tb_user (set
+                                            null)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name">judul</span>
+                                        <span class="field-type"
+                                            >varchar(255)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name">periode</span>
+                                        <span class="field-type"
+                                            >varchar(20)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-enum"
+                                            >ENUM</span
+                                        >
+                                        <span class="field-name">jenis</span>
+                                        <span class="field-type"
+                                            >'Harian'|'Mingguan'|'Bulanan'|'Tahunan'</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >jumlah_hadir</span
+                                        >
+                                        <span class="field-type"
+                                            >int unsigned, NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >jumlah_terlambat</span
+                                        >
+                                        <span class="field-type"
+                                            >int unsigned, NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >jumlah_tidak_hadir</span
+                                        >
+                                        <span class="field-type"
+                                            >int unsigned, NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >total_potongan</span
+                                        >
+                                        <span class="field-type"
+                                            >decimal(12,2), NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >file_path</span
+                                        >
+                                        <span class="field-type"
+                                            >varchar(255), NULL</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >tgl_generate</span
+                                        >
+                                        <span class="field-type">datetime</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name"
+                                            >created_at</span
+                                        >
+                                        <span class="field-type"
+                                            >timestamp</span
+                                        >
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                Penyatuan dari <em>tb_laporan</em> +
+                                <em>tb_rekap_presensi_bulanan</em>.
+                                <em>user_id</em> NULL untuk laporan agregat
+                                (semua karyawan); diisi untuk rekap
+                                per-karyawan. Kolom <em>jumlah_*</em> &amp;
+                                <em>total_potongan</em> diisi ketika tipe rekap
+                                per-karyawan; <em>file_path</em> diisi setelah
+                                file export ter-generate. Field gaji dari V2
+                                tidak diadopsi.
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="col-no">7</td>
+                            <td>
+                                <strong>tb_setting</strong>
+                                <span style="font-size: 10.5px; color: #94a3b8"
+                                    >(pendukung)</span
+                                >
+                            </td>
+                            <td>
+                                <ul class="field-list">
+                                    <li>
+                                        <span class="badge badge-pk">PK</span>
+                                        <span class="field-name">id</span>
+                                        <span class="field-type"
+                                            >bigint unsigned, AI</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-uk">UK</span>
+                                        <span class="field-name">key</span>
+                                        <span class="field-type"
+                                            >varchar(100), UNIQUE</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name">value</span>
+                                        <span class="field-type">text</span>
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name">group</span>
+                                        <span class="field-type"
+                                            >varchar(50)</span
+                                        >
+                                    </li>
+                                    <li>
+                                        <span class="badge badge-at">AT</span>
+                                        <span class="field-name">label</span>
+                                        <span class="field-type"
+                                            >varchar(255)</span
+                                        >
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                Tabel konfigurasi sistem key-value. Key yang
+                                dipakai: <code>kantor_lat</code>,
+                                <code>kantor_lng</code>,
+                                <code>kantor_radius</code>,
+                                <code>toleransi_menit</code>,
+                                <code>nama_perusahaan</code>,
+                                <code>alamat_perusahaan</code>. Dipertahankan
+                                dari V2 (tidak tergambar di ERD V3 tapi tetap
+                                dipertahankan agar konfigurasi runtime via
+                                Filament panel tetap bisa berjalan).
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section-subtitle">
+                B. Penjelasan Hubungan (Kardinalitas)
+            </div>
+            <div class="tbl-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="col-no">No</th>
+                            <th class="col-tbl">Tabel Asal</th>
+                            <th class="col-kard">Kardinalitas</th>
+                            <th class="col-tbl">Tabel Tujuan</th>
+                            <th>Penjelasan Relasi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="col-no">1</td>
+                            <td><strong>tb_user</strong></td>
+                            <td class="col-kard">
+                                <span class="badge badge-1n">1 : N</span>
+                            </td>
+                            <td><strong>tb_jadwal_pekerjaan</strong></td>
+                            <td>
+                                Satu User (karyawan) dapat memiliki banyak
+                                Jadwal Pekerjaan. FK:
+                                <em>tb_jadwal_pekerjaan.user_id</em> &rarr;
+                                <em>tb_user.id</em> (cascade delete).
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-no">2</td>
+                            <td><strong>tb_user</strong></td>
+                            <td class="col-kard">
+                                <span class="badge badge-1n">1 : N</span>
+                            </td>
+                            <td><strong>tb_jadwal_pekerjaan</strong></td>
+                            <td>
+                                Satu User (admin) dapat membuat banyak Jadwal
+                                Pekerjaan. FK:
+                                <em>tb_jadwal_pekerjaan.dibuat_oleh</em> &rarr;
+                                <em>tb_user.id</em> (set null on delete).
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-no">3</td>
+                            <td><strong>tb_jadwal_pekerjaan</strong></td>
+                            <td class="col-kard">
+                                <span class="badge badge-1n">1 : N</span>
+                            </td>
+                            <td><strong>tb_detail_pekerjaan</strong></td>
+                            <td>
+                                Satu Jadwal Pekerjaan dapat memiliki banyak
+                                Detail Pekerjaan (tugas). FK:
+                                <em>tb_detail_pekerjaan.jadwal_id</em> &rarr;
+                                <em>tb_jadwal_pekerjaan.id</em> (cascade
+                                delete).
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-no">4</td>
+                            <td><strong>tb_user</strong></td>
+                            <td class="col-kard">
+                                <span class="badge badge-1n">1 : N</span>
+                            </td>
+                            <td><strong>tb_detail_pekerjaan</strong></td>
+                            <td>
+                                Satu User (karyawan) dapat ditugaskan ke banyak
+                                Detail Pekerjaan. FK:
+                                <em>tb_detail_pekerjaan.user_id</em> &rarr;
+                                <em>tb_user.id</em> (cascade delete).
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-no">5</td>
+                            <td><strong>tb_jadwal_pekerjaan</strong></td>
+                            <td class="col-kard">
+                                <span class="badge badge-11">1 : 1</span>
+                            </td>
+                            <td><strong>tb_presensi</strong></td>
+                            <td>
+                                Satu Jadwal Pekerjaan menghasilkan paling banyak
+                                satu Presensi (1 hari = 1 presensi). FK:
+                                <em>tb_presensi.jadwal_id</em> &rarr;
+                                <em>tb_jadwal_pekerjaan.id</em> (set null on
+                                delete).
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-no">6</td>
+                            <td><strong>tb_user</strong></td>
+                            <td class="col-kard">
+                                <span class="badge badge-1n">1 : N</span>
+                            </td>
+                            <td><strong>tb_presensi</strong></td>
+                            <td>
+                                Satu User (karyawan) dapat memiliki banyak
+                                record Presensi (satu per tanggal). FK:
+                                <em>tb_presensi.user_id</em> &rarr;
+                                <em>tb_user.id</em> (cascade delete).
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-no">7</td>
+                            <td><strong>tb_user</strong></td>
+                            <td class="col-kard">
+                                <span class="badge badge-1n">1 : N</span>
+                            </td>
+                            <td><strong>tb_presensi</strong></td>
+                            <td>
+                                Satu User (supervisor) dapat memverifikasi
+                                banyak Presensi. FK:
+                                <em>tb_presensi.diverifikasi_oleh</em> &rarr;
+                                <em>tb_user.id</em> (set null on delete).
+                                Verifikasi inline ke tb_presensi (V3 hapus
+                                tb_verifikasi).
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-no">8</td>
+                            <td><strong>tb_detail_pekerjaan</strong></td>
+                            <td class="col-kard">
+                                <span class="badge badge-1n">1 : N</span>
+                            </td>
+                            <td><strong>tb_bukti_pekerjaan</strong></td>
+                            <td>
+                                Satu Detail Pekerjaan dapat memiliki banyak
+                                Bukti Pekerjaan (multiple upload). FK:
+                                <em>tb_bukti_pekerjaan.detail_pekerjaan_id</em>
+                                &rarr; <em>tb_detail_pekerjaan.id</em> (cascade
+                                delete).
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-no">9</td>
+                            <td><strong>tb_user</strong></td>
+                            <td class="col-kard">
+                                <span class="badge badge-1n">1 : N</span>
+                            </td>
+                            <td><strong>tb_bukti_pekerjaan</strong></td>
+                            <td>
+                                Satu User (karyawan) dapat mengunggah banyak
+                                Bukti Pekerjaan. FK:
+                                <em>tb_bukti_pekerjaan.user_id</em> &rarr;
+                                <em>tb_user.id</em> (cascade delete).
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-no">10</td>
+                            <td><strong>tb_user</strong></td>
+                            <td class="col-kard">
+                                <span class="badge badge-1n">1 : N</span>
+                            </td>
+                            <td><strong>tb_laporan_presensi</strong></td>
+                            <td>
+                                Satu User (karyawan) dapat menjadi subjek banyak
+                                Laporan Presensi (rekap per-karyawan
+                                per-periode). FK:
+                                <em>tb_laporan_presensi.user_id</em> &rarr;
+                                <em>tb_user.id</em> (cascade delete). Nullable
+                                untuk laporan agregat.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-no">11</td>
+                            <td><strong>tb_user</strong></td>
+                            <td class="col-kard">
+                                <span class="badge badge-1n">1 : N</span>
+                            </td>
+                            <td><strong>tb_laporan_presensi</strong></td>
+                            <td>
+                                Satu User (admin/supervisor) dapat men-generate
+                                banyak Laporan Presensi. FK:
+                                <em>tb_laporan_presensi.generated_by</em> &rarr;
+                                <em>tb_user.id</em> (set null on delete).
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════ -->
+        <!--  ERD MERMAID                                    -->
+        <!-- ═══════════════════════════════════════════════ -->
+        <div class="section">
+            <div class="section-title">
+                Diagram 2. Entity Relationship Diagram (Mermaid)
+            </div>
+            <div class="diagram-wrap">
+                <pre class="mermaid">
+erDiagram
+    tb_user {
+        bigint id PK
+        varchar nama
+        varchar email UK
+        varchar password
+        varchar nik
+        varchar no_hp
+        varchar posisi
+        enum role
+        tinyint is_active
+        timestamp created_at
+    }
+
+    tb_jadwal_pekerjaan {
+        bigint id PK
+        bigint user_id FK
+        bigint dibuat_oleh FK
+        date tanggal_kerja
+        time jam_masuk
+        time jam_pulang
+        tinyint hari_libur
+        enum status
+        timestamp created_at
+    }
+
+    tb_detail_pekerjaan {
+        bigint id PK
+        bigint jadwal_id FK
+        bigint user_id FK
+        varchar nama_lokasi
+        text alamat_lokasi
+        decimal latitude
+        decimal longitude
+        int radius_meter
+        text keterangan_pekerjaan
+        enum status
+        text alasan_tolak
+        timestamp created_at
+    }
+
+    tb_presensi {
+        bigint id PK
+        bigint user_id FK
+        bigint jadwal_id FK
+        date tanggal
+        datetime jam_masuk
+        datetime jam_keluar
+        varchar foto_masuk
+        varchar foto_keluar
+        decimal latitude_masuk
+        decimal longitude_masuk
+        decimal latitude_keluar
+        decimal longitude_keluar
+        int menit_terlambat
+        decimal potongan_terlambat
+        enum status_presensi
+        enum status_verifikasi
+        bigint diverifikasi_oleh FK
+        text catatan_verifikasi
+        datetime tgl_verifikasi
+        timestamp created_at
+    }
+
+    tb_bukti_pekerjaan {
+        bigint id PK
+        bigint detail_pekerjaan_id FK
+        bigint user_id FK
+        varchar foto_before
+        varchar foto_after
+        text keterangan
+        enum status
+        datetime uploaded_at
+        timestamp created_at
+    }
+
+    tb_laporan_presensi {
+        bigint id PK
+        bigint user_id FK
+        bigint generated_by FK
+        varchar judul
+        varchar periode
+        enum jenis
+        int jumlah_hadir
+        int jumlah_terlambat
+        int jumlah_tidak_hadir
+        decimal total_potongan
+        varchar file_path
+        datetime tgl_generate
+        timestamp created_at
+    }
+
+    tb_setting {
+        bigint id PK
+        varchar key UK
+        text value
+        varchar group
+        varchar label
+    }
+
+    tb_user ||--o{ tb_jadwal_pekerjaan : "memiliki (user_id)"
+    tb_user ||--o{ tb_jadwal_pekerjaan : "membuat (dibuat_oleh)"
+    tb_user ||--o{ tb_detail_pekerjaan : "ditugaskan"
+    tb_user ||--o{ tb_presensi : "melakukan"
+    tb_user ||--o{ tb_presensi : "memverifikasi (diverifikasi_oleh)"
+    tb_user ||--o{ tb_bukti_pekerjaan : "mengunggah"
+    tb_user ||--o{ tb_laporan_presensi : "subjek (user_id)"
+    tb_user ||--o{ tb_laporan_presensi : "pembuat (generated_by)"
+    tb_jadwal_pekerjaan ||--o{ tb_detail_pekerjaan : "memuat tugas"
+    tb_jadwal_pekerjaan ||--o| tb_presensi : "dihadiri"
+    tb_detail_pekerjaan ||--o{ tb_bukti_pekerjaan : "memiliki bukti"
+    </pre
+                >
+                <div class="diagram-caption">
+                    Diagram 2. ERD V3 — Sistem Informasi Kepegawaian CV Boss
+                    Muda Mandiri. Tabel <em>tb_setting</em> berdiri sendiri
+                    tanpa FK (konfigurasi runtime key-value).
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════ -->
+        <!--  TRADE-OFF ANALYSIS                             -->
+        <!-- ═══════════════════════════════════════════════ -->
+        <div class="section">
+            <div class="section-title">
+                Tabel 3. Analisis Trade-off Desain V3
+            </div>
+
+            <div class="pros-cons">
+                <div class="pros">
+                    <h4>✓ Kelebihan ERD V3</h4>
+                    <ul>
+                        <li>
+                            <strong>Schema ramping</strong> — 7 tabel total (6
+                            inti + 1 pendukung), turun dari 12 tabel V2.
+                        </li>
+                        <li>
+                            <strong>Single source of truth User</strong> — tidak
+                            perlu JOIN 4 tabel (user+admin+supervisor+karyawan)
+                            untuk dapat profil lengkap.
+                        </li>
+                        <li>
+                            <strong>Naming konsisten</strong> — semua FK ke user
+                            memakai <code>user_id</code>, tidak lagi campur
+                            <code>karyawan_id</code
+                            >/<code>admin_id</code>/<code>supervisor_id</code>.
+                        </li>
+                        <li>
+                            <strong>Verifikasi inline</strong> — relasi 1:1
+                            presensi↔verifikasi disederhanakan jadi kolom,
+                            mengurangi JOIN dan latensi query.
+                        </li>
+                        <li>
+                            <strong>Laporan terunifikasi</strong> — penyatuan
+                            rekap + laporan jadi satu tabel mengurangi duplikasi
+                            konsep.
+                        </li>
+                        <li>
+                            <strong>Penamaan lebih deskriptif</strong> —
+                            <code>tb_jadwal</code> menjadi
+                            <code>tb_jadwal_pekerjaan</code> mengisyaratkan
+                            konteks.
+                        </li>
+                    </ul>
+                </div>
+                <div class="cons">
+                    <h4>✗ Kekurangan / Risiko ERD V3</h4>
+                    <ul>
+                        <li>
+                            <strong>tb_user gemuk</strong> — kolom nik, no_hp,
+                            posisi yang hanya relevan untuk karyawan jadi
+                            nullable. Bisa jadi
+                            <em>data integrity smell</em> bila tidak ada
+                            constraint role-based.
+                        </li>
+                        <li>
+                            <strong>Migrasi data berat</strong> — data dari 4
+                            tabel user V2 harus di-merge ke
+                            <code>tb_user</code>; perlu strategi mapping yang
+                            cermat.
+                        </li>
+                        <li>
+                            <strong>Polimorfik laporan</strong> —
+                            <code>tb_laporan_presensi</code> menyimpan dua
+                            bentuk record (rekap per-karyawan vs laporan
+                            agregat) — kolom
+                            <em>user_id</em>/<em>jumlah_*</em>/<em
+                                >total_potongan</em
+                            >
+                            jadi nullable, schema kurang strict.
+                        </li>
+                        <li>
+                            <strong>FK self-referential tb_user</strong> — kolom
+                            <em>dibuat_oleh</em>, <em>diverifikasi_oleh</em>,
+                            <em>generated_by</em> semua FK ke tb_user; query
+                            <em>get user with role</em> jadi sering muncul.
+                        </li>
+                        <li>
+                            <strong>Audit trail verifikasi terbatas</strong> —
+                            verifikasi inline = tidak ada history kalau
+                            supervisor mengubah keputusan (V2 punya
+                            tb_verifikasi sebagai append-only log).
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="note-box danger">
+                <h4>🛠 Catatan Migrasi V2 → V3</h4>
+                Implementasi V3 memerlukan langkah migrasi berikut:
+                <ul>
+                    <li>
+                        <strong>Backup penuh DB V2</strong> sebelum migrasi
+                        (tb_admin, tb_supervisor, tb_karyawan, tb_verifikasi,
+                        tb_rekap_presensi_bulanan, tb_laporan akan di-drop).
+                    </li>
+                    <li>
+                        <strong>Migration script merge user data</strong> — copy
+                        nik/no_hp/posisi/dll dari
+                        tb_admin/tb_supervisor/tb_karyawan ke kolom baru di
+                        tb_user.
+                    </li>
+                    <li>
+                        <strong>Migration script merge verifikasi</strong> —
+                        copy status/supervisor_id/catatan/tgl_verifikasi dari
+                        tb_verifikasi ke kolom inline di tb_presensi (mapping
+                        presensi_id).
+                    </li>
+                    <li>
+                        <strong>Migration script merge laporan + rekap</strong>
+                        — merge tb_laporan + tb_rekap_presensi_bulanan jadi
+                        tb_laporan_presensi dengan jenis &amp; field statistik.
+                    </li>
+                    <li>
+                        <strong>Refactor Filament Resource</strong> —
+                        KaryawanResource, AdminResource, SupervisorResource jadi
+                        UserResource tunggal dengan filter by role.
+                        RekapPresensiBulananResource + LaporanResource jadi
+                        LaporanPresensiResource tunggal.
+                    </li>
+                    <li>
+                        <strong>Refactor RBAC</strong> — semua
+                        <em>canViewAny/canCreate</em> tetap by role, tapi data
+                        karyawan diambil via
+                        <code>User::where('role','karyawan')</code> bukan via
+                        tabel terpisah.
+                    </li>
+                    <li>
+                        <strong
+                            >Tabel <code>tb_setting</code> tetap
+                            dipertahankan</strong
+                        >
+                        — tidak perlu migrasi struktur, hanya konfirmasi semua
+                        key (kantor_lat, kantor_lng, radius, toleransi,
+                        nama_perusahaan, alamat_perusahaan) masih tersedia.
+                    </li>
+                </ul>
+            </div>
+
+            <div class="note-box warning">
+                <h4>⚠ Field critical dipertahankan dari V2</h4>
+                Walaupun gambar ERD V3 tidak menampilkannya, field berikut
+                <strong>tetap ada</strong> di schema V3 agar fitur V2.3 saat ini
+                tidak rusak:
+                <ul>
+                    <li>
+                        <code>tb_presensi.foto_masuk</code>,
+                        <code>foto_keluar</code> — fitur upload selfie
+                    </li>
+                    <li>
+                        <code
+                            >tb_presensi.latitude_masuk/longitude_masuk/latitude_keluar/longitude_keluar</code
+                        >
+                        — audit GPS
+                    </li>
+                    <li>
+                        <code>tb_detail_pekerjaan.alamat_lokasi</code> — alamat
+                        tekstual lokasi tugas
+                    </li>
+                    <li>
+                        <code>tb_detail_pekerjaan.alasan_tolak</code> — alasan
+                        tolak tugas oleh karyawan
+                    </li>
+                    <li>
+                        <code>tb_bukti_pekerjaan.keterangan</code> — konteks
+                        tekstual upload bukti
+                    </li>
+                    <li>
+                        <code>tb_setting</code> (tabel pendukung) — konfigurasi
+                        runtime
+                    </li>
+                </ul>
+                Field <em>gaji_pokok/total_potongan/gaji_bersih</em> yang muncul
+                di gambar ERD V3 untuk <code>tb_laporan_presensi</code>
+                <strong>tidak diadopsi</strong> karena fitur tampilan gaji sudah
+                dihapus permanen sejak V2.2. Hanya
+                <code>total_potongan</code> yang dipertahankan (akumulasi
+                potongan keterlambatan).
+            </div>
+        </div>
+
+        <script>
+            mermaid.initialize({ startOnLoad: true, theme: "default" });
+        </script>
+    </body>
+</html>
