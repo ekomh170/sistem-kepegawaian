@@ -72,11 +72,7 @@ class Presensi extends Model
             return 0;
         }
 
-        if ($menitTerlambat > 30) {
-            return 20000;
-        }
-
-        // 11-20 menit → 1 blok = Rp10.000, 21-30 menit → 2 blok = Rp20.000
+        // Rp10.000 per 10 menit keterlambatan (toleransi 10 menit pertama)
         $blok = (int) ceil(($menitTerlambat - 10) / 10);
         return $blok * 10000;
     }
