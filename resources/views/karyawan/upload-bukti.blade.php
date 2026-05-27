@@ -25,42 +25,57 @@
         </section>
     @else
         {{-- Form Upload --}}
-        <section class="card">
-            <h2>Upload Foto Bukti</h2>
+        <form action="{{ route('karyawan.tugas.upload.submit') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <input type="hidden" name="detail_pekerjaan_id" value="{{ $tugas->id }}">
 
-            <form action="{{ route('karyawan.tugas.upload.submit') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <input type="hidden" name="detail_pekerjaan_id" value="{{ $tugas->id }}">
-
-                {{-- Foto Before --}}
-                <div class="field" style="margin-bottom: 16px;">
-                    <label>📷 Foto Before (Sebelum Dikerjakan)</label>
+            {{-- Foto Before --}}
+            <section class="card" style="border-left:5px solid #f59e0b;background:#fffbeb;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                    <span style="background:#f59e0b;color:#fff;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:0.5px;">BEFORE</span>
+                    <h2 style="margin:0;font-size:15px;color:#92400e;">Foto Sebelum Dikerjakan</h2>
+                </div>
+                <div class="field" style="margin-bottom:0;">
                     <div style="margin-top:6px;">
-                        <button type="button" class="btn btn-secondary" onclick="openCamera('before')" style="width:100%;padding:10px;">Buka Kamera</button>
+                        <button type="button" class="btn btn-secondary" onclick="openCamera('before')" style="width:100%;padding:10px;">📷 Buka Kamera</button>
                     </div>
                     <input type="file" name="foto_before" accept="image/*" id="file_before" style="margin-top:8px;">
                     <input type="hidden" name="foto_before_base64" id="foto_before_base64">
                     <video id="video_before" autoplay playsinline style="width:100%;border-radius:8px;display:none;margin-top:8px;"></video>
                     <canvas id="canvas_before" style="display:none;"></canvas>
-                    <img id="preview_before" style="width:100%;border-radius:8px;display:none;margin-top:8px;">
+                    <img id="preview_before" style="width:100%;border-radius:8px;display:none;margin-top:8px;border:2px solid #f59e0b;">
                     <button type="button" id="capture_before" class="btn btn-primary" style="display:none;margin-top:8px;width:100%;padding:10px;" onclick="capturePhoto('before')">📸 Ambil Foto Before</button>
                 </div>
+            </section>
 
-                {{-- Foto After --}}
-                <div class="field" style="margin-bottom: 16px;">
-                    <label>📷 Foto After (Sesudah Dikerjakan)</label>
+            {{-- Pemisah visual --}}
+            <div style="display:flex;align-items:center;gap:10px;margin:6px 4px 10px;">
+                <span style="flex:1;height:1px;background:#cbd5e1;"></span>
+                <span style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:1px;">⬇ LANJUT KE FOTO AFTER ⬇</span>
+                <span style="flex:1;height:1px;background:#cbd5e1;"></span>
+            </div>
+
+            {{-- Foto After --}}
+            <section class="card" style="border-left:5px solid #10b981;background:#ecfdf5;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                    <span style="background:#10b981;color:#fff;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:0.5px;">AFTER</span>
+                    <h2 style="margin:0;font-size:15px;color:#065f46;">Foto Sesudah Dikerjakan</h2>
+                </div>
+                <div class="field" style="margin-bottom:0;">
                     <div style="margin-top:6px;">
-                        <button type="button" class="btn btn-secondary" onclick="openCamera('after')" style="width:100%;padding:10px;">Buka Kamera</button>
+                        <button type="button" class="btn btn-secondary" onclick="openCamera('after')" style="width:100%;padding:10px;">📷 Buka Kamera</button>
                     </div>
                     <input type="file" name="foto_after" accept="image/*" id="file_after" style="margin-top:8px;">
                     <input type="hidden" name="foto_after_base64" id="foto_after_base64">
                     <video id="video_after" autoplay playsinline style="width:100%;border-radius:8px;display:none;margin-top:8px;"></video>
                     <canvas id="canvas_after" style="display:none;"></canvas>
-                    <img id="preview_after" style="width:100%;border-radius:8px;display:none;margin-top:8px;">
+                    <img id="preview_after" style="width:100%;border-radius:8px;display:none;margin-top:8px;border:2px solid #10b981;">
                     <button type="button" id="capture_after" class="btn btn-primary" style="display:none;margin-top:8px;width:100%;padding:10px;" onclick="capturePhoto('after')">📸 Ambil Foto After</button>
                 </div>
+            </section>
 
-                {{-- Keterangan --}}
+            {{-- Keterangan + Submit --}}
+            <section class="card">
                 <div class="field" style="margin-bottom: 16px;">
                     <label>📝 Keterangan Hasil Kerja</label>
                     <textarea name="keterangan" rows="3" placeholder="Jelaskan hasil pekerjaan..." style="width:100%;padding:10px;border:1px solid #d9e0ef;border-radius:8px;font-size:14px;margin-top:6px;">{{ old('keterangan') }}</textarea>
@@ -69,8 +84,8 @@
                 <button type="submit" class="btn btn-primary" style="width:100%;padding:14px;font-size:1em;">
                     ✅ Upload Bukti Pekerjaan
                 </button>
-            </form>
-        </section>
+            </section>
+        </form>
     @endif
 
     <script>

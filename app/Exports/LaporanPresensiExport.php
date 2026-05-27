@@ -12,15 +12,25 @@ class LaporanPresensiExport implements FromCollection, WithHeadings, WithMapping
 {
     protected $periode;
     protected $karyawan_id;
+    protected ?Collection $prebuilt;
+    protected string $jenis;
 
-    public function __construct($periode = null, $karyawan_id = null)
+    public function __construct($periode = null, $karyawan_id = null, ?Collection $prebuilt = null, string $jenis = 'Bulanan')
     {
         $this->periode = $periode;
         $this->karyawan_id = $karyawan_id;
+        $this->prebuilt = $prebuilt;
+        $this->jenis = $jenis;
     }
 
     public function collection()
     {
+        // Kalau dipanggil dari controller dengan data pre-built (Harian/Mingguan/Bulanan
+        // via aggregator), pakai itu. Kalau tidak, fallback ke query langsung (Bulanan).
+        if ($this->prebuilt !== null) {
+            return $this->prebuilt;
+        }
+
         return RekapPresensiBulanan::query()
             ->with(['karyawan.user'])
             ->when($this->periode, fn ($query) => $query->where('periode', $this->periode))
@@ -32,7 +42,7 @@ class LaporanPresensiExport implements FromCollection, WithHeadings, WithMapping
     public function headings(): array
     {
         return [
-            'Periode',
+            'Periode (' . $this->jenis . ')',
             'Karyawan',
             'Total Hadir',
             'Total Terlambat',

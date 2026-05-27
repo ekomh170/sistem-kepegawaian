@@ -20,7 +20,7 @@ class RekapPresensiBulananResource extends Resource
 {
     protected static ?string $model = RekapPresensiBulanan::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
     protected static ?string $navigationLabel = 'Laporan Jumlah Presensi Per Karyawan';
 

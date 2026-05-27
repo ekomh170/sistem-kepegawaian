@@ -33,7 +33,11 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Matikan auto-register route /storage/{path} bawaan Laravel
+            // karena root-nya storage/app/private/ (salah lokasi untuk
+            // foto presensi yang ada di storage/app/public/). Route
+            // fallback custom di routes/web.php yang akan handle.
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],

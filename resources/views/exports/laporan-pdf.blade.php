@@ -26,9 +26,27 @@
     </style>
 </head>
 <body>
+    @php
+        $jenisLabel = $jenis ?? 'Bulanan';
+        $periodeLabel = (string) $periode;
+        try {
+            if ($jenisLabel === 'Harian' && strlen($periodeLabel) === 10) {
+                $periodeLabel = \Carbon\Carbon::parse($periodeLabel)->translatedFormat('d F Y');
+            } elseif ($jenisLabel === 'Mingguan' && strlen($periodeLabel) === 10) {
+                $start = \Carbon\Carbon::parse($periodeLabel);
+                $end = $start->copy()->addDays(6);
+                $periodeLabel = $start->translatedFormat('d M Y') . ' – ' . $end->translatedFormat('d M Y');
+            } elseif ($jenisLabel === 'Bulanan' && strlen($periodeLabel) === 7) {
+                $periodeLabel = \Carbon\Carbon::createFromFormat('Y-m', $periodeLabel)->translatedFormat('F Y');
+            }
+        } catch (\Throwable $e) {
+            // biarkan periodeLabel apa adanya
+        }
+    @endphp
+
     <h2>Laporan Jumlah Presensi Per Karyawan</h2>
-    <p><strong>Jenis Laporan:</strong> {{ $jenis ?? 'Bulanan' }}</p>
-    <p><strong>Periode:</strong> {{ $periode }}</p>
+    <p><strong>Jenis Laporan:</strong> {{ $jenisLabel }}</p>
+    <p><strong>Periode:</strong> {{ $periodeLabel }}</p>
 
     <table>
         <thead>

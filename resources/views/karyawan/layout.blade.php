@@ -3,6 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}?v=2">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('favicon.png') }}?v=2">
     <title>{{ $title ?? 'Portal Karyawan' }}</title>
     <style>
         :root {

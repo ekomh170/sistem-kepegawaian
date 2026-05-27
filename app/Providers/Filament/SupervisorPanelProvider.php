@@ -28,6 +28,7 @@ class SupervisorPanelProvider extends PanelProvider
         return $panel
             ->id('supervisor')
             ->path('supervisor')
+            ->favicon(asset('favicon.png') . '?v=2')
             ->login(Login::class)
             ->sidebarCollapsibleOnDesktop()
             ->colors([
