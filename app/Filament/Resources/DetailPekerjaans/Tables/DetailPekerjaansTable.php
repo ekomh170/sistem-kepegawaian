@@ -54,6 +54,12 @@ class DetailPekerjaansTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->modifyQueryUsing(fn (Builder $query) => $query
+                ->leftJoin('tb_jadwal', 'tb_jadwal.id', '=', 'tb_detail_pekerjaan.jadwal_id')
+                ->select('tb_detail_pekerjaan.*')
+                ->orderByDesc('tb_jadwal.tanggal_kerja')
+                ->orderByDesc('tb_detail_pekerjaan.id')
+            )
             ->filters([
                 Filter::make('tanggal_jadwal')
                     ->label('Tanggal Jadwal')

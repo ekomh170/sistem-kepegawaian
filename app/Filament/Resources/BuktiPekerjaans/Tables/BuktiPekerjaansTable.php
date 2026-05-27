@@ -15,9 +15,6 @@ class BuktiPekerjaansTable
             ->columns([
                 \Filament\Tables\Columns\TextColumn::make('karyawan.user.nama')->label('Karyawan')->searchable()->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('detailPekerjaan.nama_lokasi')->label('Tugas / Lokasi')->searchable(),
-                \Filament\Tables\Columns\TextColumn::make('detailPekerjaan.tanggal')->label('Tanggal')->date()->sortable(),
-                \Filament\Tables\Columns\ImageColumn::make('foto_before')->label('Before'),
-                \Filament\Tables\Columns\ImageColumn::make('foto_after')->label('After'),
                 \Filament\Tables\Columns\TextColumn::make('keterangan')->limit(50),
                 \Filament\Tables\Columns\TextColumn::make('status')->badge(),
                 \Filament\Tables\Columns\TextColumn::make('uploaded_at')->dateTime()->sortable(),
