@@ -9,19 +9,71 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class LaporanExportController extends Controller
 {
+    /**
+     * Build rekap presensi per karyawan. Untuk Bulanan ambil dari tabel
+     * RekapPresensiBulanan (sudah pre-aggregated). Untuk Harian/Mingguan
+     * agregasi on-the-fly dari tb_presensi. Shape disamakan dengan model
+     * RekapPresensiBulanan agar view PDF/Excel tidak perlu diubah.
+     */
+    private function buildRekapPresensi(Request $request): \Illuminate\Support\Collection
+    {
+        $jenis      = strtolower((string) $request->string('jenis')) ?: 'bulanan';
+        $periode    = (string) $request->string('periode');
+        $karyawanId = $request->integer('karyawan_id');
+
+        if ($jenis === 'bulanan' || $jenis === '') {
+            return RekapPresensiBulanan::query()
+                ->with(['karyawan.user'])
+                ->when($periode !== '', fn ($q) => $q->where('periode', $periode))
+                ->when($karyawanId, fn ($q) => $q->where('karyawan_id', $karyawanId))
+                ->orderByDesc('created_at')
+                ->get();
+        }
+
+        [$start, $end] = match ($jenis) {
+            'harian'   => [$periode, $periode],
+            'mingguan' => [$periode, \Carbon\Carbon::parse($periode)->addDays(6)->toDateString()],
+            default    => [$periode, $periode],
+        };
+
+        $rows = \App\Models\Presensi::query()
+            ->selectRaw('
+                karyawan_id,
+                SUM(CASE WHEN status_presensi IN ("hadir","terlambat") THEN 1 ELSE 0 END) AS jumlah_hadir,
+                SUM(CASE WHEN status_presensi = "terlambat" THEN 1 ELSE 0 END) AS jumlah_terlambat,
+                SUM(CASE WHEN status_presensi = "tidak_hadir" THEN 1 ELSE 0 END) AS jumlah_tidak_hadir,
+                COALESCE(SUM(potongan_terlambat), 0) AS total_potongan_keterlambatan
+            ')
+            ->whereBetween('tanggal', [$start, $end])
+            ->when($karyawanId, fn ($q) => $q->where('karyawan_id', $karyawanId))
+            ->groupBy('karyawan_id')
+            ->get();
+
+        $karyawans = \App\Models\Karyawan::with('user')
+            ->whereIn('id', $rows->pluck('karyawan_id'))
+            ->get()
+            ->keyBy('id');
+
+        return $rows->map(fn ($r) => (object) [
+            'periode' => $periode,
+            'karyawan' => $karyawans->get($r->karyawan_id),
+            'jumlah_hadir' => (int) $r->jumlah_hadir,
+            'jumlah_terlambat' => (int) $r->jumlah_terlambat,
+            'jumlah_tidak_hadir' => (int) $r->jumlah_tidak_hadir,
+            'total_potongan_keterlambatan' => (float) $r->total_potongan_keterlambatan,
+            'status' => 'rekap_otomatis',
+        ]);
+    }
+
     public function exportCsv(Request $request): StreamedResponse
     {
         $request->validate([
             'periode' => 'nullable|string|max:20',
+            'jenis' => 'nullable|string|max:20',
             'karyawan_id' => 'nullable|integer|exists:tb_karyawan,id',
         ]);
 
-        $rekapPresensiBulanans = RekapPresensiBulanan::query()
-            ->with(['karyawan.user'])
-            ->when($request->filled('periode'), fn ($query) => $query->where('periode', $request->string('periode')))
-            ->when($request->filled('karyawan_id'), fn ($query) => $query->where('karyawan_id', $request->integer('karyawan_id')))
-            ->orderByDesc('created_at')
-            ->get();
+        $rekapPresensiBulanans = $this->buildRekapPresensi($request);
 
         $filename = 'laporan-rekap-presensi-bulanan-' . now()->format('Ymd-His') . '.csv';
 
@@ -62,12 +114,20 @@ class LaporanExportController extends Controller
     {
         $request->validate([
             'periode' => 'nullable|string|max:20',
+            'jenis' => 'nullable|string|max:20',
             'karyawan_id' => 'nullable|integer|exists:tb_karyawan,id',
         ]);
 
-        $filename = 'laporan-rekap-presensi-bulanan-' . now()->format('Ymd-His') . '.xlsx';
+        $jenis = ucfirst(strtolower((string) $request->string('jenis')) ?: 'bulanan');
+        $filename = 'laporan-rekap-presensi-' . strtolower($jenis) . '-' . now()->format('Ymd-His') . '.xlsx';
+
         return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\LaporanPresensiExport($request->string('periode'), $request->integer('karyawan_id')),
+            new \App\Exports\LaporanPresensiExport(
+                $request->string('periode'),
+                $request->integer('karyawan_id'),
+                $this->buildRekapPresensi($request),
+                $jenis,
+            ),
             $filename
         );
     }
@@ -80,12 +140,7 @@ class LaporanExportController extends Controller
             'karyawan_id' => 'nullable|integer|exists:tb_karyawan,id',
         ]);
 
-        $rekapPresensiBulanans = RekapPresensiBulanan::query()
-            ->with(['karyawan.user'])
-            ->when($request->filled('periode'), fn ($query) => $query->where('periode', $request->string('periode')))
-            ->when($request->filled('karyawan_id'), fn ($query) => $query->where('karyawan_id', $request->integer('karyawan_id')))
-            ->orderByDesc('created_at')
-            ->get();
+        $rekapPresensiBulanans = $this->buildRekapPresensi($request);
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.laporan-pdf', [
             'penggajians' => $rekapPresensiBulanans,

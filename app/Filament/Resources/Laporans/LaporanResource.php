@@ -100,9 +100,6 @@ class LaporanResource extends Resource
                                 }
                             })
                             ->afterStateUpdated(function ($set, $get) {
-                                if ($get('tipe_laporan') === 'rekap_presensi_bulanan') {
-                                    $set('jenis', 'Bulanan');
-                                }
                                 self::generateJudul($set, $get);
                             })
                             ->columnSpanFull(),
@@ -110,7 +107,11 @@ class LaporanResource extends Resource
                         Select::make('jenis')
                             ->label('Jenis Laporan')
                             ->options(fn ($get) => $get('tipe_laporan') === 'rekap_presensi_bulanan'
-                                ? ['Bulanan' => '📊 Bulanan']
+                                ? [
+                                    'Harian' => '📅 Harian',
+                                    'Mingguan' => '📆 Mingguan',
+                                    'Bulanan' => '📊 Bulanan',
+                                ]
                                 : [
                                     'Harian' => '📅 Harian',
                                     'Mingguan' => '📆 Mingguan',
@@ -122,7 +123,7 @@ class LaporanResource extends Resource
                             ->default('Bulanan')
                             ->live()
                             ->helperText(fn ($get) => $get('tipe_laporan') === 'rekap_presensi_bulanan'
-                                ? 'Laporan jumlah presensi per karyawan hanya tersedia untuk periode Bulanan.'
+                                ? 'Harian = rekap 1 hari. Mingguan = rekap 7 hari. Bulanan = rekap 1 bulan penuh.'
                                 : null
                             )
                             ->afterStateUpdated(function ($set, $get) {
