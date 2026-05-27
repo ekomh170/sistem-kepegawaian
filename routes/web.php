@@ -21,6 +21,18 @@ Route::get('/', function () {
     };
 });
 
+// Fallback serve file dari storage/app/public — untuk shared hosting yang
+// tidak support symlink (php artisan storage:link). Hanya jalan kalau file
+// fisik di public_html/storage/ tidak ada (otomatis di-handle .htaccess).
+Route::get('/storage/{path}', function (string $path) {
+    $file = storage_path('app/public/' . $path);
+    abort_unless(file_exists($file) && is_file($file), 404);
+
+    return response()->file($file, [
+        'Cache-Control' => 'public, max-age=31536000',
+    ]);
+})->where('path', '.*')->name('storage.serve');
+
 $adminPanel = Filament::getPanel('admin', isStrict: false);
 
 if ($adminPanel) {
