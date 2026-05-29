@@ -26,7 +26,7 @@ class ProductionSeeder extends Seeder
     {
         // ========== ADMIN ==========
         $adminUser = User::updateOrCreate(
-            ['email' => 'admin@kepegawaianjog.com'],
+            ['email' => 'admin@gmail.com'],
             [
                 'nama' => 'Administrator',
                 'password' => 'password',
@@ -44,7 +44,7 @@ class ProductionSeeder extends Seeder
 
         // ========== SUPERVISOR ==========
         $supervisorUser = User::updateOrCreate(
-            ['email' => 'supervisor@kepegawaianjog.com'],
+            ['email' => 'supervisor@gmail.com'],
             [
                 'nama' => 'Supervisor',
                 'password' => 'password',
@@ -63,7 +63,7 @@ class ProductionSeeder extends Seeder
         // ========== KARYAWAN (8 akun) ==========
         for ($i = 1; $i <= 8; $i++) {
             $karyawanUser = User::updateOrCreate(
-                ['email' => "karyawan{$i}@kepegawaianjog.com"],
+                ['email' => "karyawan{$i}@gmail.com"],
                 [
                     'nama' => "Karyawan {$i}",
                     'password' => 'password',
@@ -106,9 +106,9 @@ class ProductionSeeder extends Seeder
         $this->command->info('========================================');
         $this->command->info('  SEEDING PRODUCTION SELESAI');
         $this->command->info('========================================');
-        $this->command->info('  Admin       : admin@kepegawaianjog.com');
-        $this->command->info('  Supervisor  : supervisor@kepegawaianjog.com');
-        $this->command->info('  Karyawan 1-8: karyawan{1..8}@kepegawaianjog.com');
+        $this->command->info('  Admin       : admin@gmail.com');
+        $this->command->info('  Supervisor  : supervisor@gmail.com');
+        $this->command->info('  Karyawan 1-8: karyawan{1..8}@gmail.com');
         $this->command->info('  Password    : password');
         $this->command->warn('  WAJIB UBAH PASSWORD SETELAH LOGIN PERTAMA!');
         $this->command->info('========================================');
