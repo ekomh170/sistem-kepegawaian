@@ -27,6 +27,11 @@ Homestead.yaml
 Thumbs.db
 docs/tabel-class-diagram-erd.html
 docs/tabel-class-diagram-erd-v2.html
-
 claude.md
 settings.local.json
+ssh/
+.env-backup-local
+.env-backup-public
+.htaccess
+public/link.php
+zip/
