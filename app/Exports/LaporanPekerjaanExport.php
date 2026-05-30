@@ -21,15 +21,15 @@ class LaporanPekerjaanExport implements FromCollection, WithHeadings, WithMappin
     public function collection()
     {
         return DetailPekerjaan::query()
-            ->with(['karyawan.user', 'jadwal', 'buktiPekerjaans'])
-            ->join('tb_jadwal', 'tb_jadwal.id', '=', 'tb_detail_pekerjaan.jadwal_id')
+            ->with(['user', 'jadwal', 'buktiPekerjaans'])
+            ->join('tb_jadwal_pekerjaan', 'tb_jadwal_pekerjaan.id', '=', 'tb_detail_pekerjaan.jadwal_id')
             ->when(
                 $this->periode,
-                fn ($q) => $q->whereRaw("DATE_FORMAT(tb_jadwal.tanggal_kerja, '%Y-%m') = ?", [$this->periode])
+                fn ($q) => $q->whereRaw("DATE_FORMAT(tb_jadwal_pekerjaan.tanggal_kerja, '%Y-%m') = ?", [$this->periode])
             )
-            ->when($this->karyawan_id, fn ($q) => $q->where('tb_detail_pekerjaan.karyawan_id', $this->karyawan_id))
-            ->orderByDesc('tb_jadwal.tanggal_kerja')
-            ->orderBy('tb_detail_pekerjaan.karyawan_id')
+            ->when($this->karyawan_id, fn ($q) => $q->where('tb_detail_pekerjaan.user_id', $this->karyawan_id))
+            ->orderByDesc('tb_jadwal_pekerjaan.tanggal_kerja')
+            ->orderBy('tb_detail_pekerjaan.user_id')
             ->select('tb_detail_pekerjaan.*')
             ->get();
     }
@@ -52,8 +52,8 @@ class LaporanPekerjaanExport implements FromCollection, WithHeadings, WithMappin
     {
         return [
             optional($p->jadwal?->tanggal_kerja)->format('Y-m-d') ?? '-',
-            $p->karyawan?->user?->nama ?? '-',
-            $p->karyawan?->nik ?? '-',
+            $p->user?->nama ?? '-',
+            $p->user?->nik ?? '-',
             $p->nama_lokasi ?? '-',
             match ($p->status) {
                 'disetujui' => 'Diterima',

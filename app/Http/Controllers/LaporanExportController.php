@@ -3,66 +3,74 @@
 namespace App\Http\Controllers;
 
 use App\Models\DetailPekerjaan;
-use App\Models\RekapPresensiBulanan;
+use App\Models\Presensi;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class LaporanExportController extends Controller
 {
     /**
-     * Build rekap presensi per karyawan. Untuk Bulanan ambil dari tabel
-     * RekapPresensiBulanan (sudah pre-aggregated). Untuk Harian/Mingguan
-     * agregasi on-the-fly dari tb_presensi. Shape disamakan dengan model
-     * RekapPresensiBulanan agar view PDF/Excel tidak perlu diubah.
+     * Build rekap presensi per karyawan dengan agregasi on-the-fly dari tb_presensi
+     * (semua jenis: Harian/Mingguan/Bulanan/Tahunan). V3 tidak lagi punya tabel
+     * rekap terpisah — angka rekap dihitung langsung dari presensi.
+     *
+     * @return Collection<int, object>
      */
-    private function buildRekapPresensi(Request $request): \Illuminate\Support\Collection
+    private function buildRekapPresensi(Request $request): Collection
     {
-        $jenis      = strtolower((string) $request->string('jenis')) ?: 'bulanan';
-        $periode    = (string) $request->string('periode');
-        $karyawanId = $request->integer('karyawan_id');
+        $jenis   = strtolower((string) $request->string('jenis')) ?: 'bulanan';
+        $periode = (string) $request->string('periode');
+        $userId  = $request->integer('karyawan_id');
 
-        if ($jenis === 'bulanan' || $jenis === '') {
-            return RekapPresensiBulanan::query()
-                ->with(['karyawan.user'])
-                ->when($periode !== '', fn ($q) => $q->where('periode', $periode))
-                ->when($karyawanId, fn ($q) => $q->where('karyawan_id', $karyawanId))
-                ->orderByDesc('created_at')
-                ->get();
+        $query = Presensi::query();
+
+        if ($periode !== '') {
+            [$start, $end] = $this->periodeRange($jenis, $periode);
+            $query->whereBetween('tanggal', [$start, $end]);
         }
 
-        [$start, $end] = match ($jenis) {
-            'harian'   => [$periode, $periode],
-            'mingguan' => [$periode, \Carbon\Carbon::parse($periode)->addDays(6)->toDateString()],
-            default    => [$periode, $periode],
-        };
-
-        $rows = \App\Models\Presensi::query()
+        $rows = $query
             ->selectRaw('
-                karyawan_id,
+                user_id,
                 SUM(CASE WHEN status_presensi IN ("hadir","terlambat") THEN 1 ELSE 0 END) AS jumlah_hadir,
                 SUM(CASE WHEN status_presensi = "terlambat" THEN 1 ELSE 0 END) AS jumlah_terlambat,
                 SUM(CASE WHEN status_presensi = "tidak_hadir" THEN 1 ELSE 0 END) AS jumlah_tidak_hadir,
-                COALESCE(SUM(potongan_terlambat), 0) AS total_potongan_keterlambatan
+                COALESCE(SUM(potongan_terlambat), 0) AS total_potongan
             ')
-            ->whereBetween('tanggal', [$start, $end])
-            ->when($karyawanId, fn ($q) => $q->where('karyawan_id', $karyawanId))
-            ->groupBy('karyawan_id')
+            ->when($userId, fn ($q) => $q->where('user_id', $userId))
+            ->groupBy('user_id')
             ->get();
 
-        $karyawans = \App\Models\Karyawan::with('user')
-            ->whereIn('id', $rows->pluck('karyawan_id'))
-            ->get()
-            ->keyBy('id');
+        $users = User::whereIn('id', $rows->pluck('user_id'))->get()->keyBy('id');
 
         return $rows->map(fn ($r) => (object) [
             'periode' => $periode,
-            'karyawan' => $karyawans->get($r->karyawan_id),
+            'user' => $users->get($r->user_id),
             'jumlah_hadir' => (int) $r->jumlah_hadir,
             'jumlah_terlambat' => (int) $r->jumlah_terlambat,
             'jumlah_tidak_hadir' => (int) $r->jumlah_tidak_hadir,
-            'total_potongan_keterlambatan' => (float) $r->total_potongan_keterlambatan,
+            'total_potongan' => (float) $r->total_potongan,
             'status' => 'rekap_otomatis',
         ]);
+    }
+
+    /**
+     * @return array{0:string,1:string} [start, end] tanggal
+     */
+    private function periodeRange(string $jenis, string $periode): array
+    {
+        return match ($jenis) {
+            'harian'   => [$periode, $periode],
+            'mingguan' => [$periode, Carbon::parse($periode)->addDays(6)->toDateString()],
+            'tahunan'  => [$periode . '-01-01', $periode . '-12-31'],
+            default    => [
+                Carbon::parse($periode . '-01')->startOfMonth()->toDateString(),
+                Carbon::parse($periode . '-01')->endOfMonth()->toDateString(),
+            ],
+        };
     }
 
     public function exportCsv(Request $request): StreamedResponse
@@ -70,14 +78,14 @@ class LaporanExportController extends Controller
         $request->validate([
             'periode' => 'nullable|string|max:20',
             'jenis' => 'nullable|string|max:20',
-            'karyawan_id' => 'nullable|integer|exists:tb_karyawan,id',
+            'karyawan_id' => 'nullable|integer|exists:tb_user,id',
         ]);
 
-        $rekapPresensiBulanans = $this->buildRekapPresensi($request);
+        $rekap = $this->buildRekapPresensi($request);
 
         $filename = 'laporan-rekap-presensi-bulanan-' . now()->format('Ymd-His') . '.csv';
 
-        return response()->streamDownload(function () use ($rekapPresensiBulanans): void {
+        return response()->streamDownload(function () use ($rekap): void {
             $handle = fopen('php://output', 'wb');
 
             fputcsv($handle, [
@@ -91,14 +99,14 @@ class LaporanExportController extends Controller
                 'Tanggal Generate',
             ]);
 
-            foreach ($rekapPresensiBulanans as $p) {
+            foreach ($rekap as $p) {
                 fputcsv($handle, [
                     $p->periode,
-                    $p->karyawan?->user?->nama ?? $p->karyawan?->nik,
+                    $p->user?->nama ?? $p->user?->nik,
                     $p->jumlah_hadir,
                     $p->jumlah_terlambat,
                     $p->jumlah_tidak_hadir,
-                    (string) $p->total_potongan_keterlambatan,
+                    (string) $p->total_potongan,
                     $p->status,
                     now()->format('Y-m-d H:i:s'),
                 ]);
@@ -115,7 +123,7 @@ class LaporanExportController extends Controller
         $request->validate([
             'periode' => 'nullable|string|max:20',
             'jenis' => 'nullable|string|max:20',
-            'karyawan_id' => 'nullable|integer|exists:tb_karyawan,id',
+            'karyawan_id' => 'nullable|integer|exists:tb_user,id',
         ]);
 
         $jenis = ucfirst(strtolower((string) $request->string('jenis')) ?: 'bulanan');
@@ -137,13 +145,13 @@ class LaporanExportController extends Controller
         $request->validate([
             'periode' => 'nullable|string|max:20',
             'jenis' => 'nullable|string|max:20',
-            'karyawan_id' => 'nullable|integer|exists:tb_karyawan,id',
+            'karyawan_id' => 'nullable|integer|exists:tb_user,id',
         ]);
 
-        $rekapPresensiBulanans = $this->buildRekapPresensi($request);
+        $rekap = $this->buildRekapPresensi($request);
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.laporan-pdf', [
-            'penggajians' => $rekapPresensiBulanans,
+            'penggajians' => $rekap,
             'periode' => $request->string('periode') ?: 'Semua Periode',
             'jenis' => $request->string('jenis') ?: 'Bulanan',
         ]);
@@ -157,22 +165,22 @@ class LaporanExportController extends Controller
     {
         $request->validate([
             'periode' => 'nullable|string|max:20',
-            'karyawan_id' => 'nullable|integer|exists:tb_karyawan,id',
+            'karyawan_id' => 'nullable|integer|exists:tb_user,id',
         ]);
 
-        return \App\Models\Presensi::query()
-            ->with(['karyawan.user'])
+        return Presensi::query()
+            ->with(['user'])
             ->when($request->filled('periode'), function ($q) use ($request) {
                 $periode = (string) $request->string('periode');
                 if (strlen($periode) === 10) {
-                    $end = \Carbon\Carbon::parse($periode)->addDays(6)->toDateString();
+                    $end = Carbon::parse($periode)->addDays(6)->toDateString();
                     return $q->whereBetween('tanggal', [$periode, $end]);
                 }
                 return $q->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$periode]);
             })
-            ->when($request->filled('karyawan_id'), fn ($q) => $q->where('karyawan_id', $request->integer('karyawan_id')))
+            ->when($request->filled('karyawan_id'), fn ($q) => $q->where('user_id', $request->integer('karyawan_id')))
             ->orderBy('tanggal', 'desc')
-            ->orderBy('karyawan_id')
+            ->orderBy('user_id')
             ->get();
     }
 
@@ -194,10 +202,10 @@ class LaporanExportController extends Controller
     {
         return [
             $p->tanggal,
-            $p->karyawan?->user?->nama ?? '-',
-            $p->karyawan?->nik ?? '-',
-            $p->jam_masuk ? \Carbon\Carbon::parse($p->jam_masuk)->format('H:i') : '-',
-            $p->jam_keluar ? \Carbon\Carbon::parse($p->jam_keluar)->format('H:i') : '-',
+            $p->user?->nama ?? '-',
+            $p->user?->nik ?? '-',
+            $p->jam_masuk ? Carbon::parse($p->jam_masuk)->format('H:i') : '-',
+            $p->jam_keluar ? Carbon::parse($p->jam_keluar)->format('H:i') : '-',
             match ($p->status_presensi) {
                 'hadir' => 'Hadir',
                 'terlambat' => 'Terlambat',
@@ -228,7 +236,6 @@ class LaporanExportController extends Controller
 
     public function exportPresensiExcel(Request $request)
     {
-        $presensis = $this->getPresensiQuery($request);
         $filename = 'laporan-presensi-' . now()->format('Ymd-His') . '.xlsx';
 
         return \Maatwebsite\Excel\Facades\Excel::download(
@@ -256,23 +263,23 @@ class LaporanExportController extends Controller
     {
         $request->validate([
             'periode' => 'nullable|string|max:20',
-            'karyawan_id' => 'nullable|integer|exists:tb_karyawan,id',
+            'karyawan_id' => 'nullable|integer|exists:tb_user,id',
         ]);
 
         return DetailPekerjaan::query()
-            ->with(['karyawan.user', 'jadwal', 'buktiPekerjaans'])
-            ->join('tb_jadwal', 'tb_jadwal.id', '=', 'tb_detail_pekerjaan.jadwal_id')
+            ->with(['user', 'jadwal', 'buktiPekerjaans'])
+            ->join('tb_jadwal_pekerjaan', 'tb_jadwal_pekerjaan.id', '=', 'tb_detail_pekerjaan.jadwal_id')
             ->when($request->filled('periode'), function ($q) use ($request) {
                 $periode = (string) $request->string('periode');
                 if (strlen($periode) === 10) {
-                    $end = \Carbon\Carbon::parse($periode)->addDays(6)->toDateString();
-                    return $q->whereBetween('tb_jadwal.tanggal_kerja', [$periode, $end]);
+                    $end = Carbon::parse($periode)->addDays(6)->toDateString();
+                    return $q->whereBetween('tb_jadwal_pekerjaan.tanggal_kerja', [$periode, $end]);
                 }
-                return $q->whereRaw("DATE_FORMAT(tb_jadwal.tanggal_kerja, '%Y-%m') = ?", [$periode]);
+                return $q->whereRaw("DATE_FORMAT(tb_jadwal_pekerjaan.tanggal_kerja, '%Y-%m') = ?", [$periode]);
             })
-            ->when($request->filled('karyawan_id'), fn ($q) => $q->where('tb_detail_pekerjaan.karyawan_id', $request->integer('karyawan_id')))
-            ->orderByDesc('tb_jadwal.tanggal_kerja')
-            ->orderBy('tb_detail_pekerjaan.karyawan_id')
+            ->when($request->filled('karyawan_id'), fn ($q) => $q->where('tb_detail_pekerjaan.user_id', $request->integer('karyawan_id')))
+            ->orderByDesc('tb_jadwal_pekerjaan.tanggal_kerja')
+            ->orderBy('tb_detail_pekerjaan.user_id')
             ->select('tb_detail_pekerjaan.*')
             ->get();
     }
@@ -295,8 +302,8 @@ class LaporanExportController extends Controller
     {
         return [
             optional($p->jadwal?->tanggal_kerja)->format('Y-m-d') ?? '-',
-            $p->karyawan?->user?->nama ?? '-',
-            $p->karyawan?->nik ?? '-',
+            $p->user?->nama ?? '-',
+            $p->user?->nik ?? '-',
             $p->nama_lokasi ?? '-',
             match ($p->status) {
                 'disetujui' => 'Diterima',

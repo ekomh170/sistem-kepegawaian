@@ -2,7 +2,6 @@
 
 namespace App\Exports;
 
-use App\Models\RekapPresensiBulanan;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -25,18 +24,9 @@ class LaporanPresensiExport implements FromCollection, WithHeadings, WithMapping
 
     public function collection()
     {
-        // Kalau dipanggil dari controller dengan data pre-built (Harian/Mingguan/Bulanan
-        // via aggregator), pakai itu. Kalau tidak, fallback ke query langsung (Bulanan).
-        if ($this->prebuilt !== null) {
-            return $this->prebuilt;
-        }
-
-        return RekapPresensiBulanan::query()
-            ->with(['karyawan.user'])
-            ->when($this->periode, fn ($query) => $query->where('periode', $this->periode))
-            ->when($this->karyawan_id, fn ($query) => $query->where('karyawan_id', $this->karyawan_id))
-            ->orderByDesc('created_at')
-            ->get();
+        // V3: rekap selalu di-build on-the-fly oleh controller (LaporanExportController)
+        // lalu dikirim sebagai prebuilt collection.
+        return $this->prebuilt ?? collect();
     }
 
     public function headings(): array
@@ -57,11 +47,11 @@ class LaporanPresensiExport implements FromCollection, WithHeadings, WithMapping
     {
         return [
             $p->periode,
-            $p->karyawan?->user?->nama ?? $p->karyawan?->nik,
+            $p->user?->nama ?? $p->user?->nik,
             $p->jumlah_hadir,
             $p->jumlah_terlambat,
             $p->jumlah_tidak_hadir,
-            (string) $p->total_potongan_keterlambatan,
+            (string) $p->total_potongan,
             $p->status,
             now()->format('Y-m-d H:i:s'),
         ];

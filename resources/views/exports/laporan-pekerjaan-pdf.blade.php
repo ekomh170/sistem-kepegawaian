@@ -41,8 +41,8 @@
             <tr>
                 <td>{{ $i + 1 }}</td>
                 <td>{{ optional($p->jadwal?->tanggal_kerja)->format('d/m/Y') ?? '-' }}</td>
-                <td>{{ $p->karyawan?->user?->nama ?? '-' }}</td>
-                <td>{{ $p->karyawan?->nik ?? '-' }}</td>
+                <td>{{ $p->user?->nama ?? '-' }}</td>
+                <td>{{ $p->user?->nik ?? '-' }}</td>
                 <td>{{ $p->nama_lokasi }}</td>
                 <td>
                     @switch($p->status)

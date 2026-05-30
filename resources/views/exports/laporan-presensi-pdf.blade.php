@@ -42,8 +42,8 @@
             <tr>
                 <td>{{ $i + 1 }}</td>
                 <td>{{ \Carbon\Carbon::parse($p->tanggal)->format('d/m/Y') }}</td>
-                <td>{{ $p->karyawan?->user?->nama ?? '-' }}</td>
-                <td>{{ $p->karyawan?->nik ?? '-' }}</td>
+                <td>{{ $p->user?->nama ?? '-' }}</td>
+                <td>{{ $p->user?->nik ?? '-' }}</td>
                 <td>{{ $p->jam_masuk ? \Carbon\Carbon::parse($p->jam_masuk)->format('H:i') : '-' }}</td>
                 <td>{{ $p->jam_keluar ? \Carbon\Carbon::parse($p->jam_keluar)->format('H:i') : '-' }}</td>
                 <td>

@@ -63,11 +63,11 @@
             @foreach($penggajians as $p)
             <tr>
                 <td>{{ $p->periode }}</td>
-                <td>{{ $p->karyawan?->user?->nama ?? $p->karyawan?->nik ?? '-' }}</td>
+                <td>{{ $p->user?->nama ?? $p->user?->nik ?? '-' }}</td>
                 <td>{{ $p->jumlah_hadir }}</td>
                 <td>{{ $p->jumlah_terlambat }}</td>
                 <td>{{ $p->jumlah_tidak_hadir }}</td>
-                <td>Rp {{ number_format($p->total_potongan_keterlambatan, 0, ',', '.') }}</td>
+                <td>Rp {{ number_format($p->total_potongan, 0, ',', '.') }}</td>
             </tr>
             @endforeach
             @if($penggajians->isEmpty())
