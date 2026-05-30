@@ -19,21 +19,22 @@ ERD V3 lahir dari kebutuhan **menyederhanakan skema database** tanpa mengubah fi
 
 ## Daftar Dokumen
 
-| File                                                                   | Isi                                                         |
-| ---------------------------------------------------------------------- | ----------------------------------------------------------- |
-| [00-README.md](00-README.md)                                           | Index folder (file ini)                                     |
-| [01-ringkasan-perubahan.md](01-ringkasan-perubahan.md)                 | Ringkasan eksekutif: apa yang berubah V2 → V3               |
-| [02-database-schema.md](02-database-schema.md)                         | Skema database V3 (7 tabel: 6 inti + 1 pendukung)           |
-| [03-class-diagram-oop.md](03-class-diagram-oop.md)                     | Class diagram OOP (objek + perilaku bisnis, bukan tabel)    |
-| [04-hak-akses-rbac.md](04-hak-akses-rbac.md)                           | Matriks hak akses V3 dengan unified User table              |
-| [05-fitur-alur-bisnis.md](05-fitur-alur-bisnis.md)                     | Alur bisnis per aktor — tidak berubah dari V2.3             |
-| [06-rencana-migrasi-data.md](06-rencana-migrasi-data.md)               | Migration script + data mapping V2 → V3                     |
-| [07-rencana-refactor-kode.md](07-rencana-refactor-kode.md)             | Refactor checklist (Model, Resource, Controller, View)      |
-| [08-trade-off-risiko.md](08-trade-off-risiko.md)                       | Trade-off analysis + identifikasi risiko                    |
-| [09-checklist-implementasi.md](09-checklist-implementasi.md)           | Step-by-step checklist eksekusi migrasi                     |
-| [10-audit-fitur-terdampak.md](10-audit-fitur-terdampak.md)             | Audit grep fitur V2.3 yang terdampak + opsi mitigasi        |
-| [11-skenario-1-analisa-eksekusi.md](11-skenario-1-analisa-eksekusi.md) | Analisa konkret kalau eksekusi Skenario 1 (V3 Strict)       |
-| [12-hasil-akhir-implementasi.md](12-hasil-akhir-implementasi.md)       | Laporan hasil aktual + analisa kesesuaian (TERIMPLEMENTASI) |
+| File                                                                   | Isi                                                            |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------- |
+| [00-README.md](00-README.md)                                           | Index folder (file ini)                                        |
+| [01-ringkasan-perubahan.md](01-ringkasan-perubahan.md)                 | Ringkasan eksekutif: apa yang berubah V2 → V3                  |
+| [02-database-schema.md](02-database-schema.md)                         | Skema database V3 (7 tabel: 6 inti + 1 pendukung)              |
+| [03-class-diagram-oop.md](03-class-diagram-oop.md)                     | Class diagram OOP (objek + perilaku bisnis, bukan tabel)       |
+| [04-hak-akses-rbac.md](04-hak-akses-rbac.md)                           | Matriks hak akses V3 dengan unified User table                 |
+| [05-fitur-alur-bisnis.md](05-fitur-alur-bisnis.md)                     | Alur bisnis per aktor — tidak berubah dari V2.3                |
+| [06-rencana-migrasi-data.md](06-rencana-migrasi-data.md)               | Migration script + data mapping V2 → V3                        |
+| [07-rencana-refactor-kode.md](07-rencana-refactor-kode.md)             | Refactor checklist (Model, Resource, Controller, View)         |
+| [08-trade-off-risiko.md](08-trade-off-risiko.md)                       | Trade-off analysis + identifikasi risiko                       |
+| [09-checklist-implementasi.md](09-checklist-implementasi.md)           | Step-by-step checklist eksekusi migrasi                        |
+| [10-audit-fitur-terdampak.md](10-audit-fitur-terdampak.md)             | Audit grep fitur V2.3 yang terdampak + opsi mitigasi           |
+| [11-skenario-1-analisa-eksekusi.md](11-skenario-1-analisa-eksekusi.md) | Analisa konkret kalau eksekusi Skenario 1 (V3 Strict)          |
+| [12-hasil-akhir-implementasi.md](12-hasil-akhir-implementasi.md)       | Laporan hasil aktual + analisa kesesuaian (TERIMPLEMENTASI)    |
+| [13-panduan-pengembangan.md](13-panduan-pengembangan.md)               | Konvensi kode & kontribusi V3 (versi ter-track dari CLAUDE.md) |
 
 ---
 
