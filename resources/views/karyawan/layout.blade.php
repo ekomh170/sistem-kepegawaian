@@ -313,10 +313,9 @@
     </div>
 
     @php
-        $karyawanNav = auth()->user()?->karyawan;
-        $presensiNav = $karyawanNav
-            ? \App\Models\Presensi::where('karyawan_id', $karyawanNav->id)
-                  ->where('tanggal', today()->toDateString())
+        $presensiNav = auth()->check()
+            ? \App\Models\Presensi::where('user_id', auth()->id())
+                  ->whereDate('tanggal', today()->toDateString())
                   ->first()
             : null;
         $sudahMasuk  = $presensiNav && $presensiNav->jam_masuk;

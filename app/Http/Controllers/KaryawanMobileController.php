@@ -4,8 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BuktiPekerjaan;
 use App\Models\DetailPekerjaan;
-use App\Models\Jadwal;
-use App\Models\Karyawan;
+use App\Models\JadwalPekerjaan;
 use App\Models\Presensi;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
@@ -19,28 +18,27 @@ class KaryawanMobileController extends Controller
 {
     public function beranda(): View
     {
-        $karyawan = $this->resolveKaryawan();
+        $userId = Auth::id();
         $today = Carbon::today()->toDateString();
 
         // Jadwal hari ini
-        $jadwalHariIni = Jadwal::getJadwalHarian($karyawan->id, $today);
+        $jadwalHariIni = JadwalPekerjaan::getJadwalHarian($userId, $today);
 
         // Presensi hari ini (1 per hari)
         $presensiHariIni = Presensi::query()
-            ->with('verifikasi')
-            ->where('karyawan_id', $karyawan->id)
-            ->where('tanggal', $today)
+            ->where('user_id', $userId)
+            ->whereDate('tanggal', $today)
             ->first();
 
         // Daftar tugas hari ini (via jadwal)
         $tugasHariIni = DetailPekerjaan::query()
-            ->where('karyawan_id', $karyawan->id)
-            ->whereHas('jadwal', fn ($q) => $q->where('tanggal_kerja', $today))
+            ->where('user_id', $userId)
+            ->whereHas('jadwal', fn ($q) => $q->whereDate('tanggal_kerja', $today))
             ->get();
 
         // Bukti yang sudah diupload hari ini
         $buktiHariIni = BuktiPekerjaan::query()
-            ->where('karyawan_id', $karyawan->id)
+            ->where('user_id', $userId)
             ->whereIn('detail_pekerjaan_id', $tugasHariIni->pluck('id'))
             ->get()
             ->keyBy('detail_pekerjaan_id');
@@ -56,12 +54,12 @@ class KaryawanMobileController extends Controller
 
     public function formPresensiMasuk(): View|RedirectResponse
     {
-        $karyawan = $this->resolveKaryawan();
+        $userId = Auth::id();
         $today = Carbon::today()->toDateString();
 
         $presensiHariIni = Presensi::query()
-            ->where('karyawan_id', $karyawan->id)
-            ->where('tanggal', $today)
+            ->where('user_id', $userId)
+            ->whereDate('tanggal', $today)
             ->first();
 
         if ($presensiHariIni && $presensiHariIni->jam_masuk && !$presensiHariIni->jam_keluar) {
@@ -96,12 +94,12 @@ class KaryawanMobileController extends Controller
 
     public function formPresensiPulang(): View
     {
-        $karyawan = $this->resolveKaryawan();
+        $userId = Auth::id();
         $today = Carbon::today()->toDateString();
 
         $presensiHariIni = Presensi::query()
-            ->where('karyawan_id', $karyawan->id)
-            ->where('tanggal', $today)
+            ->where('user_id', $userId)
+            ->whereDate('tanggal', $today)
             ->first();
 
         return view('karyawan.presensi-pulang', [
@@ -135,11 +133,11 @@ class KaryawanMobileController extends Controller
      */
     public function daftarTugas(): View|RedirectResponse
     {
-        $karyawan = $this->resolveKaryawan();
+        $userId = Auth::id();
         $today = Carbon::today()->toDateString();
 
-        $presensiHariIni = Presensi::where('karyawan_id', $karyawan->id)
-            ->where('tanggal', $today)
+        $presensiHariIni = Presensi::where('user_id', $userId)
+            ->whereDate('tanggal', $today)
             ->whereNotNull('jam_masuk')
             ->first();
 
@@ -151,12 +149,12 @@ class KaryawanMobileController extends Controller
 
         $tugasHariIni = DetailPekerjaan::query()
             ->with('jadwal')
-            ->where('karyawan_id', $karyawan->id)
-            ->whereHas('jadwal', fn ($q) => $q->where('tanggal_kerja', $today))
+            ->where('user_id', $userId)
+            ->whereHas('jadwal', fn ($q) => $q->whereDate('tanggal_kerja', $today))
             ->get();
 
         $buktiHariIni = BuktiPekerjaan::query()
-            ->where('karyawan_id', $karyawan->id)
+            ->where('user_id', $userId)
             ->whereIn('detail_pekerjaan_id', $tugasHariIni->pluck('id'))
             ->get()
             ->keyBy('detail_pekerjaan_id');
@@ -173,12 +171,12 @@ class KaryawanMobileController extends Controller
      */
     public function formUploadBukti(Request $request): View|RedirectResponse
     {
-        $karyawan = $this->resolveKaryawan();
+        $userId = Auth::id();
         $detailId = $request->query('detail_pekerjaan_id');
 
         $tugas = DetailPekerjaan::with('jadwal')
             ->where('id', $detailId)
-            ->where('karyawan_id', $karyawan->id)
+            ->where('user_id', $userId)
             ->firstOrFail();
 
         // Hanya bisa upload jika tugas sudah diterima
@@ -187,7 +185,7 @@ class KaryawanMobileController extends Controller
         }
 
         $buktiExisting = BuktiPekerjaan::where('detail_pekerjaan_id', $detailId)
-            ->where('karyawan_id', $karyawan->id)
+            ->where('user_id', $userId)
             ->first();
 
         return view('karyawan.upload-bukti', [
@@ -225,15 +223,15 @@ class KaryawanMobileController extends Controller
      */
     public function detailBukti(int $detail_pekerjaan_id): View|RedirectResponse
     {
-        $karyawan = $this->resolveKaryawan();
+        $userId = Auth::id();
 
         $tugas = DetailPekerjaan::with('jadwal')
             ->where('id', $detail_pekerjaan_id)
-            ->where('karyawan_id', $karyawan->id)
+            ->where('user_id', $userId)
             ->firstOrFail();
 
         $bukti = BuktiPekerjaan::where('detail_pekerjaan_id', $detail_pekerjaan_id)
-            ->where('karyawan_id', $karyawan->id)
+            ->where('user_id', $userId)
             ->first();
 
         if (!$bukti) {
@@ -253,9 +251,8 @@ class KaryawanMobileController extends Controller
     {
         $request->validate(['detail_pekerjaan_id' => 'required|exists:tb_detail_pekerjaan,id']);
 
-        $karyawan = $this->resolveKaryawan();
         $tugas = DetailPekerjaan::where('id', $request->detail_pekerjaan_id)
-            ->where('karyawan_id', $karyawan->id)
+            ->where('user_id', Auth::id())
             ->where('status', 'pending')
             ->firstOrFail();
 
@@ -277,9 +274,8 @@ class KaryawanMobileController extends Controller
             'alasan_tolak.min' => 'Alasan penolakan minimal 10 karakter.',
         ]);
 
-        $karyawan = $this->resolveKaryawan();
         $tugas = DetailPekerjaan::where('id', $request->detail_pekerjaan_id)
-            ->where('karyawan_id', $karyawan->id)
+            ->where('user_id', Auth::id())
             ->where('status', 'pending')
             ->firstOrFail();
 
@@ -293,13 +289,13 @@ class KaryawanMobileController extends Controller
 
     public function jadwalMingguan(): View
     {
-        $karyawan = $this->resolveKaryawan();
+        $userId = Auth::id();
 
         $startDate = Carbon::today();
         $endDate = Carbon::today()->addDays(6);
 
-        $jadwalMingguan = Jadwal::query()
-            ->where('karyawan_id', $karyawan->id)
+        $jadwalMingguan = JadwalPekerjaan::query()
+            ->where('user_id', $userId)
             ->whereBetween('tanggal_kerja', [$startDate->toDateString(), $endDate->toDateString()])
             ->orderBy('tanggal_kerja')
             ->get();
@@ -313,11 +309,10 @@ class KaryawanMobileController extends Controller
 
     public function riwayat(): View
     {
-        $karyawan = $this->resolveKaryawan();
+        $userId = Auth::id();
 
         $riwayat = Presensi::query()
-            ->with(['verifikasi'])
-            ->where('karyawan_id', $karyawan->id)
+            ->where('user_id', $userId)
             ->orderByDesc('tanggal')
             ->limit(30)
             ->get();
@@ -331,16 +326,16 @@ class KaryawanMobileController extends Controller
 
         $riwayatPekerjaan = DetailPekerjaan::query()
             ->with('jadwal')
-            ->join('tb_jadwal', 'tb_detail_pekerjaan.jadwal_id', '=', 'tb_jadwal.id')
-            ->where('tb_detail_pekerjaan.karyawan_id', $karyawan->id)
-            ->where('tb_jadwal.tanggal_kerja', '>=', now()->subDays(30)->toDateString())
-            ->orderByDesc('tb_jadwal.tanggal_kerja')
+            ->join('tb_jadwal_pekerjaan', 'tb_detail_pekerjaan.jadwal_id', '=', 'tb_jadwal_pekerjaan.id')
+            ->where('tb_detail_pekerjaan.user_id', $userId)
+            ->where('tb_jadwal_pekerjaan.tanggal_kerja', '>=', now()->subDays(30)->toDateString())
+            ->orderByDesc('tb_jadwal_pekerjaan.tanggal_kerja')
             ->select('tb_detail_pekerjaan.*')
             ->get();
 
         $bulanIni = Carbon::today();
         $presensBulanIni = Presensi::query()
-            ->where('karyawan_id', $karyawan->id)
+            ->where('user_id', $userId)
             ->whereYear('tanggal', $bulanIni->year)
             ->whereMonth('tanggal', $bulanIni->month)
             ->get();
@@ -364,12 +359,5 @@ class KaryawanMobileController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect('/login')->with('status', 'Berhasil keluar. Sampai jumpa!');
-    }
-
-    private function resolveKaryawan(): Karyawan
-    {
-        return Karyawan::query()
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
     }
 }
