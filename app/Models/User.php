@@ -3,12 +3,13 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\Role;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -30,6 +31,9 @@ class User extends Authenticatable implements FilamentUser
         'nama',
         'email',
         'password',
+        'nik',
+        'no_hp',
+        'posisi',
         'role',
         'is_active',
     ];
@@ -53,6 +57,8 @@ class User extends Authenticatable implements FilamentUser
     {
         return [
             'password' => 'hashed',
+            'is_active' => 'boolean',
+            'role' => Role::class,
         ];
     }
 
@@ -67,24 +73,92 @@ class User extends Authenticatable implements FilamentUser
         );
     }
 
-    public function karyawan(): HasOne
+    // ===== Helper role =====
+
+    public function isAdmin(): bool
     {
-        return $this->hasOne(Karyawan::class, 'user_id');
+        return $this->role === Role::Admin;
     }
 
-    public function admin(): HasOne
+    public function isSupervisor(): bool
     {
-        return $this->hasOne(Admin::class, 'user_id');
+        return $this->role === Role::Supervisor;
     }
 
-    public function supervisor(): HasOne
+    public function isKaryawan(): bool
     {
-        return $this->hasOne(Supervisor::class, 'user_id');
+        return $this->role === Role::Karyawan;
     }
 
-    public function laporans(): HasMany
+    public function hasRole(Role|string $role): bool
     {
-        return $this->hasMany(Laporan::class, 'generated_by');
+        $role = $role instanceof Role ? $role : Role::tryFrom($role);
+
+        return $this->role === $role;
+    }
+
+    // ===== Scopes =====
+
+    public function scopeKaryawan(Builder $query): Builder
+    {
+        return $query->where('role', 'karyawan');
+    }
+
+    public function scopeAdmin(Builder $query): Builder
+    {
+        return $query->where('role', 'admin');
+    }
+
+    public function scopeSupervisor(Builder $query): Builder
+    {
+        return $query->where('role', 'supervisor');
+    }
+
+    public function scopeAktif(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
+
+    // ===== Relasi (semua FK langsung ke tb_user) =====
+
+    public function jadwalKerja(): HasMany
+    {
+        return $this->hasMany(JadwalPekerjaan::class, 'user_id');
+    }
+
+    public function jadwalDibuat(): HasMany
+    {
+        return $this->hasMany(JadwalPekerjaan::class, 'dibuat_oleh');
+    }
+
+    public function presensiSaya(): HasMany
+    {
+        return $this->hasMany(Presensi::class, 'user_id');
+    }
+
+    public function verifikasiSaya(): HasMany
+    {
+        return $this->hasMany(Presensi::class, 'diverifikasi_oleh');
+    }
+
+    public function tugasSaya(): HasMany
+    {
+        return $this->hasMany(DetailPekerjaan::class, 'user_id');
+    }
+
+    public function buktiSaya(): HasMany
+    {
+        return $this->hasMany(BuktiPekerjaan::class, 'user_id');
+    }
+
+    public function laporanSubjek(): HasMany
+    {
+        return $this->hasMany(LaporanPresensi::class, 'user_id');
+    }
+
+    public function laporanDibuat(): HasMany
+    {
+        return $this->hasMany(LaporanPresensi::class, 'generated_by');
     }
 
     public function canAccessPanel(Panel $panel): bool
@@ -92,8 +166,8 @@ class User extends Authenticatable implements FilamentUser
         return match ($panel->getId()) {
             // The admin panel hosts the shared /login page for all roles.
             // Route-level role middleware still protects admin-only pages.
-            'admin' => in_array($this->role, ['admin', 'supervisor', 'karyawan'], true),
-            'supervisor' => $this->role === 'supervisor',
+            'admin' => in_array($this->role, [Role::Admin, Role::Supervisor, Role::Karyawan], true),
+            'supervisor' => $this->role === Role::Supervisor,
             default => false,
         };
     }

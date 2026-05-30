@@ -9,15 +9,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class Jadwal extends Model
+class JadwalPekerjaan extends Model
 {
-    protected $table = 'tb_jadwal';
+    protected $table = 'tb_jadwal_pekerjaan';
 
     public const UPDATED_AT = null;
 
     protected $fillable = [
-        'karyawan_id',
-        'admin_id',
+        'user_id',
+        'dibuat_oleh',
         'tanggal_kerja',
         'jam_masuk',
         'jam_pulang',
@@ -33,14 +33,14 @@ class Jadwal extends Model
         ];
     }
 
-    public function karyawan(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Karyawan::class, 'karyawan_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function admin(): BelongsTo
+    public function pembuatJadwal(): BelongsTo
     {
-        return $this->belongsTo(Admin::class, 'admin_id');
+        return $this->belongsTo(User::class, 'dibuat_oleh');
     }
 
     public function detailPekerjaans(): HasMany
@@ -58,19 +58,19 @@ class Jadwal extends Model
         return (bool) $this->hari_libur;
     }
 
-    public static function getJadwalHarian(int $karyawanId, string $tanggal): ?self
+    public static function getJadwalHarian(int $userId, string $tanggal): ?self
     {
-        return self::where('karyawan_id', $karyawanId)
-            ->where('tanggal_kerja', $tanggal)
+        return self::where('user_id', $userId)
+            ->whereDate('tanggal_kerja', $tanggal)
             ->first();
     }
 
-    public static function getJadwalBulanan(int $karyawanId, string $periode): Collection
+    public static function getJadwalBulanan(int $userId, string $periode): Collection
     {
         $start = Carbon::parse($periode . '-01')->startOfMonth();
         $end = $start->copy()->endOfMonth();
 
-        return self::where('karyawan_id', $karyawanId)
+        return self::where('user_id', $userId)
             ->whereBetween('tanggal_kerja', [$start, $end])
             ->orderBy('tanggal_kerja')
             ->get();

@@ -11,7 +11,7 @@ class BuktiPekerjaan extends Model
 
     protected $fillable = [
         'detail_pekerjaan_id',
-        'karyawan_id',
+        'user_id',
         'foto_before',
         'foto_after',
         'keterangan',
@@ -31,8 +31,8 @@ class BuktiPekerjaan extends Model
         return $this->belongsTo(DetailPekerjaan::class, 'detail_pekerjaan_id');
     }
 
-    public function karyawan(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Karyawan::class, 'karyawan_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Presensi extends Model
 {
@@ -15,7 +14,7 @@ class Presensi extends Model
     public const UPDATED_AT = null;
 
     protected $fillable = [
-        'karyawan_id',
+        'user_id',
         'jadwal_id',
         'tanggal',
         'jam_masuk',
@@ -29,7 +28,11 @@ class Presensi extends Model
         'menit_terlambat',
         'potongan_terlambat',
         'status_presensi',
-        'status_valid',
+        // V3: verifikasi inline (dulu tb_verifikasi). status_valid V2 dilebur ke status_verifikasi.
+        'status_verifikasi',
+        'diverifikasi_oleh',
+        'catatan_verifikasi',
+        'tgl_verifikasi',
     ];
 
     protected function casts(): array
@@ -38,24 +41,25 @@ class Presensi extends Model
             'tanggal' => 'date',
             'jam_masuk' => 'datetime',
             'jam_keluar' => 'datetime',
+            'tgl_verifikasi' => 'datetime',
             'menit_terlambat' => 'integer',
             'potongan_terlambat' => 'decimal:2',
         ];
     }
 
-    public function karyawan(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Karyawan::class, 'karyawan_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function jadwal(): BelongsTo
     {
-        return $this->belongsTo(Jadwal::class, 'jadwal_id');
+        return $this->belongsTo(JadwalPekerjaan::class, 'jadwal_id');
     }
 
-    public function verifikasi(): HasOne
+    public function verifikator(): BelongsTo
     {
-        return $this->hasOne(Verifikasi::class, 'presensi_id');
+        return $this->belongsTo(User::class, 'diverifikasi_oleh');
     }
 
     public static function hitungKeterlambatan(string $jamMasuk, string $jamJadwal): int
@@ -82,12 +86,37 @@ class Presensi extends Model
         return $this->status_presensi ?? '-';
     }
 
-    public static function getRiwayatBulanan(int $karyawanId, string $periode): Collection
+    /**
+     * Verifikasi presensi oleh supervisor (inline V3).
+     */
+    public function verifikasi(User $supervisor, string $status, ?string $catatan = null): self
+    {
+        $this->update([
+            'status_verifikasi' => $status,
+            'diverifikasi_oleh' => $supervisor->id,
+            'catatan_verifikasi' => $catatan,
+            'tgl_verifikasi' => now(),
+        ]);
+
+        return $this;
+    }
+
+    public function sudahDiverifikasi(): bool
+    {
+        return $this->status_verifikasi !== null && $this->status_verifikasi !== 'pending';
+    }
+
+    public function sudahCheckOut(): bool
+    {
+        return ! is_null($this->jam_keluar);
+    }
+
+    public static function getRiwayatBulanan(int $userId, string $periode): Collection
     {
         $start = Carbon::parse($periode . '-01')->startOfMonth();
         $end = $start->copy()->endOfMonth();
 
-        return self::where('karyawan_id', $karyawanId)
+        return self::where('user_id', $userId)
             ->whereBetween('tanggal', [$start, $end])
             ->orderBy('tanggal')
             ->get();

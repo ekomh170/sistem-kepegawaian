@@ -16,7 +16,7 @@ class DetailPekerjaan extends Model
 
     protected $fillable = [
         'jadwal_id',
-        'karyawan_id',
+        'user_id',
         'nama_lokasi',
         'alamat_lokasi',
         'latitude',
@@ -34,12 +34,12 @@ class DetailPekerjaan extends Model
 
     public function jadwal(): BelongsTo
     {
-        return $this->belongsTo(Jadwal::class, 'jadwal_id');
+        return $this->belongsTo(JadwalPekerjaan::class, 'jadwal_id');
     }
 
-    public function karyawan(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Karyawan::class, 'karyawan_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function buktiPekerjaans(): HasMany
