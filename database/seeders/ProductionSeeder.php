@@ -2,15 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Models\Admin;
-use App\Models\Karyawan;
 use App\Models\Setting;
-use App\Models\Supervisor;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
 /**
- * Seeder untuk environment production.
+ * Seeder untuk environment production (V3 — user terkonsolidasi).
  *
  * Isi minimal: 1 admin, 1 supervisor, 8 karyawan + settings dasar perusahaan.
  * Tidak generate data dummy (jadwal/presensi/laporan).
@@ -25,36 +22,24 @@ class ProductionSeeder extends Seeder
     public function run(): void
     {
         // ========== ADMIN ==========
-        $adminUser = User::updateOrCreate(
+        User::updateOrCreate(
             ['email' => 'admin@gmail.com'],
             [
                 'nama' => 'Administrator',
                 'password' => 'password',
                 'role' => 'admin',
-            ]
-        );
-
-        Admin::updateOrCreate(
-            ['user_id' => $adminUser->id],
-            [
                 'nik' => 'ADM-001',
                 'no_hp' => '081200000001',
             ]
         );
 
         // ========== SUPERVISOR ==========
-        $supervisorUser = User::updateOrCreate(
+        User::updateOrCreate(
             ['email' => 'supervisor@gmail.com'],
             [
                 'nama' => 'Supervisor',
                 'password' => 'password',
                 'role' => 'supervisor',
-            ]
-        );
-
-        Supervisor::updateOrCreate(
-            ['user_id' => $supervisorUser->id],
-            [
                 'nik' => 'SPV-001',
                 'no_hp' => '081200000002',
             ]
@@ -62,25 +47,15 @@ class ProductionSeeder extends Seeder
 
         // ========== KARYAWAN (8 akun) ==========
         for ($i = 1; $i <= 8; $i++) {
-            $karyawanUser = User::updateOrCreate(
+            User::updateOrCreate(
                 ['email' => "karyawan{$i}@gmail.com"],
                 [
                     'nama' => "Karyawan {$i}",
                     'password' => 'password',
                     'role' => 'karyawan',
-                ]
-            );
-
-            Karyawan::updateOrCreate(
-                ['user_id' => $karyawanUser->id],
-                [
                     'nik' => 'KRY-' . str_pad($i, 3, '0', STR_PAD_LEFT),
-                    'posisi_karyawan' => 'Staf',
-                    'tgl_masuk' => now()->toDateString(),
-                    'status_kontrak' => 'tetap',
+                    'posisi' => 'Staf',
                     'no_hp' => '0812000000' . str_pad($i + 2, 2, '0', STR_PAD_LEFT),
-                    'bidang_tugas' => 'Operasional',
-                    'gaji_pokok' => 2827593,
                 ]
             );
         }
@@ -104,7 +79,7 @@ class ProductionSeeder extends Seeder
 
         $this->command->info('');
         $this->command->info('========================================');
-        $this->command->info('  SEEDING PRODUCTION SELESAI');
+        $this->command->info('  SEEDING PRODUCTION SELESAI (V3)');
         $this->command->info('========================================');
         $this->command->info('  Admin       : admin@gmail.com');
         $this->command->info('  Supervisor  : supervisor@gmail.com');
