@@ -13,23 +13,19 @@ class FilamentLoginResponse implements LoginResponseContract
     {
         $user = Filament::auth()->user();
 
-        $targetUrl = match ($user?->role) {
+        $targetUrl = match ($user?->role?->value) {
             'admin' => url('/admin'),
             'supervisor' => url('/supervisor'),
             'karyawan' => route('karyawan.beranda'),
             default => Filament::getUrl(),
         };
 
-        if ($user?->role === 'karyawan') {
+        if ($user?->isKaryawan()) {
             return redirect()->to($targetUrl)
                 ->with('success', 'Selamat datang kembali, ' . $user->nama . '!');
         }
 
-        $roleLabel = match ($user?->role) {
-            'admin' => 'Admin',
-            'supervisor' => 'Supervisor',
-            default => ucfirst($user?->role ?? ''),
-        };
+        $roleLabel = $user?->role?->label() ?? '';
 
         return redirect()->to($targetUrl)
             ->with('login_success', 'Selamat datang, ' . $roleLabel . ' ' . $user->nama . '!');

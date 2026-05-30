@@ -28,8 +28,10 @@ class RoleMiddleware
         }
 
         $userRole = Auth::user()->role;
+        // role di-cast ke enum App\Enums\Role; route param ($roles) berupa string.
+        $userRole = $userRole instanceof \App\Enums\Role ? $userRole->value : $userRole;
 
-        if (!in_array($userRole, $roles)) {
+        if (!in_array($userRole, $roles, true)) {
             if (!$request->expectsJson() && !$request->is('api/*')) {
                 abort(403, 'Anda tidak memiliki akses ke halaman ini.');
             }

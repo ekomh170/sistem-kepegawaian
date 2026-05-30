@@ -13,7 +13,7 @@ Route::get('/', function () {
         return redirect('/login');
     }
 
-    return match (Auth::user()?->role) {
+    return match (Auth::user()?->role?->value) {
         'karyawan' => redirect()->route('karyawan.beranda'),
         'admin' => redirect('/admin'),
         'supervisor' => redirect('/supervisor'),
