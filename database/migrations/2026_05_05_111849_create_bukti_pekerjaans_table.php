@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('tb_bukti_pekerjaan', function (Blueprint $table) {
             $table->id();
             $table->foreignId('detail_pekerjaan_id')->constrained('tb_detail_pekerjaan')->cascadeOnDelete();
-            $table->foreignId('karyawan_id')->constrained('tb_karyawan')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('tb_user')->cascadeOnDelete();
             $table->string('foto_before')->nullable();
             $table->string('foto_after')->nullable();
             $table->text('keterangan')->nullable();

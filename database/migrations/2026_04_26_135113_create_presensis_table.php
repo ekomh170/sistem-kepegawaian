@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('tb_presensi', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('karyawan_id')->constrained('tb_karyawan')->cascadeOnDelete();
-            $table->foreignId('jadwal_id')->nullable()->constrained('tb_jadwal')->nullOnDelete();
+            $table->foreignId('user_id')->constrained('tb_user')->cascadeOnDelete();
+            $table->foreignId('jadwal_id')->nullable()->constrained('tb_jadwal_pekerjaan')->nullOnDelete();
             $table->date('tanggal');
             $table->dateTime('jam_masuk')->nullable();
             $table->dateTime('jam_keluar')->nullable();
@@ -23,9 +23,19 @@ return new class extends Migration
             $table->decimal('longitude_keluar', 10, 7)->nullable();
             $table->unsignedInteger('menit_terlambat')->default(0);
             $table->decimal('potongan_terlambat', 10, 2)->default(0);
-            $table->enum('status_presensi', ['hadir', 'terlambat', 'tidak_hadir', 'izin'])->default('hadir');
-            $table->enum('status_valid', ['pending', 'valid', 'tidak_valid'])->default('pending');
+            $table->enum('status_presensi', ['hadir', 'terlambat', 'tidak_hadir', 'izin'])->default('tidak_hadir');
+
+            // V3: verifikasi inline (dulu tabel tb_verifikasi terpisah). status_valid V2 dilebur ke sini.
+            $table->enum('status_verifikasi', ['pending', 'disetujui', 'ditolak'])->default('pending');
+            $table->foreignId('diverifikasi_oleh')->nullable()->constrained('tb_user')->nullOnDelete();
+            $table->text('catatan_verifikasi')->nullable();
+            $table->dateTime('tgl_verifikasi')->nullable();
+
             $table->timestamp('created_at')->useCurrent();
+
+            $table->unique(['user_id', 'tanggal']);
+            $table->index('status_presensi');
+            $table->index('status_verifikasi');
         });
     }
 

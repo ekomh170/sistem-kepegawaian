@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('tb_detail_pekerjaan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('jadwal_id')->constrained('tb_jadwal')->cascadeOnDelete();
-            $table->foreignId('karyawan_id')->constrained('tb_karyawan')->cascadeOnDelete();
+            $table->foreignId('jadwal_id')->constrained('tb_jadwal_pekerjaan')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('tb_user')->cascadeOnDelete();
             $table->string('nama_lokasi');
             $table->text('alamat_lokasi')->nullable();
             $table->decimal('latitude', 10, 7)->nullable();

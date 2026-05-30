@@ -16,10 +16,15 @@ return new class extends Migration
             $table->string('nama');
             $table->string('email')->unique();
             $table->string('password');
+            // V3: atribut role-specific dikonsolidasi ke tb_user (dulu tb_admin/supervisor/karyawan)
+            $table->string('nik')->nullable()->unique();
+            $table->string('no_hp')->nullable();
+            $table->string('posisi')->nullable();
             $table->enum('role', ['karyawan', 'admin', 'supervisor'])->default('karyawan');
             $table->boolean('is_active')->default(true);
             $table->rememberToken();
             $table->timestamp('created_at')->useCurrent();
+            $table->index('role');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
