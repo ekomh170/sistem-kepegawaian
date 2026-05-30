@@ -13,6 +13,6 @@ class KaryawanQuickAccessWidget extends Widget
 
     public static function canView(): bool
     {
-        return Auth::user()?->role === 'karyawan';
+        return Auth::user()?->isKaryawan();
     }
 }

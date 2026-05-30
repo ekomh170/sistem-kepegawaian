@@ -15,7 +15,7 @@ class ViewPresensi extends ViewRecord
     {
         return [
             EditAction::make()
-                ->visible(fn () => in_array(Auth::user()?->role, ['admin', 'supervisor'], true)),
+                ->visible(fn () => (Auth::user()?->isAdmin() || Auth::user()?->isSupervisor())),
         ];
     }
 }

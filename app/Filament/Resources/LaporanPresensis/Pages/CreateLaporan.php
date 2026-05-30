@@ -1,26 +1,22 @@
 <?php
 
-namespace App\Filament\Resources\Laporans\Pages;
+namespace App\Filament\Resources\LaporanPresensis\Pages;
 
-use App\Filament\Resources\Laporans\LaporanResource;
-use Filament\Actions\DeleteAction;
-use Filament\Resources\Pages\EditRecord;
+use App\Filament\Resources\LaporanPresensis\LaporanPresensiResource;
+use Filament\Resources\Pages\CreateRecord;
 
-class EditLaporan extends EditRecord
+class CreateLaporan extends CreateRecord
 {
-    protected static string $resource = LaporanResource::class;
+    protected static string $resource = LaporanPresensiResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            DeleteAction::make(),
-        ];
-    }
-
-    protected function mutateFormDataBeforeSave(array $data): array
+    protected function mutateFormDataBeforeCreate(array $data): array
     {
         if (empty($data['judul'])) {
             $data['judul'] = self::buildJudul($data);
+        }
+
+        if (empty($data['file_path'])) {
+            $data['file_path'] = 'laporan/' . ($data['periode'] ?? 'unknown') . '.pdf';
         }
 
         return $data;

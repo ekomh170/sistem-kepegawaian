@@ -13,7 +13,7 @@ class BuktiPekerjaansTable
     {
         return $table
             ->columns([
-                \Filament\Tables\Columns\TextColumn::make('karyawan.user.nama')->label('Karyawan')->searchable()->sortable(),
+                \Filament\Tables\Columns\TextColumn::make('user.nama')->label('Karyawan')->searchable()->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('detailPekerjaan.nama_lokasi')->label('Tugas / Lokasi')->searchable(),
                 \Filament\Tables\Columns\TextColumn::make('keterangan')->limit(50),
                 \Filament\Tables\Columns\TextColumn::make('status')->badge(),
@@ -24,12 +24,12 @@ class BuktiPekerjaansTable
             ])
             ->recordActions([
                 EditAction::make()
-                    ->visible(fn () => \Illuminate\Support\Facades\Auth::user()?->role === 'admin'),
+                    ->visible(fn () => \Illuminate\Support\Facades\Auth::user()?->isAdmin()),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                ])->visible(fn () => \Illuminate\Support\Facades\Auth::user()?->role === 'admin'),
+                ])->visible(fn () => \Illuminate\Support\Facades\Auth::user()?->isAdmin()),
             ]);
     }
 }

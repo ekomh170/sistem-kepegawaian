@@ -19,19 +19,19 @@ class ProgressPekerjaanHariIniWidget extends Widget
 
     public static function canView(): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return (Auth::user()?->isAdmin() || Auth::user()?->isSupervisor());
     }
 
     protected function getViewData(): array
     {
         $today = Carbon::today()->toDateString();
 
-        $tugasHariIni = DetailPekerjaan::with(['karyawan.user', 'jadwal', 'buktiPekerjaans'])
-            ->join('tb_jadwal', 'tb_jadwal.id', '=', 'tb_detail_pekerjaan.jadwal_id')
-            ->where('tb_jadwal.tanggal_kerja', $today)
-            ->where('tb_jadwal.hari_libur', false)
+        $tugasHariIni = DetailPekerjaan::with(['user', 'jadwal', 'buktiPekerjaans'])
+            ->join('tb_jadwal_pekerjaan', 'tb_jadwal_pekerjaan.id', '=', 'tb_detail_pekerjaan.jadwal_id')
+            ->whereDate('tb_jadwal_pekerjaan.tanggal_kerja', $today)
+            ->where('tb_jadwal_pekerjaan.hari_libur', false)
             ->select('tb_detail_pekerjaan.*')
-            ->orderBy('tb_detail_pekerjaan.karyawan_id')
+            ->orderBy('tb_detail_pekerjaan.user_id')
             ->get();
 
         $list = $tugasHariIni->map(function ($tugas) {
@@ -55,7 +55,7 @@ class ProgressPekerjaanHariIniWidget extends Widget
             return [
                 'nama_lokasi' => $tugas->nama_lokasi ?? '-',
                 'alamat_lokasi' => $tugas->alamat_lokasi ?? '',
-                'karyawan' => $tugas->karyawan?->user?->nama ?? $tugas->karyawan?->nik ?? '-',
+                'karyawan' => $tugas->user?->nama ?? $tugas->user?->nik ?? '-',
                 'label_status' => $labelStatus,
                 'badge_warna' => $badgeWarna,
                 'alasan_tolak' => $tugas->alasan_tolak,

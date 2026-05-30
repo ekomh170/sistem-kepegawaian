@@ -90,7 +90,7 @@ class LokasiKantorPage extends Page implements HasForms
                     ]),
             ])
             ->statePath('data')
-            ->disabled(Auth::user()?->role !== 'admin');
+            ->disabled(! Auth::user()?->isAdmin());
     }
 
     public function save(): void
@@ -111,6 +111,6 @@ class LokasiKantorPage extends Page implements HasForms
 
     public static function canAccess(): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return (Auth::user()?->isAdmin() || Auth::user()?->isSupervisor());
     }
 }

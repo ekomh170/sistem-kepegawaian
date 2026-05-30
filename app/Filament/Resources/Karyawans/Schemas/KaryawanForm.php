@@ -2,11 +2,7 @@
 
 namespace App\Filament\Resources\Karyawans\Schemas;
 
-use App\Models\Karyawan;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
+use App\Models\User;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -20,24 +16,24 @@ class KaryawanForm
                 Section::make('Data Akun')
                     ->description(fn ($context) => $context === 'create'
                         ? 'Buat akun login baru untuk karyawan'
-                        : 'Akun user yang terhubung')
+                        : 'Akun login karyawan')
                     ->columns(2)
                     ->columnSpanFull()
                     ->schema([
-                        // Data akun user (create/edit)
-                        TextInput::make('user_nama')
+                        TextInput::make('nama')
                             ->label('Nama Lengkap')
                             ->required()
                             ->maxLength(255)
                             ->placeholder('Masukkan nama lengkap')
                             ->columnSpanFull(),
-                        TextInput::make('user_email')
+                        TextInput::make('email')
                             ->label('Email')
                             ->email()
                             ->required()
                             ->maxLength(255)
+                            ->unique(table: User::class, column: 'email', ignoreRecord: true)
                             ->placeholder('contoh@email.com'),
-                        TextInput::make('user_password')
+                        TextInput::make('password')
                             ->label('Password')
                             ->password()
                             ->revealable()
@@ -58,55 +54,18 @@ class KaryawanForm
                             ->label('NIK Karyawan')
                             ->required()
                             ->maxLength(255)
-                            ->unique(table: Karyawan::class, column: 'nik', ignoreRecord: true)
+                            ->unique(table: User::class, column: 'nik', ignoreRecord: true)
                             ->placeholder('KRY-XXX'),
-                        TextInput::make('no_ktp')
-                            ->label('No. KTP')
-                            ->maxLength(20)
-                            ->placeholder('3XXXXXXXXXXXXXXX'),
-                        TextInput::make('posisi_karyawan')
+                        TextInput::make('posisi')
                             ->label('Posisi / Jabatan')
                             ->required()
                             ->maxLength(255)
                             ->placeholder('Contoh: Tukang Batu'),
-                        TextInput::make('bidang_tugas')
-                            ->label('Bidang Tugas')
-                            ->required()
-                            ->maxLength(255)
-                            ->placeholder('Contoh: Konstruksi'),
                         TextInput::make('no_hp')
                             ->label('No. HP')
                             ->required()
                             ->maxLength(30)
                             ->placeholder('08XXXXXXXXXX'),
-                        FileUpload::make('foto')
-                            ->label('Foto Karyawan')
-                            ->image()
-                            ->directory('karyawan')
-                            ->maxSize(2048),
-                        Textarea::make('alamat')
-                            ->label('Alamat Lengkap')
-                            ->rows(2)
-                            ->placeholder('Masukkan alamat lengkap')
-                            ->columnSpanFull(),
-                    ]),
-
-                Section::make('Kepegawaian')
-                    ->description('Status kontrak')
-                    ->columns(2)
-                    ->columnSpanFull()
-                    ->schema([
-                        DatePicker::make('tgl_masuk')
-                            ->label('Tanggal Masuk')
-                            ->required()
-                            ->default(now()),
-                        Select::make('status_kontrak')
-                            ->label('Status Kontrak')
-                            ->options([
-                                'kontrak' => '📋 Kontrak',
-                                'tetap' => '✅ Tetap',
-                            ])
-                            ->required(),
                     ]),
             ]);
     }

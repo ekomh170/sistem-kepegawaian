@@ -18,7 +18,7 @@ class DetailPekerjaansTable
     {
         return $table
             ->columns([
-                TextColumn::make('karyawan.user.nama')
+                TextColumn::make('user.nama')
                     ->label('Karyawan')
                     ->searchable()
                     ->sortable(),
@@ -55,9 +55,9 @@ class DetailPekerjaansTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->modifyQueryUsing(fn (Builder $query) => $query
-                ->leftJoin('tb_jadwal', 'tb_jadwal.id', '=', 'tb_detail_pekerjaan.jadwal_id')
+                ->leftJoin('tb_jadwal_pekerjaan', 'tb_jadwal_pekerjaan.id', '=', 'tb_detail_pekerjaan.jadwal_id')
                 ->select('tb_detail_pekerjaan.*')
-                ->orderByDesc('tb_jadwal.tanggal_kerja')
+                ->orderByDesc('tb_jadwal_pekerjaan.tanggal_kerja')
                 ->orderByDesc('tb_detail_pekerjaan.id')
             )
             ->filters([
@@ -81,12 +81,12 @@ class DetailPekerjaansTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make()
-                    ->visible(fn () => \Illuminate\Support\Facades\Auth::user()?->role === 'admin'),
+                    ->visible(fn () => \Illuminate\Support\Facades\Auth::user()?->isAdmin()),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                ])->visible(fn () => \Illuminate\Support\Facades\Auth::user()?->role === 'admin'),
+                ])->visible(fn () => \Illuminate\Support\Facades\Auth::user()?->isAdmin()),
             ]);
     }
 }

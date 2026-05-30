@@ -14,7 +14,7 @@ class ListPresensis extends ListRecords
     {
         return [
             CreateAction::make()
-                ->visible(fn () => in_array(\Illuminate\Support\Facades\Auth::user()?->role, ['admin', 'supervisor'], true)),
+                ->visible(fn () => \Illuminate\Support\Facades\Auth::user()?->isAdmin() || \Illuminate\Support\Facades\Auth::user()?->isSupervisor()),
         ];
     }
 }

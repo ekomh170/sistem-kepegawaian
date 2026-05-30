@@ -31,27 +31,27 @@ class BuktiPekerjaanResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return Auth::user()?->role === 'admin';
+        return Auth::user()?->isAdmin();
     }
 
     public static function canCreate(): bool
     {
-        return Auth::user()?->role === 'admin';
+        return Auth::user()?->isAdmin();
     }
 
     public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
     {
-        return Auth::user()?->role === 'admin';
+        return Auth::user()?->isAdmin();
     }
 
     public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
     {
-        return Auth::user()?->role === 'admin';
+        return Auth::user()?->isAdmin();
     }
 
     public static function canDeleteAny(): bool
     {
-        return Auth::user()?->role === 'admin';
+        return Auth::user()?->isAdmin();
     }
 
     public static function form(Schema $schema): Schema

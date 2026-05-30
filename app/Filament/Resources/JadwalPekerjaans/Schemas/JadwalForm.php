@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\Jadwals\Schemas;
+namespace App\Filament\Resources\JadwalPekerjaans\Schemas;
 
-use App\Models\Admin;
-use App\Models\Karyawan;
+use App\Models\User;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TimePicker;
@@ -22,47 +21,49 @@ class JadwalForm
                     ->columns(2)
                     ->columnSpanFull()
                     ->schema([
-                        Select::make('karyawan_id')
+                        Select::make('user_id')
                             ->label('Karyawan')
                             ->searchable()
-                            ->getSearchResultsUsing(fn (string $search) => Karyawan::with('user')
+                            ->getSearchResultsUsing(fn (string $search) => User::query()
+                                ->where('role', 'karyawan')
                                 ->when(filled($search), fn ($q) => $q->where(fn ($inner) => $inner
                                     ->where('nik', 'like', "%{$search}%")
-                                    ->orWhereHas('user', fn ($u) => $u->where('nama', 'like', "%{$search}%"))
+                                    ->orWhere('nama', 'like', "%{$search}%")
                                 ))
                                 ->limit(50)
                                 ->get()
-                                ->mapWithKeys(fn ($k) => [$k->id => "{$k->nik} - " . ($k->user?->nama ?? '-')])
+                                ->mapWithKeys(fn ($u) => [$u->id => "{$u->nik} - {$u->nama}"])
                                 ->all()
                             )
                             ->getOptionLabelUsing(function ($value) {
-                                $k = Karyawan::with('user')->find($value);
-                                return $k ? "{$k->nik} - " . ($k->user?->nama ?? '-') : $value;
+                                $u = User::find($value);
+                                return $u ? "{$u->nik} - {$u->nama}" : $value;
                             })
                             ->required(),
 
-                        Select::make('admin_id')
+                        Select::make('dibuat_oleh')
                             ->label('Admin Pembuat')
                             ->searchable()
-                            ->getSearchResultsUsing(fn (string $search) => Admin::with('user')
+                            ->getSearchResultsUsing(fn (string $search) => User::query()
+                                ->where('role', 'admin')
                                 ->when(filled($search), fn ($q) => $q->where(fn ($inner) => $inner
                                     ->where('nik', 'like', "%{$search}%")
-                                    ->orWhereHas('user', fn ($u) => $u->where('nama', 'like', "%{$search}%"))
+                                    ->orWhere('nama', 'like', "%{$search}%")
                                 ))
                                 ->limit(20)
                                 ->get()
-                                ->mapWithKeys(fn ($a) => [$a->id => "{$a->nik} - " . ($a->user?->nama ?? '-')])
+                                ->mapWithKeys(fn ($u) => [$u->id => "{$u->nik} - {$u->nama}"])
                                 ->all()
                             )
                             ->getOptionLabelUsing(function ($value) {
-                                $a = Admin::with('user')->find($value);
-                                return $a ? "{$a->nik} - " . ($a->user?->nama ?? '-') : $value;
+                                $u = User::find($value);
+                                return $u ? "{$u->nik} - {$u->nama}" : $value;
                             })
-                            ->default(fn () => Admin::where('user_id', Auth::id())->first()?->id),
+                            ->default(fn () => Auth::id()),
                     ]),
 
                 Section::make('Tanggal & Jam Kerja')
-                    ->description('Sesuai kebijakan: 6 hari kerja per minggu, 1 hari libur ditentukan admin, jam kerja default 08.00–16.00.')
+                    ->description('Sesuai kebijakan: 6 hari kerja per minggu, 1 hari libur ditentukan admin, jam kerja default 08.00â€“16.00.')
                     ->columns(3)
                     ->columnSpanFull()
                     ->schema([

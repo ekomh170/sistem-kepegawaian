@@ -6,8 +6,8 @@ use App\Filament\Resources\Presensis\Pages\CreatePresensi;
 use App\Filament\Resources\Presensis\Pages\EditPresensi;
 use App\Filament\Resources\Presensis\Pages\ListPresensis;
 use App\Filament\Resources\Presensis\Pages\ViewPresensi;
-use App\Models\Karyawan;
 use App\Models\Presensi;
+use App\Models\User;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -17,6 +17,7 @@ use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
@@ -43,27 +44,28 @@ class PresensiResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return (Auth::user()?->isAdmin() || Auth::user()?->isSupervisor());
     }
 
     public static function canCreate(): bool
     {
-        return Auth::user()?->role === 'admin';
+        return Auth::user()?->isAdmin();
     }
 
     public static function canEdit(Model $record): bool
     {
-        return Auth::user()?->role === 'admin';
+        // Admin: full edit. Supervisor: edit untuk verifikasi.
+        return (Auth::user()?->isAdmin() || Auth::user()?->isSupervisor());
     }
 
     public static function canDelete(Model $record): bool
     {
-        return Auth::user()?->role === 'admin';
+        return Auth::user()?->isAdmin();
     }
 
     public static function canDeleteAny(): bool
     {
-        return Auth::user()?->role === 'admin';
+        return Auth::user()?->isAdmin();
     }
 
     public static function form(Schema $schema): Schema
@@ -74,21 +76,22 @@ class PresensiResource extends Resource
                     ->columns(2)
                     ->columnSpanFull()
                     ->schema([
-                        Select::make('karyawan_id')
+                        Select::make('user_id')
                             ->label('Karyawan')
                             ->searchable()
-                            ->getSearchResultsUsing(fn (string $search) => Karyawan::with('user')
+                            ->getSearchResultsUsing(fn (string $search) => User::query()
+                                ->where('role', 'karyawan')
                                 ->when(filled($search), fn ($q) => $q->where(fn ($inner) => $inner
                                     ->where('nik', 'like', "%{$search}%")
-                                    ->orWhereHas('user', fn ($u) => $u->where('nama', 'like', "%{$search}%"))
+                                    ->orWhere('nama', 'like', "%{$search}%")
                                 ))
                                 ->limit(50)
                                 ->get()
-                                ->mapWithKeys(fn ($k) => [$k->id => "{$k->nik} - " . ($k->user?->nama ?? '-')])
+                                ->mapWithKeys(fn ($u) => [$u->id => "{$u->nik} - {$u->nama}"])
                                 ->all()
                             )
-                            ->getOptionLabelUsing(fn ($value) => ($k = Karyawan::with('user')->find($value))
-                                ? "{$k->nik} - " . ($k->user?->nama ?? '-')
+                            ->getOptionLabelUsing(fn ($value) => ($u = User::find($value))
+                                ? "{$u->nik} - {$u->nama}"
                                 : $value
                             )
                             ->required()
@@ -119,15 +122,6 @@ class PresensiResource extends Resource
                             ->required()
                             ->live()
                             ->default('hadir'),
-
-                        Select::make('status_valid')
-                            ->label('Status Validasi')
-                            ->options([
-                                'pending' => 'Pending',
-                                'valid' => 'Valid',
-                                'tidak_valid' => 'Tidak Valid',
-                            ])
-                            ->default('pending'),
                     ]),
 
                 Section::make('Waktu & Keterlambatan')
@@ -164,6 +158,27 @@ class PresensiResource extends Resource
                             ->formatStateUsing(fn ($state) => $state !== null ? number_format((float) $state, 0, ',', '.') : '0')
                             ->dehydrateStateUsing(fn ($state) => (float) str_replace('.', '', $state ?? '0'))
                             ->helperText('Toleransi 10 menit pertama, Rp 10.000 per 10 menit keterlambatan'),
+                    ]),
+
+                Section::make('Verifikasi')
+                    ->description('Diisi supervisor/admin untuk memvalidasi presensi (V3 inline).')
+                    ->columns(2)
+                    ->columnSpanFull()
+                    ->schema([
+                        Select::make('status_verifikasi')
+                            ->label('Status Verifikasi')
+                            ->options([
+                                'pending' => 'Menunggu',
+                                'disetujui' => 'Disetujui',
+                                'ditolak' => 'Ditolak',
+                            ])
+                            ->default('pending')
+                            ->required(),
+                        Textarea::make('catatan_verifikasi')
+                            ->label('Catatan Verifikasi')
+                            ->rows(2)
+                            ->placeholder('Catatan / alasan (opsional)')
+                            ->columnSpanFull(),
                     ]),
 
                 Section::make('Foto & Lokasi Masuk')
@@ -239,7 +254,7 @@ class PresensiResource extends Resource
                     ->columns(2)
                     ->columnSpanFull()
                     ->schema([
-                        TextEntry::make('karyawan.user.nama')
+                        TextEntry::make('user.nama')
                             ->label('Karyawan'),
                         TextEntry::make('tanggal')
                             ->label('Tanggal')
@@ -269,18 +284,18 @@ class PresensiResource extends Resource
                                 'izin' => 'Izin',
                                 default => $state,
                             }),
-                        TextEntry::make('status_valid')
-                            ->label('Status Validasi')
+                        TextEntry::make('status_verifikasi')
+                            ->label('Status Verifikasi')
                             ->badge()
                             ->color(fn (string $state): string => match ($state) {
-                                'valid' => 'success',
-                                'tidak_valid' => 'danger',
+                                'disetujui' => 'success',
+                                'ditolak' => 'danger',
                                 default => 'gray',
                             })
                             ->formatStateUsing(fn (string $state): string => match ($state) {
-                                'valid' => 'Valid',
-                                'tidak_valid' => 'Tidak Valid',
-                                default => 'Pending',
+                                'disetujui' => 'Disetujui',
+                                'ditolak' => 'Ditolak',
+                                default => 'Menunggu',
                             }),
                         TextEntry::make('menit_terlambat')
                             ->label('Keterlambatan')
@@ -290,6 +305,13 @@ class PresensiResource extends Resource
                             ->label('Potongan')
                             ->money('IDR')
                             ->placeholder('-'),
+                        TextEntry::make('verifikator.nama')
+                            ->label('Diverifikasi Oleh')
+                            ->placeholder('-'),
+                        TextEntry::make('catatan_verifikasi')
+                            ->label('Catatan Verifikasi')
+                            ->placeholder('-')
+                            ->columnSpanFull(),
                     ]),
 
                 Section::make('Foto Presensi')
@@ -364,7 +386,7 @@ class PresensiResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('karyawan.user.nama')
+                TextColumn::make('user.nama')
                     ->label('Karyawan')
                     ->searchable()
                     ->sortable(),
@@ -398,13 +420,18 @@ class PresensiResource extends Resource
                         'izin' => 'Izin',
                         default => $state,
                     }),
-                TextColumn::make('status_valid')
-                    ->label('Validasi')
+                TextColumn::make('status_verifikasi')
+                    ->label('Verifikasi')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'valid' => 'success',
-                        'tidak_valid' => 'danger',
+                        'disetujui' => 'success',
+                        'ditolak' => 'danger',
                         default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'disetujui' => 'Disetujui',
+                        'ditolak' => 'Ditolak',
+                        default => 'Menunggu',
                     })
                     ->toggleable(),
                 TextColumn::make('menit_terlambat')
@@ -423,14 +450,14 @@ class PresensiResource extends Resource
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make()
-                    ->visible(fn () => Auth::user()?->role === 'admin'),
+                    ->visible(fn () => (Auth::user()?->isAdmin() || Auth::user()?->isSupervisor())),
                 DeleteAction::make()
-                    ->visible(fn () => Auth::user()?->role === 'admin'),
+                    ->visible(fn () => Auth::user()?->isAdmin()),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                ])->visible(fn () => Auth::user()?->role === 'admin'),
+                ])->visible(fn () => Auth::user()?->isAdmin()),
             ]);
     }
 

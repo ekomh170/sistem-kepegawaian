@@ -14,7 +14,7 @@ class ListBuktiPekerjaans extends ListRecords
     {
         return [
             CreateAction::make()
-                ->visible(fn () => \Illuminate\Support\Facades\Auth::user()?->role === 'admin'),
+                ->visible(fn () => \Illuminate\Support\Facades\Auth::user()?->isAdmin()),
         ];
     }
 }

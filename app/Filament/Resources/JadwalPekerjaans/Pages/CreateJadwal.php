@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Filament\Resources\Jadwals\Pages;
+namespace App\Filament\Resources\JadwalPekerjaans\Pages;
 
-use App\Filament\Resources\Jadwals\JadwalResource;
-use App\Models\Jadwal;
+use App\Filament\Resources\JadwalPekerjaans\JadwalPekerjaanResource;
+use App\Models\JadwalPekerjaan;
 use Carbon\Carbon;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
 
 class CreateJadwal extends CreateRecord
 {
-    protected static string $resource = JadwalResource::class;
+    protected static string $resource = JadwalPekerjaanResource::class;
 
     private int $createdCount = 0;
 
@@ -28,12 +28,12 @@ class CreateJadwal extends CreateRecord
 
             while ($current->lte($end)) {
                 $dateStr = $current->toDateString();
-                $exists = Jadwal::where('karyawan_id', $data['karyawan_id'])
-                    ->where('tanggal_kerja', $dateStr)
+                $exists = JadwalPekerjaan::where('user_id', $data['user_id'])
+                    ->whereDate('tanggal_kerja', $dateStr)
                     ->exists();
 
                 if (!$exists) {
-                    $record = Jadwal::create(array_merge($data, ['tanggal_kerja' => $dateStr]));
+                    $record = JadwalPekerjaan::create(array_merge($data, ['tanggal_kerja' => $dateStr]));
                     $this->createdCount++;
                     $firstRecord ??= $record;
                 }
@@ -47,11 +47,11 @@ class CreateJadwal extends CreateRecord
 
             // Semua tanggal di rentang sudah ada jadwalnya
             $this->createdCount = 1;
-            return Jadwal::create(array_merge($data, ['tanggal_kerja' => $start->toDateString()]));
+            return JadwalPekerjaan::create(array_merge($data, ['tanggal_kerja' => $start->toDateString()]));
         }
 
         $this->createdCount = 1;
-        return Jadwal::create($data);
+        return JadwalPekerjaan::create($data);
     }
 
     protected function getCreatedNotificationTitle(): ?string

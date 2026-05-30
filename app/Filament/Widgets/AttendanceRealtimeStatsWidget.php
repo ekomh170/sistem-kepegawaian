@@ -2,8 +2,8 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Karyawan;
 use App\Models\Presensi;
+use App\Models\User;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Carbon;
@@ -47,7 +47,7 @@ class AttendanceRealtimeStatsWidget extends StatsOverviewWidget
             ->where('status_presensi', 'tidak_hadir')
             ->count();
 
-        $totalKaryawan = Karyawan::count();
+        $totalKaryawan = User::where('role', 'karyawan')->count();
 
         return [
             Stat::make('Total Karyawan', (string) $totalKaryawan)
@@ -79,6 +79,6 @@ class AttendanceRealtimeStatsWidget extends StatsOverviewWidget
 
     public static function canView(): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return (Auth::user()?->isAdmin() || Auth::user()?->isSupervisor());
     }
 }

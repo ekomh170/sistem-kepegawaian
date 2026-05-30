@@ -20,20 +20,9 @@ class AkunsTable
                 TextColumn::make('email')
                     ->searchable()
                     ->sortable(),
+                // role di-cast ke App\Enums\Role (HasLabel + HasColor) → badge auto label & warna
                 TextColumn::make('role')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'admin' => 'danger',
-                        'supervisor' => 'warning',
-                        'karyawan' => 'success',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'karyawan' => 'Karyawan',
-                        'admin' => 'Admin',
-                        'supervisor' => 'Supervisor',
-                        default => ucfirst($state),
-                    }),
+                    ->badge(),
                 TextColumn::make('created_at')
                     ->dateTime('d M Y H:i')
                     ->sortable(),

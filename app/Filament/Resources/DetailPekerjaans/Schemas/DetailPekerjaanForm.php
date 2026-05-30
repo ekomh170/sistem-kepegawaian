@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\DetailPekerjaans\Schemas;
 
-use App\Models\Jadwal;
-use App\Models\Karyawan;
+use App\Models\JadwalPekerjaan;
+use App\Models\User;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
@@ -16,21 +16,22 @@ class DetailPekerjaanForm
     {
         return $schema
             ->components([
-                Select::make('karyawan_id')
+                Select::make('user_id')
                     ->label('Karyawan')
                     ->searchable()
-                    ->getSearchResultsUsing(fn (string $search) => Karyawan::with('user')
+                    ->getSearchResultsUsing(fn (string $search) => User::query()
+                        ->where('role', 'karyawan')
                         ->when(filled($search), fn ($q) => $q->where(fn ($inner) => $inner
                             ->where('nik', 'like', "%{$search}%")
-                            ->orWhereHas('user', fn ($u) => $u->where('nama', 'like', "%{$search}%"))
+                            ->orWhere('nama', 'like', "%{$search}%")
                         ))
                         ->limit(50)
                         ->get()
-                        ->mapWithKeys(fn ($k) => [$k->id => "{$k->nik} - " . ($k->user?->nama ?? '-')])
+                        ->mapWithKeys(fn ($u) => [$u->id => "{$u->nik} - {$u->nama}"])
                         ->all()
                     )
-                    ->getOptionLabelUsing(fn ($value) => ($k = Karyawan::with('user')->find($value))
-                        ? "{$k->nik} - " . ($k->user?->nama ?? '-')
+                    ->getOptionLabelUsing(fn ($value) => ($u = User::find($value))
+                        ? "{$u->nik} - {$u->nama}"
                         : $value
                     )
                     ->required()
@@ -38,12 +39,12 @@ class DetailPekerjaanForm
                 Select::make('jadwal_id')
                     ->label('Jadwal')
                     ->options(function ($get) {
-                        $karyawanId = $get('karyawan_id');
-                        if (!$karyawanId) {
+                        $userId = $get('user_id');
+                        if (!$userId) {
                             return [];
                         }
 
-                        return Jadwal::where('karyawan_id', $karyawanId)
+                        return JadwalPekerjaan::where('user_id', $userId)
                             ->where('hari_libur', false)
                             ->orderByDesc('tanggal_kerja')
                             ->limit(60)

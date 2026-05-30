@@ -16,14 +16,14 @@ class DetailPekerjaanInfolist
                     ->columns(2)
                     ->columnSpanFull()
                     ->schema([
-                        TextEntry::make('karyawan.user.nama')
+                        TextEntry::make('user.nama')
                             ->label('Nama Karyawan')
                             ->weight('bold')
                             ->size('lg'),
-                        TextEntry::make('karyawan.nik')
+                        TextEntry::make('user.nik')
                             ->label('NIK')
                             ->copyable(),
-                        TextEntry::make('karyawan.posisi_karyawan')
+                        TextEntry::make('user.posisi')
                             ->label('Posisi'),
                         TextEntry::make('status')
                             ->label('Status Tugas')

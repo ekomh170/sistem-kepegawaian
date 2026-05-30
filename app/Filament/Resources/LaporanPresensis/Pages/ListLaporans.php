@@ -1,22 +1,22 @@
 <?php
 
-namespace App\Filament\Resources\Laporans\Pages;
+namespace App\Filament\Resources\LaporanPresensis\Pages;
 
 use App\Filament\Widgets\LaporanEvaluasiChartWidget;
-use App\Filament\Resources\Laporans\LaporanResource;
+use App\Filament\Resources\LaporanPresensis\LaporanPresensiResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Auth;
 
 class ListLaporans extends ListRecords
 {
-    protected static string $resource = LaporanResource::class;
+    protected static string $resource = LaporanPresensiResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
             CreateAction::make()
-                ->visible(fn (): bool => in_array(Auth::user()?->role, ['admin', 'supervisor'], true)),
+                ->visible(fn (): bool => (Auth::user()?->isAdmin() || Auth::user()?->isSupervisor())),
         ];
     }
 

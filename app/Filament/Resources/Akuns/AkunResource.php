@@ -31,32 +31,32 @@ class AkunResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return Auth::user()?->role === 'admin';
+        return Auth::user()?->isAdmin();
     }
 
     public static function canViewAny(): bool
     {
-        return Auth::user()?->role === 'admin';
+        return Auth::user()?->isAdmin();
     }
 
     public static function canCreate(): bool
     {
-        return Auth::user()?->role === 'admin';
+        return Auth::user()?->isAdmin();
     }
 
     public static function canEdit(Model $record): bool
     {
-        return Auth::user()?->role === 'admin';
+        return Auth::user()?->isAdmin();
     }
 
     public static function canDelete(Model $record): bool
     {
-        return Auth::user()?->role === 'admin';
+        return Auth::user()?->isAdmin();
     }
 
     public static function canDeleteAny(): bool
     {
-        return Auth::user()?->role === 'admin';
+        return Auth::user()?->isAdmin();
     }
 
     public static function form(Schema $schema): Schema

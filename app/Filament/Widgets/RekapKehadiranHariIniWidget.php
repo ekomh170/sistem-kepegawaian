@@ -2,8 +2,8 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Karyawan;
 use App\Models\Presensi;
+use App\Models\User;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -20,23 +20,22 @@ class RekapKehadiranHariIniWidget extends Widget
 
     public static function canView(): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return (Auth::user()?->isAdmin() || Auth::user()?->isSupervisor());
     }
 
     protected function getViewData(): array
     {
         $today = Carbon::today()->toDateString();
 
-        $karyawans = Karyawan::with(['user', 'presensis' => fn ($q) => $q->where('tanggal', $today)])
-            ->get();
+        $karyawans = User::where('role', 'karyawan')->get();
 
         $presensiMap = Presensi::where('tanggal', $today)
             ->get()
-            ->keyBy('karyawan_id');
+            ->keyBy('user_id');
 
         $list = $karyawans->map(function ($karyawan) use ($presensiMap) {
             $presensi = $presensiMap->get($karyawan->id);
-            $nama = $karyawan->user?->nama ?? '-';
+            $nama = $karyawan->nama ?? '-';
             $inisial = collect(explode(' ', $nama))
                 ->take(2)
                 ->map(fn ($w) => strtoupper(substr($w, 0, 1)))
@@ -57,7 +56,7 @@ class RekapKehadiranHariIniWidget extends Widget
             return [
                 'nama' => $nama,
                 'inisial' => $inisial,
-                'posisi' => $karyawan->posisi_karyawan ?? '-',
+                'posisi' => $karyawan->posisi ?? '-',
                 'status' => $status,
                 'jam_masuk' => $jamMasuk,
                 'menit_terlambat' => $menitTerlambat,

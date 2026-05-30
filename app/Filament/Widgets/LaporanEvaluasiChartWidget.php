@@ -2,7 +2,7 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\RekapPresensiBulanan;
+use App\Models\Presensi;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -19,12 +19,13 @@ class LaporanEvaluasiChartWidget extends ChartWidget
 
     protected function getData(): array
     {
-        $rekap = RekapPresensiBulanan::query()
+        // V3: agregasi langsung dari tb_presensi per bulan (tidak ada tabel rekap terpisah)
+        $rekap = Presensi::query()
             ->select(
-                'periode',
-                DB::raw('SUM(jumlah_hadir) as total_hadir'),
-                DB::raw('SUM(jumlah_terlambat) as total_terlambat'),
-                DB::raw('SUM(jumlah_tidak_hadir) as total_tidak_hadir')
+                DB::raw("DATE_FORMAT(tanggal, '%Y-%m') as periode"),
+                DB::raw("SUM(CASE WHEN status_presensi IN ('hadir','terlambat') THEN 1 ELSE 0 END) as total_hadir"),
+                DB::raw("SUM(CASE WHEN status_presensi = 'terlambat' THEN 1 ELSE 0 END) as total_terlambat"),
+                DB::raw("SUM(CASE WHEN status_presensi = 'tidak_hadir' THEN 1 ELSE 0 END) as total_tidak_hadir")
             )
             ->groupBy('periode')
             ->orderBy('periode')
@@ -69,6 +70,6 @@ class LaporanEvaluasiChartWidget extends ChartWidget
 
     public static function canView(): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return (Auth::user()?->isAdmin() || Auth::user()?->isSupervisor());
     }
 }

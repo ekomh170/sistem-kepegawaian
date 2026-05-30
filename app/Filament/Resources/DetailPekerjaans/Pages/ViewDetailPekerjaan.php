@@ -14,7 +14,7 @@ class ViewDetailPekerjaan extends ViewRecord
     {
         return [
             EditAction::make()
-                ->visible(fn () => \Illuminate\Support\Facades\Auth::user()?->role === 'admin'),
+                ->visible(fn () => \Illuminate\Support\Facades\Auth::user()?->isAdmin()),
         ];
     }
 }

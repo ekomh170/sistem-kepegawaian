@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Resources\Laporans;
+namespace App\Filament\Resources\LaporanPresensis;
 
-use App\Filament\Resources\Laporans\Pages\CreateLaporan;
-use App\Filament\Resources\Laporans\Pages\EditLaporan;
-use App\Filament\Resources\Laporans\Pages\ListLaporans;
-use App\Models\Laporan;
+use App\Filament\Resources\LaporanPresensis\Pages\CreateLaporan;
+use App\Filament\Resources\LaporanPresensis\Pages\EditLaporan;
+use App\Filament\Resources\LaporanPresensis\Pages\ListLaporans;
+use App\Models\LaporanPresensi;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -14,54 +14,65 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
-class LaporanResource extends Resource
+class LaporanPresensiResource extends Resource
 {
-    protected static ?string $model = Laporan::class;
+    protected static ?string $model = LaporanPresensi::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
-    protected static ?string $navigationLabel = 'Laporan';
+    protected static ?string $navigationLabel = 'Laporan Presensi';
+
+    protected static ?string $modelLabel = 'Laporan Presensi';
+
+    protected static ?string $pluralModelLabel = 'Laporan Presensi';
 
     protected static string|\UnitEnum|null $navigationGroup = 'Laporan';
 
     protected static ?int $navigationSort = 8;
 
+    /**
+     * V3: hanya tampilkan baris laporan agregat (user_id NULL). Baris rekap
+     * per-karyawan (user_id terisi) tidak dipakai di resource ini.
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->whereNull('user_id');
+    }
+
     public static function canViewAny(): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return (Auth::user()?->isAdmin() || Auth::user()?->isSupervisor());
     }
 
     public static function canCreate(): bool
     {
-        return in_array(Auth::user()?->role, ['admin', 'supervisor'], true);
+        return (Auth::user()?->isAdmin() || Auth::user()?->isSupervisor());
     }
 
     public static function canEdit(Model $record): bool
     {
-        return Auth::user()?->role === 'admin';
+        return Auth::user()?->isAdmin();
     }
 
     public static function canDelete(Model $record): bool
     {
-        return Auth::user()?->role === 'admin';
+        return Auth::user()?->isAdmin();
     }
 
     public static function canDeleteAny(): bool
     {
-        return Auth::user()?->role === 'admin';
+        return Auth::user()?->isAdmin();
     }
 
     public static function form(Schema $schema): Schema
@@ -75,12 +86,13 @@ class LaporanResource extends Resource
                         Select::make('tipe_laporan')
                             ->label('Tipe Laporan')
                             ->options([
-                                'presensi' => '📋 Laporan Presensi (Detail Harian)',
-                                'rekap_presensi_bulanan' => '📊 Laporan Jumlah Presensi Per Karyawan',
-                                'rekap_pekerjaan' => '📦 Rekap Pekerjaan',
+                                'presensi' => 'ðŸ“‹ Laporan Presensi (Detail Harian)',
+                                'rekap_presensi_bulanan' => 'ðŸ“Š Laporan Jumlah Presensi Per Karyawan',
+                                'rekap_pekerjaan' => 'ðŸ“¦ Rekap Pekerjaan',
                             ])
                             ->required()
                             ->default('presensi')
+                            ->dehydrated(false)
                             ->live()
                             ->afterStateHydrated(function ($set, $record) {
                                 if ($record && $record->judul) {
@@ -106,31 +118,19 @@ class LaporanResource extends Resource
 
                         Select::make('jenis')
                             ->label('Jenis Laporan')
-                            ->options(fn ($get) => $get('tipe_laporan') === 'rekap_presensi_bulanan'
-                                ? [
-                                    'Harian' => '📅 Harian',
-                                    'Mingguan' => '📆 Mingguan',
-                                    'Bulanan' => '📊 Bulanan',
-                                ]
-                                : [
-                                    'Harian' => '📅 Harian',
-                                    'Mingguan' => '📆 Mingguan',
-                                    'Bulanan' => '📊 Bulanan',
-                                    'Tahunan' => '📈 Tahunan',
-                                ]
-                            )
+                            ->options([
+                                'Harian' => 'ðŸ“… Harian',
+                                'Mingguan' => 'ðŸ“† Mingguan',
+                                'Bulanan' => 'ðŸ“Š Bulanan',
+                                'Tahunan' => 'ðŸ“ˆ Tahunan',
+                            ])
                             ->required()
                             ->default('Bulanan')
                             ->live()
-                            ->helperText(fn ($get) => $get('tipe_laporan') === 'rekap_presensi_bulanan'
-                                ? 'Harian = rekap 1 hari. Mingguan = rekap 7 hari. Bulanan = rekap 1 bulan penuh.'
-                                : null
-                            )
                             ->afterStateUpdated(function ($set, $get) {
                                 self::generateJudul($set, $get);
                             }),
 
-                        // Periode - format berubah sesuai jenis
                         TextInput::make('periode')
                             ->label(fn ($get) => match ($get('jenis')) {
                                 'Harian'   => 'Periode (Tanggal)',
@@ -162,7 +162,7 @@ class LaporanResource extends Resource
 
                         Select::make('generated_by')
                             ->label('Dibuat Oleh')
-                            ->relationship('user', 'nama')
+                            ->relationship('generator', 'nama')
                             ->default(fn () => Auth::id())
                             ->required()
                             ->disabled()
@@ -172,13 +172,6 @@ class LaporanResource extends Resource
                             ->label('Tanggal Generate')
                             ->default(now())
                             ->required(),
-
-                        Textarea::make('filter')
-                            ->label('Catatan')
-                            ->columnSpanFull()
-                            ->rows(2)
-                            ->placeholder('Catatan tambahan tentang laporan ini')
-                            ->default(null),
                     ]),
             ]);
     }
@@ -195,7 +188,7 @@ class LaporanResource extends Resource
         return 'Presensi Harian';
     }
 
-    private static function resolveExportRoute(Laporan $record, string $format): string
+    private static function resolveExportRoute(LaporanPresensi $record, string $format): string
     {
         $judul = strtolower($record->judul);
         $params = ['periode' => $record->periode, 'jenis' => $record->jenis];
@@ -249,7 +242,7 @@ class LaporanResource extends Resource
                 TextColumn::make('tipe')
                     ->label('Tipe')
                     ->badge()
-                    ->state(fn (Laporan $record): string => self::resolveTipeLabel($record->judul))
+                    ->state(fn (LaporanPresensi $record): string => self::resolveTipeLabel($record->judul))
                     ->color(fn (string $state): string => match ($state) {
                         'Presensi Harian'                => 'info',
                         'Jumlah Presensi Per Karyawan'   => 'success',
@@ -269,8 +262,9 @@ class LaporanResource extends Resource
                     ->label('Periode')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('user.nama')
-                    ->label('Dibuat Oleh'),
+                TextColumn::make('generator.nama')
+                    ->label('Dibuat Oleh')
+                    ->placeholder('-'),
                 TextColumn::make('tgl_generate')
                     ->label('Tanggal Generate')
                     ->dateTime('d M Y H:i')
@@ -307,7 +301,8 @@ class LaporanResource extends Resource
                     ]),
                 SelectFilter::make('periode')
                     ->label('Periode')
-                    ->options(fn (): array => Laporan::query()
+                    ->options(fn (): array => LaporanPresensi::query()
+                        ->whereNull('user_id')
                         ->select('periode')
                         ->distinct()
                         ->orderByDesc('periode')
@@ -319,29 +314,29 @@ class LaporanResource extends Resource
                     ->label('CSV')
                     ->icon('heroicon-o-document-text')
                     ->color('success')
-                    ->url(fn (Laporan $record): string => self::resolveExportRoute($record, 'csv'),
+                    ->url(fn (LaporanPresensi $record): string => self::resolveExportRoute($record, 'csv'),
                         shouldOpenInNewTab: true),
                 \Filament\Actions\Action::make('export_excel')
                     ->label('Excel')
                     ->icon('heroicon-o-table-cells')
                     ->color('primary')
-                    ->url(fn (Laporan $record): string => self::resolveExportRoute($record, 'excel'),
+                    ->url(fn (LaporanPresensi $record): string => self::resolveExportRoute($record, 'excel'),
                         shouldOpenInNewTab: true),
                 \Filament\Actions\Action::make('export_pdf')
                     ->label('PDF')
                     ->icon('heroicon-o-document-arrow-down')
                     ->color('danger')
-                    ->url(fn (Laporan $record): string => self::resolveExportRoute($record, 'pdf'),
+                    ->url(fn (LaporanPresensi $record): string => self::resolveExportRoute($record, 'pdf'),
                         shouldOpenInNewTab: true),
                 EditAction::make()
-                    ->visible(fn () => Auth::user()?->role === 'admin'),
+                    ->visible(fn () => Auth::user()?->isAdmin()),
                 DeleteAction::make()
-                    ->visible(fn () => Auth::user()?->role === 'admin'),
+                    ->visible(fn () => Auth::user()?->isAdmin()),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                ])->visible(fn () => Auth::user()?->role === 'admin'),
+                ])->visible(fn () => Auth::user()?->isAdmin()),
             ]);
     }
 

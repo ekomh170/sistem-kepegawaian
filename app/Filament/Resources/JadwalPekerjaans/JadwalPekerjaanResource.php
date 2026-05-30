@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Filament\Resources\Jadwals;
+namespace App\Filament\Resources\JadwalPekerjaans;
 
-use App\Filament\Resources\Jadwals\Pages\CreateJadwal;
-use App\Filament\Resources\Jadwals\Pages\EditJadwal;
-use App\Filament\Resources\Jadwals\Pages\ListJadwals;
-use App\Filament\Resources\Jadwals\Schemas\JadwalForm;
-use App\Filament\Resources\Jadwals\Tables\JadwalsTable;
-use App\Models\Jadwal;
+use App\Filament\Resources\JadwalPekerjaans\Pages\CreateJadwal;
+use App\Filament\Resources\JadwalPekerjaans\Pages\EditJadwal;
+use App\Filament\Resources\JadwalPekerjaans\Pages\ListJadwals;
+use App\Filament\Resources\JadwalPekerjaans\Schemas\JadwalForm;
+use App\Filament\Resources\JadwalPekerjaans\Tables\JadwalsTable;
+use App\Models\JadwalPekerjaan;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -16,13 +16,17 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
-class JadwalResource extends Resource
+class JadwalPekerjaanResource extends Resource
 {
-    protected static ?string $model = Jadwal::class;
+    protected static ?string $model = JadwalPekerjaan::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
 
-    protected static ?string $navigationLabel = 'Jadwal';
+    protected static ?string $navigationLabel = 'Jadwal Pekerjaan';
+
+    protected static ?string $modelLabel = 'Jadwal Pekerjaan';
+
+    protected static ?string $pluralModelLabel = 'Jadwal Pekerjaan';
 
     protected static string|\UnitEnum|null $navigationGroup = 'Operasional';
 
@@ -32,27 +36,27 @@ class JadwalResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return Auth::user()?->role === 'admin';
+        return Auth::user()?->isAdmin();
     }
 
     public static function canCreate(): bool
     {
-        return Auth::user()?->role === 'admin';
+        return Auth::user()?->isAdmin();
     }
 
     public static function canEdit(Model $record): bool
     {
-        return Auth::user()?->role === 'admin';
+        return Auth::user()?->isAdmin();
     }
 
     public static function canDelete(Model $record): bool
     {
-        return Auth::user()?->role === 'admin';
+        return Auth::user()?->isAdmin();
     }
 
     public static function canDeleteAny(): bool
     {
-        return Auth::user()?->role === 'admin';
+        return Auth::user()?->isAdmin();
     }
 
     public static function form(Schema $schema): Schema

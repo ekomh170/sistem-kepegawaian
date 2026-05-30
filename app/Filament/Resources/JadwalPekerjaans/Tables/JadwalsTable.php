@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Jadwals\Tables;
+namespace App\Filament\Resources\JadwalPekerjaans\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -19,7 +19,7 @@ class JadwalsTable
     {
         return $table
             ->columns([
-                TextColumn::make('karyawan.user.nama')
+                TextColumn::make('user.nama')
                     ->label('Karyawan')
                     ->searchable()
                     ->sortable(),
@@ -43,7 +43,7 @@ class JadwalsTable
                         'dibatalkan' => 'danger',
                         default => 'gray',
                     }),
-                TextColumn::make('admin.user.nama')
+                TextColumn::make('pembuatJadwal.nama')
                     ->label('Dibuat Oleh')
                     ->placeholder('-')
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -78,12 +78,12 @@ class JadwalsTable
             ])
             ->recordActions([
                 EditAction::make()
-                    ->visible(fn () => \Illuminate\Support\Facades\Auth::user()?->role === 'admin'),
+                    ->visible(fn () => \Illuminate\Support\Facades\Auth::user()?->isAdmin()),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                ])->visible(fn () => \Illuminate\Support\Facades\Auth::user()?->role === 'admin'),
+                ])->visible(fn () => \Illuminate\Support\Facades\Auth::user()?->isAdmin()),
             ]);
     }
 }
