@@ -106,7 +106,7 @@ class DatabaseSeeder extends Seeder
         // Sesuai BAB 4: 6 hari kerja per minggu, 1 hari libur (Minggu) ditentukan admin,
         // jam kerja 08:00–16:00.
         $semuaKaryawan = User::where('role', 'karyawan')->get();
-        $tanggalAcuan = \Carbon\Carbon::parse('2026-05-23');
+        $tanggalAcuan = \Carbon\Carbon::parse('2026-06-05'); // Jumat
 
         $startDate = $tanggalAcuan->copy()->subMonths(2)->startOfMonth();
         $endDate = $tanggalAcuan->copy();
@@ -293,6 +293,7 @@ class DatabaseSeeder extends Seeder
         $settings = [
             ['key' => 'nama_perusahaan',    'value' => 'CV Boss Muda Mandiri',                  'group' => 'identitas',  'label' => 'Nama Perusahaan',                       'type' => 'text'],
             ['key' => 'alamat_perusahaan',  'value' => 'Jl. Jend. Sudirman No. 45, Jakarta Pusat', 'group' => 'identitas', 'label' => 'Alamat Perusahaan',                  'type' => 'textarea'],
+            ['key' => 'wa_admin',           'value' => '081200000002',                          'group' => 'kontak',     'label' => 'Nomor WhatsApp Admin (Konfirmasi Tugas)', 'type' => 'text'],
             ['key' => 'kantor_lat',         'value' => '-6.2087634',                            'group' => 'lokasi',     'label' => 'Latitude Kantor Pusat',                 'type' => 'text'],
             ['key' => 'kantor_lng',         'value' => '106.8222568',                           'group' => 'lokasi',     'label' => 'Longitude Kantor Pusat',                'type' => 'text'],
             ['key' => 'kantor_radius',      'value' => '500',                                   'group' => 'lokasi',     'label' => 'Radius Presensi (Meter)',               'type' => 'number'],
