@@ -231,4 +231,12 @@ class V3RbacTest extends TestCase
             'generated_by' => $admin->id,
         ]);
     }
+
+    public function test_supervisor_bisa_lihat_menu_pengaturan(): void
+    {
+        // Pengaturan kini tampil di supervisor (read-only).
+        $this->actingAs($this->user('supervisor', 'spv-setting@example.com'))
+            ->get('/supervisor/settings')
+            ->assertSuccessful();
+    }
 }

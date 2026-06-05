@@ -25,7 +25,8 @@ class SettingResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return Auth::user()?->isAdmin();
+        // Supervisor boleh MELIHAT pengaturan (read-only); ubah/hapus tetap admin-only.
+        return (Auth::user()?->isAdmin() || Auth::user()?->isSupervisor());
     }
 
     public static function canCreate(): bool
