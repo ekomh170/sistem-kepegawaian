@@ -9,6 +9,7 @@ use App\Filament\Resources\Presensis\Pages\ViewPresensi;
 use App\Models\Presensi;
 use App\Models\User;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -21,6 +22,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -382,73 +384,84 @@ class PresensiResource extends Resource
         }
     }
 
+    /**
+     * Kolom tabel presensi — dipakai PresensiResource & VerifikasiResource (antrian).
+     *
+     * @return array<int, TextColumn>
+     */
+    public static function presensiColumns(): array
+    {
+        return [
+            TextColumn::make('user.nama')
+                ->label('Karyawan')
+                ->searchable()
+                ->sortable(),
+
+            TextColumn::make('tanggal')
+                ->label('Tanggal')
+                ->date('d M Y')
+                ->sortable(),
+            TextColumn::make('jam_masuk')
+                ->label('Masuk')
+                ->time('H:i')
+                ->placeholder('-'),
+            TextColumn::make('jam_keluar')
+                ->label('Keluar')
+                ->time('H:i')
+                ->placeholder('-'),
+            TextColumn::make('status_presensi')
+                ->label('Status')
+                ->badge()
+                ->color(fn (string $state): string => match ($state) {
+                    'hadir' => 'success',
+                    'terlambat' => 'warning',
+                    'tidak_hadir' => 'danger',
+                    'izin' => 'info',
+                    default => 'gray',
+                })
+                ->formatStateUsing(fn (string $state): string => match ($state) {
+                    'hadir' => 'Hadir',
+                    'terlambat' => 'Terlambat',
+                    'tidak_hadir' => 'Alpa',
+                    'izin' => 'Izin',
+                    default => $state,
+                }),
+            TextColumn::make('status_verifikasi')
+                ->label('Verifikasi')
+                ->badge()
+                ->color(fn (string $state): string => match ($state) {
+                    'disetujui' => 'success',
+                    'ditolak' => 'danger',
+                    default => 'gray',
+                })
+                ->formatStateUsing(fn (string $state): string => match ($state) {
+                    'disetujui' => 'Disetujui',
+                    'ditolak' => 'Ditolak',
+                    default => 'Menunggu',
+                })
+                ->toggleable(),
+            TextColumn::make('menit_terlambat')
+                ->label('Telat')
+                ->suffix(' mnt')
+                ->color('warning')
+                ->placeholder('-'),
+            TextColumn::make('potongan_terlambat')
+                ->label('Potongan')
+                ->money('idr')
+                ->color('danger')
+                ->placeholder('-'),
+        ];
+    }
+
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
-                TextColumn::make('user.nama')
-                    ->label('Karyawan')
-                    ->searchable()
-                    ->sortable(),
-
-                TextColumn::make('tanggal')
-                    ->label('Tanggal')
-                    ->date('d M Y')
-                    ->sortable(),
-                TextColumn::make('jam_masuk')
-                    ->label('Masuk')
-                    ->time('H:i')
-                    ->placeholder('-'),
-                TextColumn::make('jam_keluar')
-                    ->label('Keluar')
-                    ->time('H:i')
-                    ->placeholder('-'),
-                TextColumn::make('status_presensi')
-                    ->label('Status')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'hadir' => 'success',
-                        'terlambat' => 'warning',
-                        'tidak_hadir' => 'danger',
-                        'izin' => 'info',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'hadir' => 'Hadir',
-                        'terlambat' => 'Terlambat',
-                        'tidak_hadir' => 'Alpa',
-                        'izin' => 'Izin',
-                        default => $state,
-                    }),
-                TextColumn::make('status_verifikasi')
-                    ->label('Verifikasi')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'disetujui' => 'success',
-                        'ditolak' => 'danger',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'disetujui' => 'Disetujui',
-                        'ditolak' => 'Ditolak',
-                        default => 'Menunggu',
-                    })
-                    ->toggleable(),
-                TextColumn::make('menit_terlambat')
-                    ->label('Telat')
-                    ->suffix(' mnt')
-                    ->color('warning')
-                    ->placeholder('-'),
-                TextColumn::make('potongan_terlambat')
-                    ->label('Potongan')
-                    ->money('idr')
-                    ->color('danger')
-                    ->placeholder('-'),
-            ])
+            ->columns(self::presensiColumns())
             ->defaultSort('tanggal', 'desc')
             ->filters([])
             ->recordActions([
                 ViewAction::make(),
+                ...self::verifikasiRecordActions(),
                 EditAction::make()
                     ->visible(fn () => (Auth::user()?->isAdmin() || Auth::user()?->isSupervisor())),
                 DeleteAction::make()
@@ -459,6 +472,55 @@ class PresensiResource extends Resource
                     DeleteBulkAction::make(),
                 ])->visible(fn () => Auth::user()?->isAdmin()),
             ]);
+    }
+
+    /**
+     * Aksi cepat verifikasi (Setujui/Tolak) untuk supervisor/admin.
+     * Dipakai di tabel Presensi & antrian VerifikasiResource.
+     * Hanya muncul saat presensi belum diverifikasi (status_verifikasi = pending/null).
+     *
+     * @return array<int, Action>
+     */
+    public static function verifikasiRecordActions(): array
+    {
+        // Verifikasi = tugas SUPERVISOR saja (RBAC: admin ❌). Lihat docs/v3/04-hak-akses-rbac.md.
+        // Hanya untuk presensi dengan check-in nyata (Alpa/Izin tidak punya jam_masuk).
+        $bisaVerifikasi = fn (Presensi $record): bool => (Auth::user()?->isSupervisor() ?? false)
+            && $record->jam_masuk !== null
+            && ! $record->sudahDiverifikasi();
+
+        return [
+            Action::make('setujui')
+                ->label('Setujui')
+                ->icon('heroicon-o-check-circle')
+                ->color('success')
+                ->visible($bisaVerifikasi)
+                ->requiresConfirmation()
+                ->modalHeading('Setujui Presensi')
+                ->modalDescription('Tandai presensi ini sebagai DISETUJUI?')
+                ->action(function (Presensi $record): void {
+                    $record->verifikasi(Auth::user(), 'disetujui');
+                    Notification::make()->title('Presensi disetujui')->success()->send();
+                }),
+            Action::make('tolak')
+                ->label('Tolak')
+                ->icon('heroicon-o-x-circle')
+                ->color('danger')
+                ->visible($bisaVerifikasi)
+                ->modalHeading('Tolak Presensi')
+                ->schema([
+                    Textarea::make('catatan_verifikasi')
+                        ->label('Alasan Penolakan')
+                        ->required()
+                        ->minLength(5)
+                        ->maxLength(500)
+                        ->rows(3),
+                ])
+                ->action(function (array $data, Presensi $record): void {
+                    $record->verifikasi(Auth::user(), 'ditolak', $data['catatan_verifikasi']);
+                    Notification::make()->title('Presensi ditolak')->danger()->send();
+                }),
+        ];
     }
 
     public static function getRelations(): array
