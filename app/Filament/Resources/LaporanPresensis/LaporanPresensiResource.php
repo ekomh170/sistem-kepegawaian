@@ -11,7 +11,6 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
@@ -79,16 +78,18 @@ class LaporanPresensiResource extends Resource
     {
         return $schema
             ->components([
-                Section::make('Informasi Laporan')
+                Section::make('Buat Laporan')
+                    ->description('Pilih laporan yang ingin dibuat lalu tentukan periodenya. Nama pembuat & waktu pembuatan dicatat otomatis. Setelah tersimpan, laporan bisa diunduh (CSV/Excel/PDF) dari daftar.')
                     ->columns(2)
                     ->columnSpanFull()
                     ->schema([
                         Select::make('tipe_laporan')
-                            ->label('Tipe Laporan')
+                            ->label('Laporan yang dibuat')
+                            ->helperText('Pilih isi laporannya.')
                             ->options([
-                                'presensi' => 'ðŸ“‹ Laporan Presensi (Detail Harian)',
-                                'rekap_presensi_bulanan' => 'ðŸ“Š Laporan Jumlah Presensi Per Karyawan',
-                                'rekap_pekerjaan' => 'ðŸ“¦ Rekap Pekerjaan',
+                                'presensi' => 'Presensi Harian — rincian jam masuk & keluar tiap karyawan',
+                                'rekap_presensi_bulanan' => 'Rekap Kehadiran — jumlah hadir, terlambat & potongan per karyawan',
+                                'rekap_pekerjaan' => 'Rekap Pekerjaan — daftar tugas & bukti per karyawan',
                             ])
                             ->required()
                             ->default('presensi')
@@ -117,12 +118,13 @@ class LaporanPresensiResource extends Resource
                             ->columnSpanFull(),
 
                         Select::make('jenis')
-                            ->label('Jenis Laporan')
+                            ->label('Rentang Waktu')
+                            ->helperText('Periode data yang dirangkum.')
                             ->options([
-                                'Harian' => 'ðŸ“… Harian',
-                                'Mingguan' => 'ðŸ“† Mingguan',
-                                'Bulanan' => 'ðŸ“Š Bulanan',
-                                'Tahunan' => 'ðŸ“ˆ Tahunan',
+                                'Harian' => 'Harian (satu tanggal)',
+                                'Mingguan' => 'Mingguan (satu minggu)',
+                                'Bulanan' => 'Bulanan (satu bulan)',
+                                'Tahunan' => 'Tahunan (satu tahun)',
                             ])
                             ->required()
                             ->default('Bulanan')
@@ -133,24 +135,25 @@ class LaporanPresensiResource extends Resource
 
                         TextInput::make('periode')
                             ->label(fn ($get) => match ($get('jenis')) {
-                                'Harian'   => 'Periode (Tanggal)',
-                                'Mingguan' => 'Periode (Tanggal Awal Minggu)',
-                                'Tahunan'  => 'Periode (Tahun)',
-                                default    => 'Periode (Bulan)',
+                                'Harian'   => 'Pilih Tanggal',
+                                'Mingguan' => 'Pilih Tanggal Awal Minggu',
+                                'Tahunan'  => 'Masukkan Tahun',
+                                default    => 'Pilih Bulan',
+                            })
+                            // Input native sesuai rentang waktu (month/date/number) → ramah untuk awam.
+                            ->type(fn ($get) => match ($get('jenis')) {
+                                'Harian'   => 'date',
+                                'Mingguan' => 'date',
+                                'Tahunan'  => 'number',
+                                default    => 'month',
                             })
                             ->required()
                             ->maxLength(20)
-                            ->placeholder(fn ($get) => match ($get('jenis')) {
-                                'Harian'   => '2026-05-09',
-                                'Mingguan' => '2026-05-19',
-                                'Tahunan'  => '2026',
-                                default    => '2026-04',
-                            })
+                            ->placeholder(fn ($get) => $get('jenis') === 'Tahunan' ? '2026' : null)
                             ->helperText(fn ($get) => match ($get('jenis')) {
-                                'Harian'   => 'Format: YYYY-MM-DD (contoh: 2026-05-09)',
-                                'Mingguan' => 'Format: YYYY-MM-DD tanggal awal minggu, data diambil 7 hari ke depan (contoh: 2026-05-19)',
-                                'Tahunan'  => 'Format: YYYY (contoh: 2026)',
-                                default    => 'Format: YYYY-MM (contoh: 2026-04)',
+                                'Mingguan' => 'Data diambil 7 hari sejak tanggal yang dipilih.',
+                                'Tahunan'  => 'Cukup tahun, contoh: 2026.',
+                                default    => 'Gunakan pemilih tanggal yang muncul.',
                             })
                             ->live(onBlur: true)
                             ->afterStateUpdated(function ($set, $get) {
@@ -160,18 +163,14 @@ class LaporanPresensiResource extends Resource
                         \Filament\Forms\Components\Hidden::make('judul')
                             ->dehydrated(),
 
-                        Select::make('generated_by')
-                            ->label('Dibuat Oleh')
-                            ->relationship('generator', 'nama')
+                        // Pembuat & waktu pembuatan otomatis — tidak perlu diisi user.
+                        \Filament\Forms\Components\Hidden::make('generated_by')
                             ->default(fn () => Auth::id())
-                            ->required()
-                            ->disabled()
                             ->dehydrated(),
 
-                        DateTimePicker::make('tgl_generate')
-                            ->label('Tanggal Generate')
-                            ->default(now())
-                            ->required(),
+                        \Filament\Forms\Components\Hidden::make('tgl_generate')
+                            ->default(fn () => now())
+                            ->dehydrated(),
                     ]),
             ]);
     }

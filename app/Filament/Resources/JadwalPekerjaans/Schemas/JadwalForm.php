@@ -63,7 +63,7 @@ class JadwalForm
                     ]),
 
                 Section::make('Tanggal & Jam Kerja')
-                    ->description('Sesuai kebijakan: 6 hari kerja per minggu, 1 hari libur ditentukan admin, jam kerja default 08.00â€“16.00.')
+                    ->description('Sesuai kebijakan: 6 hari kerja per minggu, 1 hari libur ditentukan admin, jam kerja default 08.00-16.00.')
                     ->columns(3)
                     ->columnSpanFull()
                     ->schema([
