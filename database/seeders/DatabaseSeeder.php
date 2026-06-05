@@ -182,6 +182,10 @@ class DatabaseSeeder extends Seeder
                     $jamMasuk = $jamMasukTime ? $tgl->toDateString() . ' ' . $jamMasukTime : null;
                     $jamKeluar = $jamKeluarTime ? $tgl->toDateString() . ' ' . $jamKeluarTime : null;
                     $sudahHadir = in_array($statusPresensi, ['hadir', 'terlambat']);
+                    // Check-in lama sudah diverifikasi supervisor; check-in 7 hari terakhir dari
+                    // rentang data ($endDate) dibiarkan "pending" agar antrian Verifikasi terisi realistis.
+                    // (Pakai $endDate, bukan now(), karena data seeded berada di masa lampau.)
+                    $checkinTerverifikasi = $sudahHadir && $tgl->lt($endDate->copy()->subDays(7));
 
                     $presensi = Presensi::create([
                         'user_id' => $kr->id,
@@ -199,10 +203,10 @@ class DatabaseSeeder extends Seeder
                         'potongan_terlambat' => $potonganTerlambat,
                         'status_presensi' => $statusPresensi,
                         // V3: verifikasi inline. Hari yang sudah selesai → disetujui supervisor.
-                        'status_verifikasi' => $sudahHadir ? 'disetujui' : 'pending',
-                        'diverifikasi_oleh' => $sudahHadir ? $supervisorUser->id : null,
-                        'catatan_verifikasi' => $sudahHadir ? 'Terverifikasi dengan baik' : null,
-                        'tgl_verifikasi' => $sudahHadir ? $tgl->toDateString() . ' 18:00:00' : null,
+                        'status_verifikasi' => $checkinTerverifikasi ? 'disetujui' : 'pending',
+                        'diverifikasi_oleh' => $checkinTerverifikasi ? $supervisorUser->id : null,
+                        'catatan_verifikasi' => $checkinTerverifikasi ? 'Terverifikasi dengan baik' : null,
+                        'tgl_verifikasi' => $checkinTerverifikasi ? $tgl->toDateString() . ' 18:00:00' : null,
                     ]);
 
                     // Bukti pekerjaan hanya untuk hari yang sudah selesai
