@@ -6,6 +6,8 @@ use App\Models\BuktiPekerjaan;
 use App\Models\DetailPekerjaan;
 use App\Models\JadwalPekerjaan;
 use App\Models\Presensi;
+use App\Models\Setting;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -274,7 +276,8 @@ class KaryawanMobileController extends Controller
             'alasan_tolak.min' => 'Alasan penolakan minimal 10 karakter.',
         ]);
 
-        $tugas = DetailPekerjaan::where('id', $request->detail_pekerjaan_id)
+        $tugas = DetailPekerjaan::with('jadwal')
+            ->where('id', $request->detail_pekerjaan_id)
             ->where('user_id', Auth::id())
             ->where('status', 'pending')
             ->firstOrFail();
@@ -284,7 +287,74 @@ class KaryawanMobileController extends Controller
             'alasan_tolak' => $request->alasan_tolak,
         ]);
 
-        return redirect()->route('karyawan.tugas')->with('success', 'Tugas "' . $tugas->nama_lokasi . '" berhasil ditolak.');
+        // Konfirmasi ulang penolakan ke admin via WhatsApp (template otomatis).
+        return redirect()->route('karyawan.tugas')
+            ->with('success', 'Tugas "' . $tugas->nama_lokasi . '" ditolak. Silakan konfirmasi ke admin via WhatsApp.')
+            ->with('wa_konfirmasi', $this->buildWaKonfirmasiTolak($tugas));
+    }
+
+    /**
+     * Bangun link konfirmasi WhatsApp ke admin (pembuat jadwal) berisi template
+     * penolakan tugas. Mengembalikan null bila nomor admin tidak tersedia.
+     */
+    private function buildWaKonfirmasiTolak(DetailPekerjaan $tugas): ?string
+    {
+        $karyawan = Auth::user();
+
+        // Prioritas nomor WA dari Pengaturan (key: wa_admin, bisa diubah admin);
+        // fallback ke no_hp admin pembuat jadwal lalu admin pertama.
+        $nomorMentah = Setting::get('wa_admin');
+        if (! $nomorMentah) {
+            $admin = ($tugas->jadwal && $tugas->jadwal->dibuat_oleh)
+                ? User::find($tugas->jadwal->dibuat_oleh)
+                : null;
+            $admin ??= User::where('role', 'admin')->first();
+            $nomorMentah = $admin?->no_hp;
+        }
+
+        $nomor = $this->formatNomorWa($nomorMentah);
+        if (! $nomor) {
+            return null;
+        }
+
+        $perusahaan = Setting::get('nama_perusahaan', 'Perusahaan');
+        $tanggal = $tugas->jadwal && $tugas->jadwal->tanggal_kerja
+            ? Carbon::parse($tugas->jadwal->tanggal_kerja)->translatedFormat('d M Y')
+            : '-';
+
+        $pesan = "Halo Admin {$perusahaan}," . "\n"
+            . "Saya {$karyawan->nama} (NIK: {$karyawan->nik}) mengonfirmasi PENOLAKAN tugas berikut:" . "\n\n"
+            . "Lokasi : {$tugas->nama_lokasi}" . "\n"
+            . "Tanggal: {$tanggal}" . "\n"
+            . "Alasan : {$tugas->alasan_tolak}" . "\n\n"
+            . "Mohon arahan selanjutnya. Terima kasih.";
+
+        return 'https://wa.me/' . $nomor . '?text=' . rawurlencode($pesan);
+    }
+
+    /**
+     * Normalisasi nomor HP Indonesia ke format internasional wa.me (62...).
+     */
+    private function formatNomorWa(?string $no): ?string
+    {
+        if (! $no) {
+            return null;
+        }
+
+        $digits = preg_replace('/\D+/', '', $no);
+        if ($digits === '' || $digits === null) {
+            return null;
+        }
+
+        if (str_starts_with($digits, '0')) {
+            return '62' . substr($digits, 1);
+        }
+
+        if (! str_starts_with($digits, '62')) {
+            return '62' . $digits;
+        }
+
+        return $digits;
     }
 
     public function jadwalMingguan(): View

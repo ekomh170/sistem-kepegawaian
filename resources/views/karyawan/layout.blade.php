@@ -297,6 +297,16 @@
             <div class="alert alert-success js-auto-dismiss">{{ session('success') }}</div>
         @endif
 
+        @if (session('wa_konfirmasi'))
+            <div class="alert" style="background:#dcfce7;border:1px solid #25D366;color:#166534;display:flex;flex-direction:column;gap:10px;align-items:flex-start;">
+                <span style="font-weight:600;">Langkah terakhir — konfirmasi penolakan ke admin via WhatsApp:</span>
+                <a href="{{ session('wa_konfirmasi') }}" target="_blank" rel="noopener"
+                   style="display:inline-flex;align-items:center;gap:8px;background:#25D366;color:#fff;padding:10px 18px;border-radius:8px;font-weight:700;text-decoration:none;">
+                    💬 Konfirmasi via WhatsApp
+                </a>
+            </div>
+        @endif
+
         @if (session('error'))
             <div class="alert alert-error js-auto-dismiss">{{ session('error') }}</div>
         @endif

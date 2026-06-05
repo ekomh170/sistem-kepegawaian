@@ -261,6 +261,59 @@ class V3Test extends TestCase
         $this->assertSame('ditolak', $tugasB->fresh()->status);
     }
 
+    public function test_tolak_tugas_membuat_link_konfirmasi_wa(): void
+    {
+        $admin = User::create([
+            'nama' => 'Admin WA', 'email' => 'adminwa@example.com', 'password' => 'p',
+            'role' => 'admin', 'nik' => 'ADM-WA', 'no_hp' => '081234567890',
+        ]);
+        $kar = $this->karyawan();
+        $jadwal = JadwalPekerjaan::create([
+            'user_id' => $kar->id,
+            'dibuat_oleh' => $admin->id,
+            'tanggal_kerja' => Carbon::today()->toDateString(),
+            'jam_masuk' => '08:00:00', 'jam_pulang' => '16:00:00', 'status' => 'aktif',
+        ]);
+        $tugas = DetailPekerjaan::create(['jadwal_id' => $jadwal->id, 'user_id' => $kar->id, 'nama_lokasi' => 'Lokasi A', 'status' => 'pending']);
+
+        $resp = $this->actingAs($kar)->post(route('karyawan.tugas.tolak'), [
+            'detail_pekerjaan_id' => $tugas->id,
+            'alasan_tolak' => 'Lokasi terlalu jauh dari domisili saya',
+        ]);
+
+        $this->assertSame('ditolak', $tugas->fresh()->status);
+        // Nomor admin dinormalisasi (0812 -> 62812) & alasan masuk template WA.
+        $resp->assertSessionHas('wa_konfirmasi', fn ($url) => is_string($url)
+            && str_contains($url, 'https://wa.me/6281234567890')
+            && str_contains($url, rawurlencode('Lokasi terlalu jauh')));
+    }
+
+    public function test_nomor_wa_konfirmasi_mengikuti_pengaturan(): void
+    {
+        Setting::clearCache();
+        Setting::updateOrCreate(['key' => 'wa_admin'], [
+            'key' => 'wa_admin', 'value' => '085799990000', 'group' => 'kontak', 'label' => 'WA', 'type' => 'text',
+        ]);
+        Setting::clearCache();
+
+        $kar = $this->karyawan();
+        $jadwal = JadwalPekerjaan::create([
+            'user_id' => $kar->id,
+            'tanggal_kerja' => Carbon::today()->toDateString(),
+            'jam_masuk' => '08:00:00', 'jam_pulang' => '16:00:00', 'status' => 'aktif',
+        ]);
+        $tugas = DetailPekerjaan::create(['jadwal_id' => $jadwal->id, 'user_id' => $kar->id, 'nama_lokasi' => 'Lokasi A', 'status' => 'pending']);
+
+        $resp = $this->actingAs($kar)->post(route('karyawan.tugas.tolak'), [
+            'detail_pekerjaan_id' => $tugas->id,
+            'alasan_tolak' => 'Alasan penolakan yang cukup panjang',
+        ]);
+
+        // Pakai nomor dari Pengaturan (085799990000 -> 6285799990000), bukan no_hp admin.
+        $resp->assertSessionHas('wa_konfirmasi', fn ($url) => is_string($url)
+            && str_contains($url, 'https://wa.me/6285799990000'));
+    }
+
     public function test_user_pakai_relasi_v3_bukan_tabel_anak_lama(): void
     {
         // V3: relasi konsolidasi ada; relasi/model anak lama tidak dipakai lagi.
