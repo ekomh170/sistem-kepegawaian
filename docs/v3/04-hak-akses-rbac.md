@@ -30,9 +30,10 @@ RBAC di V3 **secara konseptual sama dengan V2.3** — 3 role (admin, supervisor,
 | **Bukti Pekerjaan**                       |                    ✅ CRUD                     |             ❌             |    ❌    |
 | **Presensi**                              |                    ✅ CRUD                     |   👁️ View Only (kelola)    |    ❌    |
 | **Verifikasi (inline di Presensi)**       |                       ❌                       | ✅ Update kolom verifikasi |    ❌    |
+| **Antrian Verifikasi (menu khusus)**      |                       ❌                       |   ✅ Setujui/Tolak cepat   |    ❌    |
 | **Laporan Presensi (multi-jenis)**        |                ✅ CRUD + Export                |    ✅ Generate + Export    |    ❌    |
 | **Laporan Presensi (rekap per-karyawan)** |                    ✅ CRUD                     |     👁️ View Only tabel     |    ❌    |
-| **Pengaturan (Setting)**                  |                    ✅ CRUD                     |             ❌             |    ❌    |
+| **Pengaturan (Setting)**                  |                    ✅ CRUD                     |        👁️ View Only        |    ❌    |
 | **Lokasi Kantor**                         |                    ✅ Edit                     |             ❌             |    ❌    |
 
 ### 2.2 Portal Karyawan (Mobile Web)

@@ -176,8 +176,26 @@ Status diperbarui **30 Mei 2026** setelah menutup item lanjutan:
 | Apakah laporan+rekap tergabung?    | ✅ Ya (`tb_laporan_presensi`)                              |
 | Apakah ada fitur Kategori C rusak? | ❌ Tidak ada yang rusak                                    |
 | Apakah aplikasi boot tanpa error?  | ✅ Ya (2 panel, 56 route)                                  |
-| Apakah ada automated test?         | ✅ Ya (15 test PHPUnit hijau)                              |
+| Apakah ada automated test?         | ✅ Ya (35 test PHPUnit hijau)                              |
 | Siap merge ke `main-dev`?          | ✅ Ya — item lanjutan ditutup; uji klik UI manual opsional |
+
+---
+
+## 9. Pembaruan Pasca-Implementasi (Enhancement)
+
+Setelah V3 Strict, ditambahkan sejumlah peningkatan UX & operasional. Semua ber-test; suite kini **35 hijau (83 assertion)**.
+
+| #   | Fitur                                       | Ringkas                                                                                                                                                                                                                                                                |
+| --- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Menu Antrian Verifikasi**                 | Resource baru `VerifikasiResource` (atas model `Presensi`, difilter `status_verifikasi=pending` **dan** `jam_masuk` ada) + badge jumlah pending. **Supervisor-only** (admin 403), sesuai matriks RBAC. Alpa/Izin tidak masuk antrian (bukan objek verifikasi).         |
+| 2   | **Aksi cepat Setujui/Tolak**                | Tombol di tabel Presensi & antrian: Setujui (1-klik konfirmasi) dan Tolak (modal wajib alasan). Memanggil `Presensi::verifikasi()` → isi `diverifikasi_oleh` + `tgl_verifikasi`. Hanya muncul untuk supervisor pada presensi dengan check-in yang belum diverifikasi.  |
+| 3   | **Pengaturan untuk Supervisor (read-only)** | Menu **Pengaturan** tampil di panel supervisor; `canViewAny` mengizinkan supervisor, tetapi Create/Edit/Delete tetap admin-only.                                                                                                                                       |
+| 4   | **Konfirmasi penolakan tugas via WhatsApp** | Saat karyawan menolak tugas, muncul tombol "Konfirmasi via WhatsApp" dengan template otomatis (perusahaan, nama+NIK, lokasi, tanggal, alasan). Nomor dari **Setting `wa_admin`** (diubah di Pengaturan), fallback `no_hp` admin pembuat jadwal. Normalisasi 08xx→62xx. |
+| 5   | **Form "Buat Laporan" ramah-awam**          | Label jelas + opsi berdeskripsi; Periode pakai input native (month/date/number) sesuai rentang waktu; "Dibuat Oleh" & "Tanggal Generate" otomatis (disembunyikan). Daftar laporan default urut `tgl_generate` terbaru.                                                 |
+| 6   | **Perbaikan mojibake**                      | Emoji rusak (double-encoded) di form Laporan & deskripsi Jadwal dibersihkan ke teks/label jelas.                                                                                                                                                                       |
+| 7   | **Seeder realistis**                        | Tanggal acuan **2026-06-05 (Jumat)**; check-in 7 hari terakhir dari rentang data dibiarkan `pending` agar antrian Verifikasi terisi; tambah setting `wa_admin`.                                                                                                        |
+
+**Test tambahan** (`V3Test` + `V3RbacTest`): render antrian Verifikasi (baris pending), gate admin-403 ke antrian, render & **submit** form Laporan, **E2E klik** Setujui/Tolak (assert perubahan DB via `callTableAction`), akses Pengaturan supervisor, dan link konfirmasi WhatsApp (normalisasi nomor + ikut Setting). Total **35 test, 83 assertion — hijau**.
 
 ---
 

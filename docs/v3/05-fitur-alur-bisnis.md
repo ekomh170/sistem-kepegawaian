@@ -84,6 +84,7 @@ Akses via menu **Laporan Presensi**:
 2. Lihat daftar `tb_detail_pekerjaan` (status `pending`)
 3. **Terima** tugas (`DetailPekerjaan::terima()`) → status jadi `disetujui`
 4. **Tolak** tugas (`DetailPekerjaan::tolak(alasan)`) → status jadi `ditolak` + `alasan_tolak` tersimpan
+    - **(V3 enhancement)** Setelah menolak, muncul tombol **"Konfirmasi via WhatsApp"** ke admin dengan template otomatis (perusahaan, nama+NIK, lokasi, tanggal, alasan). Nomor tujuan dari Setting `wa_admin` (bisa diubah di Pengaturan), fallback `no_hp` admin pembuat jadwal; dinormalisasi 08xx→62xx.
 5. Setelah diterima: bisa upload **Bukti Pekerjaan**
 
 ### 3.3 Upload Bukti Pekerjaan
@@ -107,13 +108,14 @@ Akses via menu **Laporan Presensi**:
 
 ### 4.1 Hak Akses Terbatas (V2.3 — Tetap V3)
 
-Supervisor hanya melihat 4 menu di sidebar:
+Menu supervisor di sidebar:
 
-1. **Presensi** (view-only tabel)
-2. **Laporan Presensi** (generate + export)
-3. **Verifikasi** (inline di Presensi — tidak ada menu terpisah lagi di V3)
+1. **Verifikasi** (antrian presensi `pending` + aksi cepat Setujui/Tolak) — supervisor-only
+2. **Presensi** (view-only tabel; verifikasi juga bisa inline dari form Edit)
+3. **Laporan Presensi** (generate + export)
+4. **Pengaturan** (read-only — lihat konfigurasi, tidak bisa ubah)
 
-> **V3 Note:** Tidak ada lagi menu **Verifikasi** terpisah. Supervisor verifikasi langsung dari halaman edit Presensi (section khusus "Verifikasi" muncul untuk role supervisor).
+> **V3 Note (diperbarui):** Verifikasi kini punya **menu antrian khusus** (`VerifikasiResource`) berisi presensi `pending` yang sudah check-in, dengan tombol cepat Setujui/Tolak. Verifikasi inline di form Edit Presensi tetap tersedia sebagai alternatif. Menu **Pengaturan** tampil read-only untuk supervisor.
 
 ### 4.2 Verifikasi Presensi (V3 — Inline)
 
@@ -125,6 +127,8 @@ Supervisor hanya melihat 4 menu di sidebar:
 4. Submit → `Presensi::verifikasi(supervisor, status, catatan)`:
     - `diverifikasi_oleh` = supervisor.id
     - `tgl_verifikasi` = `now()`
+
+**Cara cepat (V3 enhancement):** dari menu **Verifikasi** (atau tabel Presensi), klik **Setujui** (1-klik konfirmasi) atau **Tolak** (modal wajib alasan) langsung di baris — memanggil `Presensi::verifikasi()` yang sama. Hanya untuk presensi dengan check-in nyata (`jam_masuk` terisi); Alpa/Izin tidak masuk antrian.
 
 ### 4.3 Generate Laporan
 

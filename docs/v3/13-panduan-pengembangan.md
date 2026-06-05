@@ -118,8 +118,10 @@ Tersedia **7 enum** yang sudah mengimplementasikan kontrak Filament `HasLabel` +
     - `JadwalPekerjaans/` → class `JadwalPekerjaanResource` (model `JadwalPekerjaan`)
     - `LaporanPresensis/` → class `LaporanPresensiResource` (model `LaporanPresensi`)
 - **Resource user:** **`AkunResource`** (kelola semua role) + **`KaryawanResource`** (scope `role = karyawan`).
-- **Resource yang DIHAPUS** (konsolidasi): `AdminResource`, `SupervisorResource`, `VerifikasiResource`,
-  `RekapPresensiBulananResource`. Verifikasi kini **inline** di `PresensiResource`.
+- **Resource yang dihapus saat konsolidasi:** `AdminResource`, `SupervisorResource`, `RekapPresensiBulananResource`. `VerifikasiResource` **lama** (model `Verifikasi`) juga dihapus — verifikasi kini **inline** di `tb_presensi`.
+- **`VerifikasiResource` (BARU, V3 enhancement):** menu **antrian** atas model `Presensi`, difilter `status_verifikasi = pending` **dan** `jam_masuk` ada. **Supervisor-only** (`canViewAny = isSupervisor`), badge = jumlah pending, hanya halaman `index`.
+- **Aksi cepat verifikasi:** `PresensiResource::verifikasiRecordActions()` (Setujui 1-klik, Tolak modal wajib alasan) dipakai bersama tabel Presensi & antrian Verifikasi; memanggil `Presensi::verifikasi()`. Kolom di-share via `PresensiResource::presensiColumns()`.
+- **`SettingResource` (Pengaturan):** `canViewAny` admin **+ supervisor** (supervisor **read-only**; Create/Edit/Delete admin-only). Setting **`wa_admin`** = nomor WhatsApp tujuan konfirmasi penolakan tugas (dipakai `KaryawanMobileController::tolakTugas` + helper `formatNomorWa` untuk normalisasi 08xx→62xx).
 - **Kolom role** memakai `->badge()` polos — label & warna otomatis dari `Role` (`HasLabel`+`HasColor`).
 - **Dua panel:** `admin` (`/admin`) & `supervisor` (`/supervisor`); auto-discover resources/pages/widgets.
 - **RBAC berlapis:** `canViewAny()`/`canCreate()` per resource **+** middleware `role:` di route **+**
