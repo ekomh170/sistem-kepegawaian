@@ -168,6 +168,14 @@ class V3Test extends TestCase
         $this->get('/')->assertRedirect('/login');
     }
 
+    public function test_halaman_login_tidak_di_cache_browser(): void
+    {
+        // Cegah token CSRF basi setelah logout (anti "login dua kali" / 419 saat ganti role).
+        $resp = $this->get('/login');
+        $resp->assertSuccessful();
+        $this->assertStringContainsString('no-store', (string) $resp->headers->get('Cache-Control'));
+    }
+
     public function test_root_redirect_karyawan_ke_beranda(): void
     {
         $this->actingAs($this->karyawan())
