@@ -122,6 +122,7 @@ Tersedia **7 enum** yang sudah mengimplementasikan kontrak Filament `HasLabel` +
 - **`VerifikasiResource` (BARU, V3 enhancement):** menu **antrian** atas model `Presensi`, difilter `status_verifikasi = pending` **dan** `jam_masuk` ada. **Supervisor-only** (`canViewAny = isSupervisor`), badge = jumlah pending, hanya halaman `index`.
 - **Aksi cepat verifikasi:** `PresensiResource::verifikasiRecordActions()` (Setujui 1-klik, Tolak modal wajib alasan) dipakai bersama tabel Presensi & antrian Verifikasi; memanggil `Presensi::verifikasi()`. Kolom di-share via `PresensiResource::presensiColumns()`.
 - **`SettingResource` (Pengaturan):** `canViewAny` admin **+ supervisor** (supervisor **read-only**; Create/Edit/Delete admin-only). Setting **`wa_admin`** = nomor WhatsApp tujuan konfirmasi penolakan tugas (dipakai `KaryawanMobileController::tolakTugas` + helper `formatNomorWa` untuk normalisasi 08xx→62xx).
+- **Upload foto TIDAK dibatasi ukuran** (keputusan owner): `max:` dibuang dari validasi foto presensi/bukti di `PresensiController`, dan `->maxSize()` dilepas dari `FileUpload` Filament. Validasi tipe `image` tetap dipertahankan — **jangan** menambah batas ukuran lagi.
 - **Kolom role** memakai `->badge()` polos — label & warna otomatis dari `Role` (`HasLabel`+`HasColor`).
 - **Dua panel:** `admin` (`/admin`) & `supervisor` (`/supervisor`); auto-discover resources/pages/widgets.
 - **RBAC berlapis:** `canViewAny()`/`canCreate()` per resource **+** middleware `role:` di route **+**

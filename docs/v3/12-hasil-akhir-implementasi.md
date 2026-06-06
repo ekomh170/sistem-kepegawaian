@@ -176,14 +176,14 @@ Status diperbarui **30 Mei 2026** setelah menutup item lanjutan:
 | Apakah laporan+rekap tergabung?    | ✅ Ya (`tb_laporan_presensi`)                              |
 | Apakah ada fitur Kategori C rusak? | ❌ Tidak ada yang rusak                                    |
 | Apakah aplikasi boot tanpa error?  | ✅ Ya (2 panel, 56 route)                                  |
-| Apakah ada automated test?         | ✅ Ya (35 test PHPUnit hijau)                              |
+| Apakah ada automated test?         | ✅ Ya (45 test PHPUnit hijau)                              |
 | Siap merge ke `main-dev`?          | ✅ Ya — item lanjutan ditutup; uji klik UI manual opsional |
 
 ---
 
 ## 9. Pembaruan Pasca-Implementasi (Enhancement)
 
-Setelah V3 Strict, ditambahkan sejumlah peningkatan UX & operasional. Semua ber-test; suite kini **35 hijau (83 assertion)**.
+Setelah V3 Strict, ditambahkan sejumlah peningkatan UX & operasional. Semua ber-test; suite kini **45 hijau (111 assertion)**.
 
 | #   | Fitur                                       | Ringkas                                                                                                                                                                                                                                                                |
 | --- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -194,8 +194,9 @@ Setelah V3 Strict, ditambahkan sejumlah peningkatan UX & operasional. Semua ber-
 | 5   | **Form "Buat Laporan" ramah-awam**          | Label jelas + opsi berdeskripsi; Periode pakai input native (month/date/number) sesuai rentang waktu; "Dibuat Oleh" & "Tanggal Generate" otomatis (disembunyikan). Daftar laporan default urut `tgl_generate` terbaru.                                                 |
 | 6   | **Perbaikan mojibake**                      | Emoji rusak (double-encoded) di form Laporan & deskripsi Jadwal dibersihkan ke teks/label jelas.                                                                                                                                                                       |
 | 7   | **Seeder realistis**                        | Tanggal acuan **2026-06-05 (Jumat)**; check-in 7 hari terakhir dari rentang data dibiarkan `pending` agar antrian Verifikasi terisi; tambah setting `wa_admin`.                                                                                                        |
+| 8   | **Upload tanpa batas ukuran**               | Batas `max:` dihapus dari validasi foto presensi & bukti (`PresensiController`) dan `->maxSize()` di FileUpload Filament — **keputusan owner** agar foto resolusi tinggi tidak ditolak. Validasi tipe `image` tetap dipertahankan.                                     |
 
-**Test tambahan** (`V3Test` + `V3RbacTest`): render antrian Verifikasi (baris pending), gate admin-403 ke antrian, render & **submit** form Laporan, **E2E klik** Setujui/Tolak (assert perubahan DB via `callTableAction`), akses Pengaturan supervisor, dan link konfirmasi WhatsApp (normalisasi nomor + ikut Setting). Total **35 test, 83 assertion — hijau**.
+**Cakupan test diperluas** (`V3Test` + `V3RbacTest`): **smoke render** semua resource (termasuk Detail/Bukti Pekerjaan, Pengaturan, halaman Lokasi Kantor) + antrian Verifikasi; gate admin-403 ke antrian; **submit form** Buat Laporan, Buat Akun (password ter-hash), Buat Jadwal, verifikasi via form Edit Presensi, & edit Setting; **E2E klik** Setujui/Tolak (assert DB via `callTableAction`); **upload bukti pekerjaan** (E2E + validasi 2 foto wajib); akses Pengaturan supervisor; link konfirmasi WhatsApp. Total **45 test, 111 assertion — hijau**.
 
 ---
 
