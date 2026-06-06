@@ -13,6 +13,11 @@ class ListJadwals extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            \Filament\Actions\Action::make('kalender')
+                ->label('Kalender')
+                ->icon('heroicon-o-calendar-days')
+                ->color('gray')
+                ->url(JadwalPekerjaanResource::getUrl('kalender')),
             CreateAction::make(),
         ];
     }

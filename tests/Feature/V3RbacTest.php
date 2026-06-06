@@ -409,4 +409,20 @@ class V3RbacTest extends TestCase
             ->assertSuccessful()
             ->assertSee('Detail Presensi');
     }
+
+    public function test_admin_render_kalender_jadwal(): void
+    {
+        $kar = $this->user('karyawan', 'kalender-kar@example.com');
+        JadwalPekerjaan::create([
+            'user_id' => $kar->id,
+            'tanggal_kerja' => Carbon::today()->toDateString(),
+            'jam_masuk' => '08:00:00', 'jam_pulang' => '16:00:00', 'status' => 'aktif',
+        ]);
+
+        // Halaman kalender jadwal ter-render (grid + jadwal hari ini).
+        $this->actingAs($this->user('admin', 'admin-kalender@example.com'))
+            ->get('/admin/jadwal-pekerjaans/kalender')
+            ->assertSuccessful()
+            ->assertSee('Kalender Jadwal');
+    }
 }

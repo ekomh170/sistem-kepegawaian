@@ -4,6 +4,7 @@ namespace App\Filament\Resources\JadwalPekerjaans;
 
 use App\Filament\Resources\JadwalPekerjaans\Pages\CreateJadwal;
 use App\Filament\Resources\JadwalPekerjaans\Pages\EditJadwal;
+use App\Filament\Resources\JadwalPekerjaans\Pages\KalenderJadwal;
 use App\Filament\Resources\JadwalPekerjaans\Pages\ListJadwals;
 use App\Filament\Resources\JadwalPekerjaans\Schemas\JadwalForm;
 use App\Filament\Resources\JadwalPekerjaans\Tables\JadwalsTable;
@@ -78,6 +79,7 @@ class JadwalPekerjaanResource extends Resource
     {
         return [
             'index' => ListJadwals::route('/'),
+            'kalender' => KalenderJadwal::route('/kalender'),
             'create' => CreateJadwal::route('/create'),
             'edit' => EditJadwal::route('/{record}/edit'),
         ];
