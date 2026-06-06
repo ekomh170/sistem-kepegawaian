@@ -2,10 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\Akuns\Pages\CreateAkun;
+use App\Filament\Resources\JadwalPekerjaans\Pages\CreateJadwal;
 use App\Filament\Resources\LaporanPresensis\Pages\CreateLaporan;
+use App\Filament\Resources\Presensis\Pages\EditPresensi;
+use App\Filament\Resources\SettingResource\Pages\ManageSettings;
 use App\Filament\Resources\Verifikasis\Pages\ListVerifikasis;
 use App\Models\JadwalPekerjaan;
 use App\Models\Presensi;
+use App\Models\Setting;
 use App\Models\User;
 use Carbon\Carbon;
 use Filament\Facades\Filament;
@@ -103,6 +108,9 @@ class V3RbacTest extends TestCase
             'jadwal'   => ['/admin/jadwal-pekerjaans'],
             'laporan'  => ['/admin/laporan-presensis'],
             'akun'     => ['/admin/akuns'],
+            'detail'   => ['/admin/detail-pekerjaans'],
+            'bukti'    => ['/admin/bukti-pekerjaans'],
+            'setting'  => ['/admin/settings'],
         ];
     }
 
@@ -238,5 +246,109 @@ class V3RbacTest extends TestCase
         $this->actingAs($this->user('supervisor', 'spv-setting@example.com'))
             ->get('/supervisor/settings')
             ->assertSuccessful();
+    }
+
+    public function test_admin_render_halaman_lokasi_kantor(): void
+    {
+        $this->actingAs($this->user('admin', 'admin-lokasi@example.com'))
+            ->get('/admin/lokasi-kantor-page')
+            ->assertSuccessful();
+    }
+
+    public function test_admin_submit_buat_akun_tersimpan(): void
+    {
+        $admin = $this->user('admin', 'admin-buatakun@example.com');
+        $this->actingAs($admin);
+        Filament::setCurrentPanel('admin');
+
+        Livewire::test(CreateAkun::class)
+            ->fillForm([
+                'nama' => 'Budi Baru',
+                'email' => 'budibaru@example.com',
+                'password' => 'rahasia123',
+                'role' => 'supervisor',
+                'nik' => 'SPV-BARU',
+                'no_hp' => '081200000099',
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $this->assertDatabaseHas('tb_user', [
+            'email' => 'budibaru@example.com', 'role' => 'supervisor', 'nik' => 'SPV-BARU',
+        ]);
+        // Password ter-hash (cast 'hashed'), bukan plaintext.
+        $u = User::where('email', 'budibaru@example.com')->first();
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('rahasia123', $u->password));
+    }
+
+    public function test_admin_submit_buat_jadwal_tersimpan(): void
+    {
+        $admin = $this->user('admin', 'admin-buatjadwal@example.com');
+        $kar = $this->user('karyawan', 'kar-jadwal@example.com');
+        $this->actingAs($admin);
+        Filament::setCurrentPanel('admin');
+
+        Livewire::test(CreateJadwal::class)
+            ->fillForm([
+                'user_id' => $kar->id,
+                'tanggal_kerja' => Carbon::today()->toDateString(),
+                'jam_masuk' => '08:00',
+                'jam_pulang' => '16:00',
+                'status' => 'aktif',
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $this->assertDatabaseHas('tb_jadwal_pekerjaan', [
+            'user_id' => $kar->id, 'status' => 'aktif',
+        ]);
+    }
+
+    public function test_supervisor_verifikasi_via_form_edit_presensi(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+        $kar = $this->user('karyawan', 'kar-formverif@example.com');
+        $jadwal = JadwalPekerjaan::create([
+            'user_id' => $kar->id,
+            'tanggal_kerja' => Carbon::today()->toDateString(),
+            'jam_masuk' => '08:00:00', 'jam_pulang' => '16:00:00', 'status' => 'aktif',
+        ]);
+        $presensi = Presensi::create([
+            'user_id' => $kar->id,
+            'jadwal_id' => $jadwal->id,
+            'tanggal' => Carbon::today()->toDateString(),
+            'jam_masuk' => Carbon::today()->setTime(8, 0),
+            'status_presensi' => 'hadir',
+            'status_verifikasi' => 'pending',
+        ]);
+        $supervisor = $this->user('supervisor', 'spv-formverif@example.com');
+        $this->actingAs($supervisor);
+        Filament::setCurrentPanel('supervisor');
+
+        Livewire::test(EditPresensi::class, ['record' => $presensi->getKey()])
+            ->fillForm(['status_verifikasi' => 'disetujui'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $fresh = $presensi->fresh();
+        $this->assertSame('disetujui', $fresh->status_verifikasi);
+        // mutateFormDataBeforeSave mengisi verifikator otomatis.
+        $this->assertSame($supervisor->id, $fresh->diverifikasi_oleh);
+    }
+
+    public function test_admin_edit_setting_value(): void
+    {
+        $setting = Setting::create([
+            'key' => 'nama_perusahaan', 'value' => 'Lama',
+            'group' => 'identitas', 'label' => 'Nama Perusahaan', 'type' => 'text',
+        ]);
+        $admin = $this->user('admin', 'admin-editsetting@example.com');
+        $this->actingAs($admin);
+        Filament::setCurrentPanel('admin');
+
+        Livewire::test(ManageSettings::class)
+            ->callTableAction('edit', $setting, ['value' => 'Baru']);
+
+        $this->assertSame('Baru', $setting->fresh()->value);
     }
 }

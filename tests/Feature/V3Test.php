@@ -314,6 +314,55 @@ class V3Test extends TestCase
             && str_contains($url, 'https://wa.me/6285799990000'));
     }
 
+    private function tugasDisetujui(string $email): DetailPekerjaan
+    {
+        $kar = $this->karyawan($email);
+        $jadwal = JadwalPekerjaan::create([
+            'user_id' => $kar->id,
+            'tanggal_kerja' => Carbon::today()->toDateString(),
+            'jam_masuk' => '08:00:00', 'jam_pulang' => '16:00:00', 'status' => 'aktif',
+        ]);
+
+        return DetailPekerjaan::create([
+            'jadwal_id' => $jadwal->id, 'user_id' => $kar->id,
+            'nama_lokasi' => 'Lokasi A', 'status' => 'disetujui',
+        ]);
+    }
+
+    public function test_upload_bukti_pekerjaan_tersimpan(): void
+    {
+        Storage::fake('public');
+        $tugas = $this->tugasDisetujui('uploadbukti@example.com');
+        $img = 'data:image/jpeg;base64,' . base64_encode('imgbytes');
+
+        $this->actingAs($tugas->user)->postJson(route('presensi.bukti-pekerjaan'), [
+            'detail_pekerjaan_id' => $tugas->id,
+            'foto_before_base64' => $img,
+            'foto_after_base64' => $img,
+            'keterangan' => 'Pekerjaan selesai',
+        ])->assertOk()->assertJson(['success' => true]);
+
+        $this->assertDatabaseHas('tb_bukti_pekerjaan', [
+            'detail_pekerjaan_id' => $tugas->id,
+            'user_id' => $tugas->user_id,
+            'status' => 'pending',
+        ]);
+    }
+
+    public function test_upload_bukti_wajib_dua_foto(): void
+    {
+        Storage::fake('public');
+        $tugas = $this->tugasDisetujui('uploadbukti2@example.com');
+
+        // Hanya foto before -> ditolak (kedua foto wajib).
+        $this->actingAs($tugas->user)->postJson(route('presensi.bukti-pekerjaan'), [
+            'detail_pekerjaan_id' => $tugas->id,
+            'foto_before_base64' => 'data:image/jpeg;base64,' . base64_encode('x'),
+        ])->assertStatus(422)->assertJson(['success' => false]);
+
+        $this->assertDatabaseMissing('tb_bukti_pekerjaan', ['detail_pekerjaan_id' => $tugas->id]);
+    }
+
     public function test_user_pakai_relasi_v3_bukan_tabel_anak_lama(): void
     {
         // V3: relasi konsolidasi ada; relasi/model anak lama tidak dipakai lagi.
