@@ -111,6 +111,17 @@ class DatabaseSeeder extends Seeder
         $startDate = $tanggalAcuan->copy()->subMonths(2)->startOfMonth();
         $endDate = $tanggalAcuan->copy();
 
+        // Salin foto contoh (example-foto-dev) ke storage publik default Laravel,
+        // lalu pakai path-nya untuk seed presensi (masuk/pulang) & bukti (galeri).
+        $fotoMasukExample = $this->salinFotoContoh('presensi-masuk-example.png', 'presensi/masuk');
+        $fotoPulangExample = $this->salinFotoContoh('presensi-pulang-example.png', 'presensi/keluar');
+        $fotoDetailExample = [];
+        for ($i = 1; $i <= 5; $i++) {
+            if ($path = $this->salinFotoContoh("foto-detail-kerja-example-{$i}.png", 'bukti_pekerjaan')) {
+                $fotoDetailExample[] = $path;
+            }
+        }
+
         foreach ($semuaKaryawan as $kr) {
             $currentDate = $startDate->copy();
             while ($currentDate->lte($endDate)) {
@@ -193,8 +204,8 @@ class DatabaseSeeder extends Seeder
                         'tanggal' => $tgl->toDateString(),
                         'jam_masuk' => $jamMasuk,
                         'jam_keluar' => $jamKeluar,
-                        'foto_masuk' => null,
-                        'foto_keluar' => null,
+                        'foto_masuk' => $sudahHadir ? $fotoMasukExample : null,
+                        'foto_keluar' => $sudahHadir ? $fotoPulangExample : null,
                         'latitude_masuk' => $sudahHadir ? -6.2087634 : null,
                         'longitude_masuk' => $sudahHadir ? 106.8222568 : null,
                         'latitude_keluar' => $sudahHadir ? -6.2087634 : null,
@@ -216,6 +227,7 @@ class DatabaseSeeder extends Seeder
                             'user_id' => $kr->id,
                             'foto_before' => null,
                             'foto_after' => null,
+                            'foto' => $fotoDetailExample,
                             'keterangan' => 'Tugas selesai, area bersih.',
                             'status' => 'disetujui',
                             'uploaded_at' => $jamKeluar,
@@ -306,5 +318,23 @@ class DatabaseSeeder extends Seeder
         }
 
         Setting::clearCache();
+    }
+
+    /**
+     * Salin satu foto contoh dari example-foto-dev/ ke storage publik default
+     * Laravel. Mengembalikan path relatif (untuk kolom DB) atau null bila sumber
+     * tidak ada (mis. folder example-foto-dev belum tersedia di mesin lain).
+     */
+    private function salinFotoContoh(string $namaFile, string $folderTujuan): ?string
+    {
+        $sumber = base_path('example-foto-dev/' . $namaFile);
+        if (! is_file($sumber)) {
+            return null;
+        }
+
+        $tujuan = $folderTujuan . '/' . $namaFile;
+        \Illuminate\Support\Facades\Storage::disk('public')->put($tujuan, file_get_contents($sumber));
+
+        return $tujuan;
     }
 }
