@@ -21,7 +21,7 @@ class PresensiController extends Controller
         $request->validate([
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
-            'foto_masuk' => 'nullable|image|max:10240',
+            'foto_masuk' => 'nullable|image', // ukuran sengaja tidak dibatasi
             'foto_masuk_base64' => 'nullable|string',
         ]);
 
@@ -194,8 +194,8 @@ class PresensiController extends Controller
     {
         $request->validate([
             'detail_pekerjaan_id' => 'required|exists:tb_detail_pekerjaan,id',
-            'foto_before' => 'nullable|image|max:5120',
-            'foto_after' => 'nullable|image|max:5120',
+            'foto_before' => 'nullable|image', // ukuran sengaja tidak dibatasi
+            'foto_after' => 'nullable|image',  // ukuran sengaja tidak dibatasi
             'foto_before_base64' => 'nullable|string',
             'foto_after_base64' => 'nullable|string',
             'keterangan' => 'nullable|string',
@@ -386,7 +386,7 @@ class PresensiController extends Controller
         $request->validate([
             'presensi_id' => 'required|exists:tb_presensi,id',
             'tipe' => 'required|in:masuk,keluar',
-            'foto' => 'required|image|max:5120',
+            'foto' => 'required|image', // ukuran sengaja tidak dibatasi
         ]);
 
         $user = Auth::user();

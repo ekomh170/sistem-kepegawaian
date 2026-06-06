@@ -192,16 +192,12 @@ class PresensiResource extends Resource
                             ->label('Foto Masuk')
                             ->image()
                             ->directory('presensi/masuk')
-                            ->disk('public')
-                            ->maxSize(2048)
-                            ->helperText('Normalnya terisi otomatis dari selfie karyawan.'),
+                            ->disk('public')                            ->helperText('Normalnya terisi otomatis dari selfie karyawan.'),
                         \Filament\Forms\Components\FileUpload::make('foto_keluar')
                             ->label('Foto Keluar')
                             ->image()
                             ->directory('presensi/keluar')
-                            ->disk('public')
-                            ->maxSize(2048)
-                            ->helperText('Normalnya terisi otomatis dari selfie karyawan.'),
+                            ->disk('public')                            ->helperText('Normalnya terisi otomatis dari selfie karyawan.'),
                         \Dotswan\MapPicker\Fields\Map::make('location_masuk')
                             ->label('Lokasi Masuk')
                             ->columnSpanFull()
