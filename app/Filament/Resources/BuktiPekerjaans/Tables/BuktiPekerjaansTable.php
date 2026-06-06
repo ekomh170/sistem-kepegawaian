@@ -15,6 +15,11 @@ class BuktiPekerjaansTable
             ->columns([
                 \Filament\Tables\Columns\TextColumn::make('user.nama')->label('Karyawan')->searchable()->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('detailPekerjaan.nama_lokasi')->label('Tugas / Lokasi')->searchable(),
+                \Filament\Tables\Columns\TextColumn::make('foto')
+                    ->label('Jumlah Foto')
+                    ->state(fn ($record) => is_array($record->foto) ? count($record->foto) : 0)
+                    ->badge()
+                    ->color('info'),
                 \Filament\Tables\Columns\TextColumn::make('keterangan')->limit(50),
                 \Filament\Tables\Columns\TextColumn::make('status')->badge(),
                 \Filament\Tables\Columns\TextColumn::make('uploaded_at')->dateTime()->sortable(),

@@ -14,6 +14,7 @@ class BuktiPekerjaan extends Model
         'user_id',
         'foto_before',
         'foto_after',
+        'foto',
         'keterangan',
         'status',
         'uploaded_at',
@@ -23,6 +24,7 @@ class BuktiPekerjaan extends Model
     {
         return [
             'uploaded_at' => 'datetime',
+            'foto' => 'array',
         ];
     }
 

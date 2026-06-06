@@ -337,35 +337,60 @@ class V3Test extends TestCase
         ]);
     }
 
-    public function test_upload_bukti_pekerjaan_tersimpan(): void
+    public function test_upload_bukti_banyak_foto_tersimpan(): void
     {
         Storage::fake('public');
         $tugas = $this->tugasDisetujui('uploadbukti@example.com');
         $img = 'data:image/jpeg;base64,' . base64_encode('imgbytes');
 
-        $this->actingAs($tugas->user)->postJson(route('presensi.bukti-pekerjaan'), [
+        $resp = $this->actingAs($tugas->user)->postJson(route('presensi.bukti-pekerjaan'), [
             'detail_pekerjaan_id' => $tugas->id,
-            'foto_before_base64' => $img,
-            'foto_after_base64' => $img,
+            'foto_base64' => [$img, $img, $img], // 3 foto sekaligus
             'keterangan' => 'Pekerjaan selesai',
-        ])->assertOk()->assertJson(['success' => true]);
-
-        $this->assertDatabaseHas('tb_bukti_pekerjaan', [
-            'detail_pekerjaan_id' => $tugas->id,
-            'user_id' => $tugas->user_id,
-            'status' => 'pending',
         ]);
+        $resp->assertOk()->assertJson(['success' => true, 'jumlah_foto' => 3]);
+
+        $bukti = BuktiPekerjaan::where('detail_pekerjaan_id', $tugas->id)->first();
+        $this->assertCount(3, $bukti->foto);
+        $this->assertSame('pending', $bukti->status);
     }
 
-    public function test_upload_bukti_wajib_dua_foto(): void
+    public function test_upload_bukti_append_dan_maks_20(): void
     {
         Storage::fake('public');
         $tugas = $this->tugasDisetujui('uploadbukti2@example.com');
+        $img = 'data:image/jpeg;base64,' . base64_encode('x');
 
-        // Hanya foto before -> ditolak (kedua foto wajib).
+        // Batch 1: 12 foto
         $this->actingAs($tugas->user)->postJson(route('presensi.bukti-pekerjaan'), [
             'detail_pekerjaan_id' => $tugas->id,
-            'foto_before_base64' => 'data:image/jpeg;base64,' . base64_encode('x'),
+            'foto_base64' => array_fill(0, 12, $img),
+        ])->assertOk()->assertJson(['jumlah_foto' => 12]);
+
+        // Batch 2: +5 -> total 17 (append, bukan replace)
+        $this->actingAs($tugas->user)->postJson(route('presensi.bukti-pekerjaan'), [
+            'detail_pekerjaan_id' => $tugas->id,
+            'foto_base64' => array_fill(0, 5, $img),
+        ])->assertOk()->assertJson(['jumlah_foto' => 17]);
+
+        // Batch 3: +5 -> total 22 > 20 -> ditolak, tetap 17
+        $this->actingAs($tugas->user)->postJson(route('presensi.bukti-pekerjaan'), [
+            'detail_pekerjaan_id' => $tugas->id,
+            'foto_base64' => array_fill(0, 5, $img),
+        ])->assertStatus(422);
+
+        $this->assertCount(17, BuktiPekerjaan::where('detail_pekerjaan_id', $tugas->id)->first()->foto);
+    }
+
+    public function test_upload_bukti_wajib_minimal_satu_foto(): void
+    {
+        Storage::fake('public');
+        $tugas = $this->tugasDisetujui('uploadbukti3@example.com');
+
+        // Tanpa foto sama sekali -> ditolak.
+        $this->actingAs($tugas->user)->postJson(route('presensi.bukti-pekerjaan'), [
+            'detail_pekerjaan_id' => $tugas->id,
+            'keterangan' => 'tanpa foto',
         ])->assertStatus(422)->assertJson(['success' => false]);
 
         $this->assertDatabaseMissing('tb_bukti_pekerjaan', ['detail_pekerjaan_id' => $tugas->id]);

@@ -194,65 +194,74 @@ class PresensiController extends Controller
     {
         $request->validate([
             'detail_pekerjaan_id' => 'required|exists:tb_detail_pekerjaan,id',
-            'foto_before' => 'nullable|image', // ukuran sengaja tidak dibatasi
-            'foto_after' => 'nullable|image',  // ukuran sengaja tidak dibatasi
-            'foto_before_base64' => 'nullable|string',
-            'foto_after_base64' => 'nullable|string',
+            'foto' => 'nullable|array|max:20',
+            'foto.*' => 'image',            // ukuran sengaja tidak dibatasi
+            'foto_base64' => 'nullable|array|max:20',
+            'foto_base64.*' => 'string',
             'keterangan' => 'nullable|string',
         ]);
 
-        if ((!$request->hasFile('foto_before') && !$request->filled('foto_before_base64')) ||
-            (!$request->hasFile('foto_after') && !$request->filled('foto_after_base64'))) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Kedua foto (Before & After) wajib diunggah',
-            ], 422);
-        }
-
         $user = Auth::user();
 
-        // Validasi bahwa detail pekerjaan ini memang milik user ini
+        // Pastikan tugas ini milik user yang login
         $detailPekerjaan = DetailPekerjaan::where('id', $request->detail_pekerjaan_id)
             ->where('user_id', $user->id)
             ->firstOrFail();
 
-        // Handle foto upload
-        $fotoBeforePath = null;
-        if ($request->hasFile('foto_before')) {
-            $fotoBeforePath = $request->file('foto_before')->store('bukti_pekerjaan/before', 'public');
-        } elseif ($request->filled('foto_before_base64')) {
-            $imageParts = explode(";base64,", $request->foto_before_base64);
-            $imageBase64 = base64_decode($imageParts[1] ?? $imageParts[0]);
-            $fileName = 'bukti_pekerjaan/before/' . uniqid() . '.jpg';
-            \Illuminate\Support\Facades\Storage::disk('public')->put($fileName, $imageBase64);
-            $fotoBeforePath = $fileName;
+        // Kumpulkan path dari file upload (multiple) + base64 (kamera in-app)
+        $paths = [];
+
+        foreach ((array) $request->file('foto', []) as $file) {
+            $paths[] = $file->store('bukti_pekerjaan', 'public');
         }
 
-        $fotoAfterPath = null;
-        if ($request->hasFile('foto_after')) {
-            $fotoAfterPath = $request->file('foto_after')->store('bukti_pekerjaan/after', 'public');
-        } elseif ($request->filled('foto_after_base64')) {
-            $imageParts = explode(";base64,", $request->foto_after_base64);
-            $imageBase64 = base64_decode($imageParts[1] ?? $imageParts[0]);
-            $fileName = 'bukti_pekerjaan/after/' . uniqid() . '.jpg';
-            \Illuminate\Support\Facades\Storage::disk('public')->put($fileName, $imageBase64);
-            $fotoAfterPath = $fileName;
+        foreach ((array) $request->input('foto_base64', []) as $b64) {
+            if (! is_string($b64) || trim($b64) === '') {
+                continue;
+            }
+            $parts = explode(';base64,', $b64);
+            $decoded = base64_decode($parts[1] ?? $parts[0]);
+            if ($decoded === false) {
+                continue;
+            }
+            $fileName = 'bukti_pekerjaan/' . uniqid('', true) . '.jpg';
+            \Illuminate\Support\Facades\Storage::disk('public')->put($fileName, $decoded);
+            $paths[] = $fileName;
         }
 
-        $bukti = \App\Models\BuktiPekerjaan::create([
+        if (empty($paths)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Minimal unggah 1 foto bukti.',
+            ], 422);
+        }
+
+        // 1 record bukti per tugas; foto baru di-append ke galeri (maks 20 total).
+        $bukti = \App\Models\BuktiPekerjaan::firstOrNew([
             'detail_pekerjaan_id' => $detailPekerjaan->id,
             'user_id' => $user->id,
-            'foto_before' => $fotoBeforePath,
-            'foto_after' => $fotoAfterPath,
-            'keterangan' => $request->keterangan,
-            'status' => 'pending',
-            'uploaded_at' => Carbon::now(),
         ]);
+
+        $existing = $bukti->foto ?? [];
+
+        if (count($existing) + count($paths) > 20) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Maksimal 20 foto per tugas (saat ini sudah ' . count($existing) . ').',
+            ], 422);
+        }
+
+        $bukti->foto = array_values(array_merge($existing, $paths));
+        $bukti->keterangan = $request->keterangan ?? $bukti->keterangan;
+        $bukti->status = 'pending';
+        $bukti->uploaded_at = Carbon::now();
+        $bukti->save();
 
         return response()->json([
             'success' => true,
             'data' => $bukti,
-            'message' => 'Bukti pekerjaan berhasil diupload',
+            'jumlah_foto' => count($bukti->foto),
+            'message' => 'Bukti pekerjaan berhasil diupload (' . count($bukti->foto) . ' foto).',
         ]);
     }
 

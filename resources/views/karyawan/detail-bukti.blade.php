@@ -46,31 +46,25 @@
         </div>
     </section>
 
-    {{-- Foto Bukti --}}
-    @if ($bukti->foto_before || $bukti->foto_after)
+    {{-- Foto Bukti (galeri) --}}
+    @php
+        $galeri = is_array($bukti->foto) ? $bukti->foto : [];
+        // Fallback data lama (V2) yang masih pakai before/after.
+        if (empty($galeri)) {
+            $galeri = array_values(array_filter([$bukti->foto_before, $bukti->foto_after]));
+        }
+    @endphp
+    @if (count($galeri) > 0)
         <section class="card">
-            <h2>Foto Bukti</h2>
-
-            @if ($bukti->foto_before)
-                <div style="margin-bottom:16px;">
-                    <p style="font-size:0.85em;font-weight:600;color:#555;margin-bottom:6px;">📷 Foto Before (Sebelum Dikerjakan)</p>
-                    <img src="{{ asset('storage/' . $bukti->foto_before) }}"
-                         alt="Foto Before"
-                         style="width:100%;border-radius:10px;border:2px solid #f59e0b;object-fit:cover;"
+            <h2>Foto Bukti ({{ count($galeri) }})</h2>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;">
+                @foreach ($galeri as $f)
+                    <img src="{{ asset('storage/' . $f) }}"
+                         alt="Foto bukti"
+                         style="width:100%;aspect-ratio:1/1;border-radius:8px;border:1px solid #e5e7eb;object-fit:cover;cursor:pointer;"
                          onclick="openLightbox(this.src)">
-                </div>
-            @endif
-
-            @if ($bukti->foto_after)
-                <div style="margin-bottom:8px;">
-                    <p style="font-size:0.85em;font-weight:600;color:#555;margin-bottom:6px;">📷 Foto After (Sesudah Dikerjakan)</p>
-                    <img src="{{ asset('storage/' . $bukti->foto_after) }}"
-                         alt="Foto After"
-                         style="width:100%;border-radius:10px;border:2px solid #10b981;object-fit:cover;"
-                         onclick="openLightbox(this.src)">
-                </div>
-            @endif
-
+                @endforeach
+            </div>
             <p style="font-size:0.78em;color:#aaa;margin-top:8px;text-align:center;">Ketuk foto untuk memperbesar</p>
         </section>
     @else
