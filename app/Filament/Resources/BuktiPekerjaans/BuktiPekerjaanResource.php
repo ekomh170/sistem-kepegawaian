@@ -66,6 +66,15 @@ class BuktiPekerjaanResource extends Resource
         return BuktiPekerjaanInfolist::configure($schema);
     }
 
+    /**
+     * Judul record (breadcrumb/aksi) — hindari menampilkan "1" (id);
+     * pakai nama lokasi tugas.
+     */
+    public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): ?string
+    {
+        return $record?->detailPekerjaan?->nama_lokasi ?? 'Bukti Pekerjaan';
+    }
+
     public static function table(Table $table): Table
     {
         return BuktiPekerjaansTable::configure($table);

@@ -377,4 +377,36 @@ class V3RbacTest extends TestCase
             ->assertSee('Detail Bukti') // judul bermakna, bukan "Lihat 1"
             ->assertSee('Galeri Foto');
     }
+
+    public function test_admin_render_view_detail_pekerjaan_judul_bermakna(): void
+    {
+        $kar = $this->user('karyawan', 'detail-view-kar@example.com');
+        $jadwal = JadwalPekerjaan::create([
+            'user_id' => $kar->id,
+            'tanggal_kerja' => Carbon::today()->toDateString(),
+            'jam_masuk' => '08:00:00', 'jam_pulang' => '16:00:00', 'status' => 'aktif',
+        ]);
+        $tugas = \App\Models\DetailPekerjaan::create([
+            'jadwal_id' => $jadwal->id, 'user_id' => $kar->id,
+            'nama_lokasi' => 'Lokasi Uji', 'status' => 'disetujui',
+        ]);
+
+        // Judul "Detail Pekerjaan — {lokasi}", bukan "Lihat ...".
+        $this->actingAs($this->user('admin', 'admin-detail-view@example.com'))
+            ->get("/admin/detail-pekerjaans/{$tugas->id}")
+            ->assertSuccessful()
+            ->assertSee('Detail Pekerjaan')
+            ->assertSee('Lokasi Uji');
+    }
+
+    public function test_admin_render_view_presensi_judul_bermakna(): void
+    {
+        $presensi = $this->presensiPending('presensi-view-kar@example.com');
+
+        // Judul "Detail Presensi — {karyawan} (tanggal)", bukan "Lihat Presensi".
+        $this->actingAs($this->user('admin', 'admin-presensi-view@example.com'))
+            ->get("/admin/presensis/{$presensi->id}")
+            ->assertSuccessful()
+            ->assertSee('Detail Presensi');
+    }
 }

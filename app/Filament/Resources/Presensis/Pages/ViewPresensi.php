@@ -11,6 +11,14 @@ class ViewPresensi extends ViewRecord
 {
     protected static string $resource = PresensiResource::class;
 
+    public function getTitle(): string
+    {
+        $nama = $this->record->user?->nama;
+        $tgl = $this->record->tanggal?->translatedFormat('d M Y');
+
+        return 'Detail Presensi' . ($nama ? ' — ' . $nama : '') . ($tgl ? ' (' . $tgl . ')' : '');
+    }
+
     protected function getHeaderActions(): array
     {
         return [

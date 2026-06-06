@@ -519,6 +519,18 @@ class PresensiResource extends Resource
         ];
     }
 
+    /**
+     * Judul record (breadcrumb/aksi) — pakai nama karyawan + tanggal,
+     * bukan label generik "Presensi".
+     */
+    public static function getRecordTitle(?Model $record): ?string
+    {
+        $nama = $record?->user?->nama ?? 'Presensi';
+        $tgl = $record?->tanggal?->translatedFormat('d M Y');
+
+        return $tgl ? "{$nama} · {$tgl}" : $nama;
+    }
+
     public static function getRelations(): array
     {
         return [];
