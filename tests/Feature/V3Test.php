@@ -396,6 +396,55 @@ class V3Test extends TestCase
         $this->assertDatabaseMissing('tb_bukti_pekerjaan', ['detail_pekerjaan_id' => $tugas->id]);
     }
 
+    public function test_render_semua_halaman_mobile_karyawan(): void
+    {
+        $this->seedSettings();
+        $kar = $this->karyawan('render-kar@example.com');
+        $jadwal = JadwalPekerjaan::create([
+            'user_id' => $kar->id,
+            'tanggal_kerja' => Carbon::today()->toDateString(),
+            'jam_masuk' => '08:00:00', 'jam_pulang' => '16:00:00', 'status' => 'aktif',
+        ]);
+        // Sudah check-in hari ini -> halaman Tugas tidak redirect ke presensi masuk.
+        Presensi::create([
+            'user_id' => $kar->id, 'jadwal_id' => $jadwal->id,
+            'tanggal' => Carbon::today()->toDateString(),
+            'jam_masuk' => Carbon::today()->setTime(8, 0),
+            'status_presensi' => 'hadir', 'status_verifikasi' => 'pending',
+        ]);
+        $tugas = DetailPekerjaan::create([
+            'jadwal_id' => $jadwal->id, 'user_id' => $kar->id,
+            'nama_lokasi' => 'Lokasi A', 'status' => 'disetujui',
+        ]);
+        BuktiPekerjaan::create([
+            'detail_pekerjaan_id' => $tugas->id, 'user_id' => $kar->id,
+            'foto' => ['bukti_pekerjaan/x.jpg', 'bukti_pekerjaan/y.jpg'],
+            'keterangan' => 'oke', 'status' => 'pending', 'uploaded_at' => now(),
+        ]);
+
+        $this->actingAs($kar);
+
+        $this->get(route('karyawan.beranda'))->assertOk();
+        $this->get(route('karyawan.jadwal'))->assertOk();
+        $this->get(route('karyawan.riwayat'))->assertOk();
+        $this->get(route('karyawan.presensi.pulang'))->assertOk();
+        $this->get(route('karyawan.tugas'))->assertOk();
+        // Form upload multi-foto + galeri foto yang sudah ada ter-render.
+        $this->get(route('karyawan.tugas.upload', ['detail_pekerjaan_id' => $tugas->id]))
+            ->assertOk()->assertSee('Foto Bukti');
+        // Halaman detail bukti (galeri) ter-render.
+        $this->get(route('karyawan.tugas.bukti.detail', ['detail_pekerjaan_id' => $tugas->id]))
+            ->assertOk()->assertSee('Foto Bukti');
+    }
+
+    public function test_render_halaman_presensi_masuk_karyawan(): void
+    {
+        $this->seedSettings();
+        $kar = $this->karyawan('render-masuk@example.com');
+        // Belum check-in -> form presensi masuk tampil (200, tidak redirect).
+        $this->actingAs($kar)->get(route('karyawan.presensi.masuk'))->assertOk();
+    }
+
     public function test_user_pakai_relasi_v3_bukan_tabel_anak_lama(): void
     {
         // V3: relasi konsolidasi ada; relasi/model anak lama tidak dipakai lagi.
