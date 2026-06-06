@@ -5,7 +5,9 @@ namespace App\Filament\Resources\BuktiPekerjaans;
 use App\Filament\Resources\BuktiPekerjaans\Pages\CreateBuktiPekerjaan;
 use App\Filament\Resources\BuktiPekerjaans\Pages\EditBuktiPekerjaan;
 use App\Filament\Resources\BuktiPekerjaans\Pages\ListBuktiPekerjaans;
+use App\Filament\Resources\BuktiPekerjaans\Pages\ViewBuktiPekerjaan;
 use App\Filament\Resources\BuktiPekerjaans\Schemas\BuktiPekerjaanForm;
+use App\Filament\Resources\BuktiPekerjaans\Schemas\BuktiPekerjaanInfolist;
 use App\Filament\Resources\BuktiPekerjaans\Tables\BuktiPekerjaansTable;
 use App\Models\BuktiPekerjaan;
 use BackedEnum;
@@ -59,6 +61,11 @@ class BuktiPekerjaanResource extends Resource
         return BuktiPekerjaanForm::configure($schema);
     }
 
+    public static function infolist(Schema $schema): Schema
+    {
+        return BuktiPekerjaanInfolist::configure($schema);
+    }
+
     public static function table(Table $table): Table
     {
         return BuktiPekerjaansTable::configure($table);
@@ -76,6 +83,7 @@ class BuktiPekerjaanResource extends Resource
         return [
             'index' => ListBuktiPekerjaans::route('/'),
             'create' => CreateBuktiPekerjaan::route('/create'),
+            'view' => ViewBuktiPekerjaan::route('/{record}'),
             'edit' => EditBuktiPekerjaan::route('/{record}/edit'),
         ];
     }

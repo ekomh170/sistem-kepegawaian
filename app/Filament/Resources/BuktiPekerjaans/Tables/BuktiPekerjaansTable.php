@@ -28,6 +28,7 @@ class BuktiPekerjaansTable
                 //
             ])
             ->recordActions([
+                \Filament\Actions\ViewAction::make(),
                 EditAction::make()
                     ->visible(fn () => \Illuminate\Support\Facades\Auth::user()?->isAdmin()),
             ])

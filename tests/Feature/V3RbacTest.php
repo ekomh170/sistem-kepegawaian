@@ -351,4 +351,30 @@ class V3RbacTest extends TestCase
 
         $this->assertSame('Baru', $setting->fresh()->value);
     }
+
+    public function test_admin_render_view_bukti_pekerjaan_dengan_galeri(): void
+    {
+        $kar = $this->user('karyawan', 'bukti-view-kar@example.com');
+        $jadwal = JadwalPekerjaan::create([
+            'user_id' => $kar->id,
+            'tanggal_kerja' => Carbon::today()->toDateString(),
+            'jam_masuk' => '08:00:00', 'jam_pulang' => '16:00:00', 'status' => 'aktif',
+        ]);
+        $tugas = \App\Models\DetailPekerjaan::create([
+            'jadwal_id' => $jadwal->id, 'user_id' => $kar->id,
+            'nama_lokasi' => 'Lokasi A', 'status' => 'disetujui',
+        ]);
+        $bukti = \App\Models\BuktiPekerjaan::create([
+            'detail_pekerjaan_id' => $tugas->id, 'user_id' => $kar->id,
+            'foto' => ['bukti_pekerjaan/a.jpg', 'bukti_pekerjaan/b.jpg'],
+            'keterangan' => 'oke', 'status' => 'pending', 'uploaded_at' => now(),
+        ]);
+
+        // Halaman View (detail) + galeri foto ter-render tanpa fatal.
+        $this->actingAs($this->user('admin', 'admin-bukti-view@example.com'))
+            ->get("/admin/bukti-pekerjaans/{$bukti->id}")
+            ->assertSuccessful()
+            ->assertSee('Detail Bukti') // judul bermakna, bukan "Lihat 1"
+            ->assertSee('Galeri Foto');
+    }
 }
