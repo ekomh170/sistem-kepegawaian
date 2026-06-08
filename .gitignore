@@ -35,4 +35,5 @@ ssh/
 .env-backup-public
 .htaccess
 public/link.php
+public/unlink.php
 zip/
