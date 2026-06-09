@@ -161,10 +161,18 @@ class KaryawanMobileController extends Controller
             ->get()
             ->keyBy('detail_pekerjaan_id');
 
+        // Link konfirmasi WhatsApp untuk tiap tugas yang DITOLAK (tombol persisten di kartu).
+        $waKonfirmasi = $tugasHariIni
+            ->where('status', 'ditolak')
+            ->mapWithKeys(fn (DetailPekerjaan $t) => [$t->id => $this->buildWaKonfirmasiTolak($t)])
+            ->filter() // buang null (nomor admin tidak tersedia)
+            ->all();
+
         return view('karyawan.tugas', [
             'tugasHariIni' => $tugasHariIni,
             'buktiHariIni' => $buktiHariIni,
             'today' => $today,
+            'waKonfirmasi' => $waKonfirmasi,
         ]);
     }
 

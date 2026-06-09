@@ -124,12 +124,20 @@
                             </a>
                         @endif
 
-                    {{-- STATUS: DITOLAK — Tampilkan alasan --}}
+                    {{-- STATUS: DITOLAK — Tampilkan alasan + tombol konfirmasi WhatsApp --}}
                     @elseif ($statusTugas === 'ditolak')
                         <div style="margin-top: 10px; padding: 10px; background-color: #fef2f2; border-radius: 8px; border: 1px solid #fca5a5;">
                             <strong style="color: #b91c1c;">❌ Anda menolak tugas ini</strong><br>
                             <span class="text-muted" style="font-size:0.88em;">Alasan: {{ $tugas->alasan_tolak ?? '-' }}</span>
                         </div>
+
+                        @php $waLink = ($waKonfirmasi ?? [])[$tugas->id] ?? null; @endphp
+                        @if ($waLink)
+                            <a href="{{ $waLink }}" target="_blank" rel="noopener"
+                               style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;padding:11px;background:#25D366;color:#fff;border-radius:8px;font-size:0.9em;font-weight:700;text-decoration:none;">
+                                💬 Konfirmasi Penolakan via WhatsApp
+                            </a>
+                        @endif
                     @endif
                 </div>
             @endforeach

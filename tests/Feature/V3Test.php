@@ -322,6 +322,44 @@ class V3Test extends TestCase
             && str_contains($url, 'https://wa.me/6285799990000'));
     }
 
+    public function test_kartu_tugas_ditolak_menampilkan_tombol_konfirmasi_wa(): void
+    {
+        Setting::clearCache();
+        Setting::updateOrCreate(['key' => 'wa_admin'], [
+            'key' => 'wa_admin', 'value' => '085799990000', 'group' => 'kontak', 'label' => 'WA', 'type' => 'text',
+        ]);
+        Setting::clearCache();
+
+        $kar = $this->karyawan();
+
+        // daftarTugas hanya bisa diakses bila karyawan sudah check-in hari ini.
+        Presensi::create([
+            'user_id' => $kar->id,
+            'tanggal' => Carbon::today()->toDateString(),
+            'jam_masuk' => Carbon::today()->setTime(8, 0),
+            'status_presensi' => 'hadir',
+        ]);
+
+        $jadwal = JadwalPekerjaan::create([
+            'user_id' => $kar->id,
+            'tanggal_kerja' => Carbon::today()->toDateString(),
+            'jam_masuk' => '08:00:00', 'jam_pulang' => '16:00:00', 'status' => 'aktif',
+        ]);
+        DetailPekerjaan::create([
+            'jadwal_id' => $jadwal->id,
+            'user_id' => $kar->id,
+            'nama_lokasi' => 'Lokasi A',
+            'status' => 'ditolak',
+            'alasan_tolak' => 'Saya sedang sakit flu',
+        ]);
+
+        // Tombol konfirmasi WA persisten muncul di kartu tugas yang ditolak.
+        $this->actingAs($kar)->get(route('karyawan.tugas'))
+            ->assertOk()
+            ->assertSee('Konfirmasi Penolakan via WhatsApp')
+            ->assertSee('https://wa.me/6285799990000', false);
+    }
+
     private function tugasDisetujui(string $email): DetailPekerjaan
     {
         $kar = $this->karyawan($email);
