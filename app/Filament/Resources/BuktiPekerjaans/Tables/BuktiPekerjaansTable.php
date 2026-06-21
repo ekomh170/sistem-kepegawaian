@@ -17,7 +17,9 @@ class BuktiPekerjaansTable
                 \Filament\Tables\Columns\TextColumn::make('detailPekerjaan.nama_lokasi')->label('Tugas / Lokasi')->searchable(),
                 \Filament\Tables\Columns\TextColumn::make('foto')
                     ->label('Jumlah Foto')
-                    ->state(fn ($record) => is_array($record->foto) ? count($record->foto) : 0)
+                    ->state(fn ($record) => (is_array($record->foto_before) ? count($record->foto_before) : 0)
+                        + (is_array($record->foto_after) ? count($record->foto_after) : 0)
+                        + (is_array($record->foto) ? count($record->foto) : 0))
                     ->badge()
                     ->color('info'),
                 \Filament\Tables\Columns\TextColumn::make('keterangan')->limit(50),

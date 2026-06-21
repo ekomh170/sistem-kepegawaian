@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('detail_pekerjaan_id')->constrained('tb_detail_pekerjaan')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained('tb_user')->cascadeOnDelete();
-            $table->string('foto_before')->nullable(); // legacy (V2): foto tunggal before
-            $table->string('foto_after')->nullable();  // legacy (V2): foto tunggal after
-            $table->json('foto')->nullable();          // V3: galeri banyak foto bukti (hingga 20) per tugas
+            $table->json('foto_before')->nullable(); // V3: galeri foto SEBELUM kerja (banyak, hingga 20)
+            $table->json('foto_after')->nullable();  // V3: galeri foto SESUDAH kerja (banyak, hingga 20)
+            $table->json('foto')->nullable();        // legacy: galeri gabungan (data lama) — tidak dipakai upload baru
             $table->text('keterangan')->nullable();
             $table->enum('status', ['pending', 'disetujui', 'ditolak'])->default('pending');
             $table->dateTime('uploaded_at')->useCurrent();

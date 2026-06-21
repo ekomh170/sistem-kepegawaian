@@ -121,6 +121,9 @@ class DatabaseSeeder extends Seeder
                 $fotoDetailExample[] = $path;
             }
         }
+        // Split contoh menjadi galeri SEBELUM (2 foto pertama) & SESUDAH (sisanya).
+        $fotoSebelumExample = array_slice($fotoDetailExample, 0, 2);
+        $fotoSesudahExample = array_slice($fotoDetailExample, 2);
 
         foreach ($semuaKaryawan as $kr) {
             $currentDate = $startDate->copy();
@@ -225,9 +228,9 @@ class DatabaseSeeder extends Seeder
                         BuktiPekerjaan::create([
                             'detail_pekerjaan_id' => $tugas->id,
                             'user_id' => $kr->id,
-                            'foto_before' => null,
-                            'foto_after' => null,
-                            'foto' => $fotoDetailExample,
+                            'foto_before' => $fotoSebelumExample ?: null,
+                            'foto_after' => $fotoSesudahExample ?: null,
+                            'foto' => null,
                             'keterangan' => 'Tugas selesai, area bersih.',
                             'status' => 'disetujui',
                             'uploaded_at' => $jamKeluar,

@@ -36,8 +36,8 @@ class BuktiPekerjaanForm
                         : $value
                     )
                     ->required(),
-                \Filament\Forms\Components\FileUpload::make('foto')
-                    ->label('Foto Bukti (galeri, bisa banyak)')
+                \Filament\Forms\Components\FileUpload::make('foto_before')
+                    ->label('Foto Sebelum (galeri, bisa banyak)')
                     ->multiple()
                     ->image()
                     ->reorderable()
@@ -45,14 +45,24 @@ class BuktiPekerjaanForm
                     ->directory('bukti_pekerjaan')
                     ->disk('public')
                     ->columnSpanFull(),
-                \Filament\Forms\Components\FileUpload::make('foto_before')
-                    ->label('Foto Before (legacy)')
-                    ->image()
-                    ->disk('public'),
                 \Filament\Forms\Components\FileUpload::make('foto_after')
-                    ->label('Foto After (legacy)')
+                    ->label('Foto Sesudah (galeri, bisa banyak)')
+                    ->multiple()
                     ->image()
-                    ->disk('public'),
+                    ->reorderable()
+                    ->panelLayout('grid')
+                    ->directory('bukti_pekerjaan')
+                    ->disk('public')
+                    ->columnSpanFull(),
+                \Filament\Forms\Components\FileUpload::make('foto')
+                    ->label('Foto Bukti Gabungan (lama)')
+                    ->multiple()
+                    ->image()
+                    ->reorderable()
+                    ->panelLayout('grid')
+                    ->directory('bukti_pekerjaan')
+                    ->disk('public')
+                    ->columnSpanFull(),
                 \Filament\Forms\Components\Textarea::make('keterangan')
                     ->maxLength(65535)
                     ->columnSpanFull(),

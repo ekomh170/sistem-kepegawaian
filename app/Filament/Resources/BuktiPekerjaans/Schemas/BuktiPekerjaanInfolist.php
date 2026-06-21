@@ -33,29 +33,31 @@ class BuktiPekerjaanInfolist
                 Section::make('Galeri Foto Bukti')
                     ->columnSpanFull()
                     ->schema([
+                        ImageEntry::make('foto_before')
+                            ->label('Foto Sebelum')
+                            ->disk('public')
+                            ->height(140)
+                            ->columnSpanFull()
+                            ->visible(fn ($record): bool => is_array($record->foto_before) && count($record->foto_before) > 0),
+                        ImageEntry::make('foto_after')
+                            ->label('Foto Sesudah')
+                            ->disk('public')
+                            ->height(140)
+                            ->columnSpanFull()
+                            ->visible(fn ($record): bool => is_array($record->foto_after) && count($record->foto_after) > 0),
+
+                        // Fallback data lama: galeri gabungan.
                         ImageEntry::make('foto')
-                            ->label('Foto Bukti')
+                            ->label('Foto Bukti (lama)')
                             ->disk('public')
                             ->height(140)
                             ->columnSpanFull()
                             ->visible(fn ($record): bool => is_array($record->foto) && count($record->foto) > 0),
 
-                        // Fallback data lama (V2) yang masih pakai before/after.
-                        ImageEntry::make('foto_before')
-                            ->label('Foto Before (legacy)')
-                            ->disk('public')
-                            ->height(140)
-                            ->visible(fn ($record): bool => empty($record->foto) && filled($record->foto_before)),
-                        ImageEntry::make('foto_after')
-                            ->label('Foto After (legacy)')
-                            ->disk('public')
-                            ->height(140)
-                            ->visible(fn ($record): bool => empty($record->foto) && filled($record->foto_after)),
-
                         TextEntry::make('kosong')
                             ->label('')
                             ->state('Belum ada foto bukti.')
-                            ->visible(fn ($record): bool => empty($record->foto) && empty($record->foto_before) && empty($record->foto_after)),
+                            ->visible(fn ($record): bool => empty($record->foto_before) && empty($record->foto_after) && empty($record->foto)),
                     ]),
             ]);
     }

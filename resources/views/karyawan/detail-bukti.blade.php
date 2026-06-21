@@ -46,27 +46,37 @@
         </div>
     </section>
 
-    {{-- Foto Bukti (galeri) --}}
+    {{-- Foto Bukti (galeri Sebelum & Sesudah) --}}
     @php
-        $galeri = is_array($bukti->foto) ? $bukti->foto : [];
-        // Fallback data lama (V2) yang masih pakai before/after.
-        if (empty($galeri)) {
-            $galeri = array_values(array_filter([$bukti->foto_before, $bukti->foto_after]));
-        }
+        $sebelum = is_array($bukti->foto_before) ? $bukti->foto_before : [];
+        $sesudah = is_array($bukti->foto_after) ? $bukti->foto_after : [];
+        // Fallback data lama: galeri gabungan `foto`.
+        $legacy = is_array($bukti->foto) ? $bukti->foto : [];
+
+        $galeriBukti = [
+            ['judul' => '📸 Foto Sebelum', 'warna' => '#f59e0b', 'foto' => $sebelum],
+            ['judul' => '📸 Foto Sesudah', 'warna' => '#10b981', 'foto' => $sesudah],
+            ['judul' => '🖼️ Foto Bukti (lama)', 'warna' => '#6b7280', 'foto' => $legacy],
+        ];
+        $adaFoto = count($sebelum) > 0 || count($sesudah) > 0 || count($legacy) > 0;
     @endphp
-    @if (count($galeri) > 0)
-        <section class="card">
-            <h2>Foto Bukti ({{ count($galeri) }})</h2>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;">
-                @foreach ($galeri as $f)
-                    <img src="{{ asset('storage/' . $f) }}"
-                         alt="Foto bukti"
-                         style="width:100%;aspect-ratio:1/1;border-radius:8px;border:1px solid #e5e7eb;object-fit:cover;cursor:pointer;"
-                         onclick="openLightbox(this.src)">
-                @endforeach
-            </div>
-            <p style="font-size:0.78em;color:#aaa;margin-top:8px;text-align:center;">Ketuk foto untuk memperbesar</p>
-        </section>
+    @if ($adaFoto)
+        @foreach ($galeriBukti as $g)
+            @if (count($g['foto']) > 0)
+                <section class="card">
+                    <h2 style="color:{{ $g['warna'] }};">{{ $g['judul'] }} ({{ count($g['foto']) }})</h2>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;">
+                        @foreach ($g['foto'] as $f)
+                            <img src="{{ asset('storage/' . $f) }}"
+                                 alt="Foto bukti"
+                                 style="width:100%;aspect-ratio:1/1;border-radius:8px;border:1px solid #e5e7eb;object-fit:cover;cursor:pointer;"
+                                 onclick="openLightbox(this.src)">
+                        @endforeach
+                    </div>
+                </section>
+            @endif
+        @endforeach
+        <p style="font-size:0.78em;color:#aaa;margin:-4px 0 8px;text-align:center;">Ketuk foto untuk memperbesar</p>
     @else
         <section class="card">
             <p class="text-muted" style="text-align:center;">Tidak ada foto bukti yang diupload.</p>

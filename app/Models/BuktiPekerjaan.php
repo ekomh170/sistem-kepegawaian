@@ -24,6 +24,8 @@ class BuktiPekerjaan extends Model
     {
         return [
             'uploaded_at' => 'datetime',
+            'foto_before' => 'array',
+            'foto_after' => 'array',
             'foto' => 'array',
         ];
     }

@@ -194,8 +194,19 @@ class PresensiController extends Controller
     {
         $request->validate([
             'detail_pekerjaan_id' => 'required|exists:tb_detail_pekerjaan,id',
+            // Galeri SEBELUM kerja (banyak foto)
+            'foto_before' => 'nullable|array|max:20',
+            'foto_before.*' => 'image',                 // ukuran sengaja tidak dibatasi
+            'foto_before_base64' => 'nullable|array|max:20',
+            'foto_before_base64.*' => 'string',
+            // Galeri SESUDAH kerja (banyak foto)
+            'foto_after' => 'nullable|array|max:20',
+            'foto_after.*' => 'image',
+            'foto_after_base64' => 'nullable|array|max:20',
+            'foto_after_base64.*' => 'string',
+            // Legacy: galeri gabungan (kompatibilitas API lama)
             'foto' => 'nullable|array|max:20',
-            'foto.*' => 'image',            // ukuran sengaja tidak dibatasi
+            'foto.*' => 'image',
             'foto_base64' => 'nullable|array|max:20',
             'foto_base64.*' => 'string',
             'keterangan' => 'nullable|string',
@@ -208,14 +219,79 @@ class PresensiController extends Controller
             ->where('user_id', $user->id)
             ->firstOrFail();
 
-        // Kumpulkan path dari file upload (multiple) + base64 (kamera in-app)
+        // Kumpulkan foto baru per galeri: kolom => array path (file upload + base64 kamera).
+        $labelGaleri = [
+            'foto_before' => 'Foto Sebelum',
+            'foto_after' => 'Foto Sesudah',
+            'foto' => 'Foto',
+        ];
+        $baru = [
+            'foto_before' => $this->kumpulkanFotoBukti($request, 'foto_before', 'foto_before_base64'),
+            'foto_after' => $this->kumpulkanFotoBukti($request, 'foto_after', 'foto_after_base64'),
+            'foto' => $this->kumpulkanFotoBukti($request, 'foto', 'foto_base64'),
+        ];
+
+        if (array_sum(array_map('count', $baru)) === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Minimal unggah 1 foto bukti (Sebelum atau Sesudah).',
+            ], 422);
+        }
+
+        // 1 record bukti per tugas; foto baru di-append ke galeri masing-masing (maks 20 per galeri).
+        $bukti = \App\Models\BuktiPekerjaan::firstOrNew([
+            'detail_pekerjaan_id' => $detailPekerjaan->id,
+            'user_id' => $user->id,
+        ]);
+
+        foreach ($baru as $kolom => $paths) {
+            if (empty($paths)) {
+                continue;
+            }
+
+            $existing = (array) ($bukti->{$kolom} ?? []);
+            if (count($existing) + count($paths) > 20) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Maksimal 20 ' . $labelGaleri[$kolom] . ' per tugas (saat ini sudah ' . count($existing) . ').',
+                ], 422);
+            }
+
+            $bukti->{$kolom} = array_values(array_merge($existing, $paths));
+        }
+
+        $bukti->keterangan = $request->keterangan ?? $bukti->keterangan;
+        $bukti->status = 'pending';
+        $bukti->uploaded_at = Carbon::now();
+        $bukti->save();
+
+        $jumlahSebelum = count((array) $bukti->foto_before);
+        $jumlahSesudah = count((array) $bukti->foto_after);
+        $jumlahTotal = $jumlahSebelum + $jumlahSesudah + count((array) $bukti->foto);
+
+        return response()->json([
+            'success' => true,
+            'data' => $bukti,
+            'jumlah_foto' => $jumlahTotal,
+            'jumlah_sebelum' => $jumlahSebelum,
+            'jumlah_sesudah' => $jumlahSesudah,
+            'message' => 'Bukti pekerjaan berhasil diupload (Sebelum: ' . $jumlahSebelum . ', Sesudah: ' . $jumlahSesudah . ').',
+        ]);
+    }
+
+    /**
+     * Kumpulkan path foto bukti dari satu galeri: file upload (multiple) + base64 (kamera in-app).
+     * Foto disimpan ke disk `public` di folder bukti_pekerjaan dan path-nya dikembalikan.
+     */
+    private function kumpulkanFotoBukti(Request $request, string $fileKey, string $base64Key): array
+    {
         $paths = [];
 
-        foreach ((array) $request->file('foto', []) as $file) {
+        foreach ((array) $request->file($fileKey, []) as $file) {
             $paths[] = $file->store('bukti_pekerjaan', 'public');
         }
 
-        foreach ((array) $request->input('foto_base64', []) as $b64) {
+        foreach ((array) $request->input($base64Key, []) as $b64) {
             if (! is_string($b64) || trim($b64) === '') {
                 continue;
             }
@@ -229,40 +305,7 @@ class PresensiController extends Controller
             $paths[] = $fileName;
         }
 
-        if (empty($paths)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Minimal unggah 1 foto bukti.',
-            ], 422);
-        }
-
-        // 1 record bukti per tugas; foto baru di-append ke galeri (maks 20 total).
-        $bukti = \App\Models\BuktiPekerjaan::firstOrNew([
-            'detail_pekerjaan_id' => $detailPekerjaan->id,
-            'user_id' => $user->id,
-        ]);
-
-        $existing = $bukti->foto ?? [];
-
-        if (count($existing) + count($paths) > 20) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Maksimal 20 foto per tugas (saat ini sudah ' . count($existing) . ').',
-            ], 422);
-        }
-
-        $bukti->foto = array_values(array_merge($existing, $paths));
-        $bukti->keterangan = $request->keterangan ?? $bukti->keterangan;
-        $bukti->status = 'pending';
-        $bukti->uploaded_at = Carbon::now();
-        $bukti->save();
-
-        return response()->json([
-            'success' => true,
-            'data' => $bukti,
-            'jumlah_foto' => count($bukti->foto),
-            'message' => 'Bukti pekerjaan berhasil diupload (' . count($bukti->foto) . ' foto).',
-        ]);
+        return $paths;
     }
 
     /**
