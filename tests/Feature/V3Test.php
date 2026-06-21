@@ -456,7 +456,8 @@ class V3Test extends TestCase
         ]);
         BuktiPekerjaan::create([
             'detail_pekerjaan_id' => $tugas->id, 'user_id' => $kar->id,
-            'foto' => ['bukti_pekerjaan/x.jpg', 'bukti_pekerjaan/y.jpg'],
+            'foto_before' => ['bukti_pekerjaan/x.jpg'],
+            'foto_after' => ['bukti_pekerjaan/y.jpg'],
             'keterangan' => 'oke', 'status' => 'pending', 'uploaded_at' => now(),
         ]);
 
@@ -467,12 +468,12 @@ class V3Test extends TestCase
         $this->get(route('karyawan.riwayat'))->assertOk();
         $this->get(route('karyawan.presensi.pulang'))->assertOk();
         $this->get(route('karyawan.tugas'))->assertOk();
-        // Form upload multi-foto + galeri foto yang sudah ada ter-render.
+        // Form upload multi-foto Sebelum & Sesudah + galeri foto yang sudah ada ter-render.
         $this->get(route('karyawan.tugas.upload', ['detail_pekerjaan_id' => $tugas->id]))
-            ->assertOk()->assertSee('Foto Bukti');
-        // Halaman detail bukti (galeri) ter-render.
+            ->assertOk()->assertSee('Foto SEBELUM Kerja')->assertSee('Foto SESUDAH Kerja');
+        // Halaman detail bukti (galeri Sebelum/Sesudah) ter-render.
         $this->get(route('karyawan.tugas.bukti.detail', ['detail_pekerjaan_id' => $tugas->id]))
-            ->assertOk()->assertSee('Foto Bukti');
+            ->assertOk()->assertSee('Foto Sebelum')->assertSee('Foto Sesudah');
     }
 
     public function test_render_halaman_presensi_masuk_karyawan(): void

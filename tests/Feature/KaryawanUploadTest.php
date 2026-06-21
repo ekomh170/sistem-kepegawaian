@@ -186,6 +186,107 @@ class KaryawanUploadTest extends TestCase
         $this->assertSame(0, BuktiPekerjaan::count());
     }
 
+    // ============ BUKTI PEKERJAAN (galeri Sebelum & Sesudah) ============
+
+    public function test_upload_foto_sebelum_dan_sesudah_tersimpan_terpisah(): void
+    {
+        Storage::fake('public');
+        $kar = $this->karyawan();
+        $tugas = $this->tugasMilik($kar);
+
+        $this->actingAs($kar)->post(route('presensi.bukti-pekerjaan'), [
+            'detail_pekerjaan_id' => $tugas->id,
+            'foto_before' => [
+                UploadedFile::fake()->image('b1.jpg'),
+                UploadedFile::fake()->image('b2.jpg'),
+            ],
+            'foto_after' => [
+                UploadedFile::fake()->image('a1.jpg'),
+            ],
+            'keterangan' => 'Sebelum 2, sesudah 1',
+        ])->assertOk()->assertJson([
+            'success' => true,
+            'jumlah_sebelum' => 2,
+            'jumlah_sesudah' => 1,
+            'jumlah_foto' => 3,
+        ]);
+
+        $bukti = BuktiPekerjaan::where('user_id', $kar->id)->firstOrFail();
+        $this->assertCount(2, $bukti->foto_before);
+        $this->assertCount(1, $bukti->foto_after);
+        foreach (array_merge($bukti->foto_before, $bukti->foto_after) as $path) {
+            $this->assertStringStartsWith('bukti_pekerjaan/', $path);
+            Storage::disk('public')->assertExists($path);
+        }
+    }
+
+    public function test_galeri_sebelum_dan_sesudah_diappend_independen(): void
+    {
+        Storage::fake('public');
+        $kar = $this->karyawan();
+        $tugas = $this->tugasMilik($kar);
+
+        // Batch 1: hanya foto sebelum.
+        $this->actingAs($kar)->post(route('presensi.bukti-pekerjaan'), [
+            'detail_pekerjaan_id' => $tugas->id,
+            'foto_before' => [UploadedFile::fake()->image('b1.jpg')],
+        ])->assertOk();
+
+        // Batch 2: hanya foto sesudah — galeri sebelum tidak hilang.
+        $this->actingAs($kar)->post(route('presensi.bukti-pekerjaan'), [
+            'detail_pekerjaan_id' => $tugas->id,
+            'foto_after' => [UploadedFile::fake()->image('a1.jpg'), UploadedFile::fake()->image('a2.jpg')],
+        ])->assertOk();
+
+        $this->assertSame(1, BuktiPekerjaan::where('detail_pekerjaan_id', $tugas->id)->count());
+        $bukti = BuktiPekerjaan::where('detail_pekerjaan_id', $tugas->id)->firstOrFail();
+        $this->assertCount(1, $bukti->foto_before);
+        $this->assertCount(2, $bukti->foto_after);
+    }
+
+    public function test_foto_sebelum_sesudah_base64_kamera_tersimpan(): void
+    {
+        Storage::fake('public');
+        $kar = $this->karyawan();
+        $tugas = $this->tugasMilik($kar);
+
+        $this->actingAs($kar)->postJson(route('presensi.bukti-pekerjaan'), [
+            'detail_pekerjaan_id' => $tugas->id,
+            'foto_before_base64' => ['data:image/jpeg;base64,' . base64_encode('cam-before')],
+            'foto_after_base64' => ['data:image/jpeg;base64,' . base64_encode('cam-after')],
+        ])->assertOk()->assertJson(['success' => true, 'jumlah_sebelum' => 1, 'jumlah_sesudah' => 1]);
+
+        $bukti = BuktiPekerjaan::where('user_id', $kar->id)->firstOrFail();
+        $this->assertCount(1, $bukti->foto_before);
+        $this->assertCount(1, $bukti->foto_after);
+        Storage::disk('public')->assertExists($bukti->foto_before[0]);
+        Storage::disk('public')->assertExists($bukti->foto_after[0]);
+    }
+
+    public function test_cap_20_per_galeri_sebelum_ditegakkan(): void
+    {
+        Storage::fake('public');
+        $kar = $this->karyawan();
+        $tugas = $this->tugasMilik($kar);
+
+        $duaPuluh = [];
+        for ($i = 0; $i < 20; $i++) {
+            $duaPuluh[] = UploadedFile::fake()->image("b{$i}.jpg");
+        }
+        $this->actingAs($kar)->post(route('presensi.bukti-pekerjaan'), [
+            'detail_pekerjaan_id' => $tugas->id,
+            'foto_before' => $duaPuluh,
+        ])->assertOk();
+
+        // Foto sebelum ke-21 ditolak.
+        $this->actingAs($kar)->post(route('presensi.bukti-pekerjaan'), [
+            'detail_pekerjaan_id' => $tugas->id,
+            'foto_before' => [UploadedFile::fake()->image('lebih.jpg')],
+        ])->assertStatus(422)->assertJson(['success' => false]);
+
+        $this->assertCount(20, BuktiPekerjaan::where('detail_pekerjaan_id', $tugas->id)->first()->foto_before);
+    }
+
     // ===================== PRESENSI (foto) =====================
 
     public function test_presensi_checkin_menyimpan_foto_masuk(): void
