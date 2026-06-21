@@ -24,15 +24,15 @@ lapangan, bukti pekerjaan, laporan presensi, verifikasi, pengaturan lokasi kanto
 
 Sejak **30 Mei 2026** schema memakai **V3 Strict**. 6 tabel inti + 1 pendukung:
 
-| Tabel                 | Catatan                                                                                                         |
-| --------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `tb_user`             | **Konsolidasi semua role.** Kolom: `nama, email, password, nik, no_hp, posisi, role, is_active`                 |
-| `tb_jadwal_pekerjaan` | dulu `tb_jadwal`. FK `user_id` (karyawan) + `dibuat_oleh` (admin)                                               |
-| `tb_detail_pekerjaan` | FK `user_id`. Tugas lapangan per jadwal                                                                         |
-| `tb_presensi`         | FK `user_id`. **Verifikasi inline**: `status_verifikasi, diverifikasi_oleh, catatan_verifikasi, tgl_verifikasi` |
-| `tb_bukti_pekerjaan`  | FK `user_id`. Foto before/after                                                                                 |
-| `tb_laporan_presensi` | dulu `tb_laporan` + `tb_rekap_presensi_bulanan`. `user_id` NULL = laporan agregat, terisi = rekap per-karyawan  |
-| `tb_setting`          | key-value config (geofence, identitas perusahaan)                                                               |
+| Tabel                 | Catatan                                                                                                                          |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `tb_user`             | **Konsolidasi semua role.** Kolom: `nama, email, password, nik, no_hp, posisi, role, is_active`                                  |
+| `tb_jadwal_pekerjaan` | dulu `tb_jadwal`. FK `user_id` (karyawan) + `dibuat_oleh` (admin)                                                                |
+| `tb_detail_pekerjaan` | FK `user_id`. Tugas lapangan per jadwal                                                                                          |
+| `tb_presensi`         | FK `user_id`. **Verifikasi inline**: `status_verifikasi, diverifikasi_oleh, catatan_verifikasi, tgl_verifikasi`                  |
+| `tb_bukti_pekerjaan`  | FK `user_id`. Galeri foto **Sebelum/Sesudah** (`foto_before`/`foto_after` JSON, banyak; cap 20/galeri). `foto` = legacy fallback |
+| `tb_laporan_presensi` | dulu `tb_laporan` + `tb_rekap_presensi_bulanan`. `user_id` NULL = laporan agregat, terisi = rekap per-karyawan                   |
+| `tb_setting`          | key-value config (geofence, identitas perusahaan)                                                                                |
 
 **Tabel V2 yang sudah DIHAPUS** (jangan referensikan lagi): `tb_admin`, `tb_supervisor`,
 `tb_karyawan`, `tb_verifikasi`, `tb_laporan`, `tb_rekap_presensi_bulanan`.
@@ -123,6 +123,7 @@ Tersedia **7 enum** yang sudah mengimplementasikan kontrak Filament `HasLabel` +
 - **Aksi cepat verifikasi:** `PresensiResource::verifikasiRecordActions()` (Setujui 1-klik, Tolak modal wajib alasan) dipakai bersama tabel Presensi & antrian Verifikasi; memanggil `Presensi::verifikasi()`. Kolom di-share via `PresensiResource::presensiColumns()`.
 - **`SettingResource` (Pengaturan):** `canViewAny` admin **+ supervisor** (supervisor **read-only**; Create/Edit/Delete admin-only). Setting **`wa_admin`** = nomor WhatsApp tujuan konfirmasi penolakan tugas (dipakai `KaryawanMobileController::tolakTugas` + helper `formatNomorWa` untuk normalisasi 08xx→62xx).
 - **Upload foto TIDAK dibatasi ukuran** (keputusan owner): `max:` dibuang dari validasi foto presensi/bukti di `PresensiController`, dan `->maxSize()` dilepas dari `FileUpload` Filament. Validasi tipe `image` tetap dipertahankan — **jangan** menambah batas ukuran lagi.
+- **Bukti pekerjaan = galeri Sebelum/Sesudah:** `foto_before`/`foto_after` adalah **JSON array** (cast `array` di model). `submitBuktiPekerjaan()` meng-**append** foto baru per galeri (file `foto_before[]`/`foto_after[]` + base64 kamera `foto_*_base64[]`), **1 record/tugas**, cap **20 per galeri**, min 1 foto/submit. Kolom `foto` (galeri gabungan iterasi lama) **hanya fallback** — jangan tulis lagi, jangan kembalikan ke single foto. Form karyawan ([`upload-bukti.blade.php`](../../resources/views/karyawan/upload-bukti.blade.php)) sinkron FileList via `DataTransfer` agar yang tampil = yang terkirim.
 - **Kolom role** memakai `->badge()` polos — label & warna otomatis dari `Role` (`HasLabel`+`HasColor`).
 - **Dua panel:** `admin` (`/admin`) & `supervisor` (`/supervisor`); auto-discover resources/pages/widgets.
 - **RBAC berlapis:** `canViewAny()`/`canCreate()` per resource **+** middleware `role:` di route **+**

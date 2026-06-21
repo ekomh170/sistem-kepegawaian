@@ -90,10 +90,12 @@ Akses via menu **Laporan Presensi**:
 ### 3.3 Upload Bukti Pekerjaan
 
 1. Pilih tugas yang sudah diterima
-2. Ambil **Foto Before** (sebelum dikerjakan)
-3. Ambil **Foto After** (sesudah selesai)
+2. Galeri **Foto Sebelum** — unggah **banyak foto** (pilih dari galeri perangkat **atau** kamera in-app), bisa bertahap. Tiap foto bisa dibuang (tombol **×**) sebelum submit. Maks **20** foto.
+3. Galeri **Foto Sesudah** — sama seperti Sebelum, **terpisah** dan mandiri. Maks **20** foto.
 4. Isi **keterangan**
-5. Submit → `BuktiPekerjaan::upload()` membuat record di `tb_bukti_pekerjaan`
+5. Submit → `PresensiController::submitBuktiPekerjaan()` menyimpan **1 record per tugas** di `tb_bukti_pekerjaan`; foto baru **di-append** ke galeri `foto_before` / `foto_after` (JSON), bukan menimpa.
+
+> **(V3 enhancement, Jun 2026)** Dulu hanya **1** Foto Before + **1** Foto After. Kini keduanya jadi **galeri banyak foto terpisah** (cap 20 per galeri), mendukung **file picker multi-pilih** + **kamera** (ambil berkali-kali), dengan hapus per-item. Yang ditampilkan = yang terkirim (FileList disinkron via `DataTransfer`). Minimal **1 foto** (Sebelum atau Sesudah) per submit. Lihat skema [§2.5 tb_bukti_pekerjaan](02-database-schema.md).
 
 ### 3.4 Lihat Riwayat
 
@@ -157,10 +159,10 @@ sequenceDiagram
     K->>K: Presensi::checkIn() → status_presensi otomatis
 
     Note over K: 4. Eksekusi Tugas
-    K->>K: Foto Before
+    K->>K: Galeri Foto Sebelum (banyak)
     K->>K: Selesaikan pekerjaan
-    K->>K: Foto After + Keterangan
-    K->>A: BuktiPekerjaan::upload()
+    K->>K: Galeri Foto Sesudah (banyak) + Keterangan
+    K->>A: submitBuktiPekerjaan() — append per galeri
 
     Note over K: 5. Check-out
     K->>K: Presensi::checkOut()

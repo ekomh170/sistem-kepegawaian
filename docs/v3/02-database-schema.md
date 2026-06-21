@@ -6,15 +6,15 @@
 
 ## 1. Ringkasan Tabel
 
-| No  | Tabel                 | Tipe      | Jumlah Kolom | Catatan                                                 |
-| --- | --------------------- | --------- | ------------ | ------------------------------------------------------- |
-| 1   | `tb_user`             | Inti      | 11           | Konsolidasi 4 tabel V2 (user+admin+supervisor+karyawan) |
-| 2   | `tb_jadwal_pekerjaan` | Inti      | 10           | Rename dari `tb_jadwal`                                 |
-| 3   | `tb_detail_pekerjaan` | Inti      | 12           | Sama struktur V2 (FK karyawan_id → user_id)             |
-| 4   | `tb_presensi`         | Inti      | 22           | + 4 kolom verifikasi inline (dari tb_verifikasi)        |
-| 5   | `tb_bukti_pekerjaan`  | Inti      | 9            | Sama struktur V2 (FK karyawan_id → user_id)             |
-| 6   | `tb_laporan_presensi` | Inti      | 13           | Merger tb_laporan + tb_rekap_presensi_bulanan           |
-| 7   | `tb_setting`          | Pendukung | 5            | Tetap dari V2                                           |
+| No  | Tabel                 | Tipe      | Jumlah Kolom | Catatan                                                          |
+| --- | --------------------- | --------- | ------------ | ---------------------------------------------------------------- |
+| 1   | `tb_user`             | Inti      | 11           | Konsolidasi 4 tabel V2 (user+admin+supervisor+karyawan)          |
+| 2   | `tb_jadwal_pekerjaan` | Inti      | 10           | Rename dari `tb_jadwal`                                          |
+| 3   | `tb_detail_pekerjaan` | Inti      | 12           | Sama struktur V2 (FK karyawan_id → user_id)                      |
+| 4   | `tb_presensi`         | Inti      | 22           | + 4 kolom verifikasi inline (dari tb_verifikasi)                 |
+| 5   | `tb_bukti_pekerjaan`  | Inti      | 11           | Galeri foto **Sebelum/Sesudah** (JSON, banyak foto) — lihat §2.5 |
+| 6   | `tb_laporan_presensi` | Inti      | 13           | Merger tb_laporan + tb_rekap_presensi_bulanan                    |
+| 7   | `tb_setting`          | Pendukung | 5            | Tetap dari V2                                                    |
 
 **Total:** 6 tabel inti + 1 pendukung = **7 tabel** (turun dari 12 tabel V2)
 
@@ -139,17 +139,26 @@ CREATE TABLE tb_bukti_pekerjaan (
     id                    BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     detail_pekerjaan_id   BIGINT UNSIGNED NOT NULL,
     user_id               BIGINT UNSIGNED NOT NULL,
-    foto_before           VARCHAR(255) NOT NULL,
-    foto_after            VARCHAR(255) NOT NULL,
+    foto_before           JSON NULL,   -- galeri foto SEBELUM kerja (banyak foto, hingga 20)
+    foto_after            JSON NULL,   -- galeri foto SESUDAH kerja (banyak foto, hingga 20)
+    foto                  JSON NULL,   -- legacy: galeri gabungan (data lama) — TIDAK dipakai upload baru
     keterangan            TEXT NULL,
     status                ENUM('pending', 'disetujui', 'ditolak') NOT NULL DEFAULT 'pending',
     uploaded_at           DATETIME NOT NULL,
     created_at            TIMESTAMP NULL,
+    updated_at            TIMESTAMP NULL,
 
     FOREIGN KEY (detail_pekerjaan_id) REFERENCES tb_detail_pekerjaan(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id)             REFERENCES tb_user(id) ON DELETE CASCADE
 );
 ```
+
+> **Evolusi kolom foto:**
+> **V2** menyimpan **1** `foto_before` + **1** `foto_after` (`VARCHAR`). **V3 (enhancement Jun 2026)**
+> mengubah keduanya menjadi **`JSON` galeri banyak foto** (Sebelum & Sesudah terpisah, cap **20 per galeri**).
+> Kolom `foto` adalah galeri gabungan iterasi sebelumnya — **dipertahankan untuk fallback data lama**, tidak
+> ditulis lagi oleh upload baru. Di model `BuktiPekerjaan`, ketiganya di-`cast` ke `array`.
+> Catatan MariaDB/SQLite: tipe `JSON` tersimpan sebagai `LONGTEXT`/`TEXT`; cast array menangani encode/decode.
 
 ### 2.6 tb_laporan_presensi
 
