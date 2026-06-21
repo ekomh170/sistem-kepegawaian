@@ -30,11 +30,11 @@ class LaporanPresensiResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
-    protected static ?string $navigationLabel = 'Laporan Presensi';
+    protected static ?string $navigationLabel = 'Laporan';
 
-    protected static ?string $modelLabel = 'Laporan Presensi';
+    protected static ?string $modelLabel = 'Laporan';
 
-    protected static ?string $pluralModelLabel = 'Laporan Presensi';
+    protected static ?string $pluralModelLabel = 'Laporan';
 
     protected static string|\UnitEnum|null $navigationGroup = 'Laporan';
 
