@@ -106,7 +106,7 @@ class DatabaseSeeder extends Seeder
         // Sesuai BAB 4: 6 hari kerja per minggu, 1 hari libur (Minggu) ditentukan admin,
         // jam kerja 08:00–16:00.
         $semuaKaryawan = User::where('role', 'karyawan')->get();
-        $tanggalAcuan = \Carbon\Carbon::parse('2026-06-05'); // Jumat
+        $tanggalAcuan = \Carbon\Carbon::parse('2026-06-30'); // Selasa
 
         $startDate = $tanggalAcuan->copy()->subMonths(2)->startOfMonth();
         $endDate = $tanggalAcuan->copy();
@@ -223,16 +223,27 @@ class DatabaseSeeder extends Seeder
                         'tgl_verifikasi' => $checkinTerverifikasi ? $tgl->toDateString() . ' 18:00:00' : null,
                     ]);
 
-                    // Bukti pekerjaan hanya untuk hari yang sudah selesai
+                    // Bukti pekerjaan hanya untuk hari yang sudah selesai.
+                    // Galeri Sebelum/Sesudah dibuat BERVARIASI (jumlah foto beda-beda) agar
+                    // mendemokan fitur multi-foto; status ikut pola verifikasi (lama → disetujui,
+                    // 7 hari terakhir → pending menunggu review).
                     if ($sudahHadir) {
+                        $galeriBefore = array_slice($fotoSebelumExample, 0, rand(1, max(1, count($fotoSebelumExample))));
+                        $galeriAfter  = array_slice($fotoSesudahExample, 0, rand(1, max(1, count($fotoSesudahExample))));
+
                         BuktiPekerjaan::create([
                             'detail_pekerjaan_id' => $tugas->id,
                             'user_id' => $kr->id,
-                            'foto_before' => $fotoSebelumExample ?: null,
-                            'foto_after' => $fotoSesudahExample ?: null,
+                            'foto_before' => $galeriBefore ?: null,
+                            'foto_after' => $galeriAfter ?: null,
                             'foto' => null,
-                            'keterangan' => 'Tugas selesai, area bersih.',
-                            'status' => 'disetujui',
+                            'keterangan' => $faker->randomElement([
+                                'Tugas selesai, area bersih.',
+                                'Pekerjaan rampung sesuai SOP.',
+                                'Sudah dirapikan, dokumentasi terlampir.',
+                                'Area kerja kembali normal setelah dibersihkan.',
+                            ]),
+                            'status' => $checkinTerverifikasi ? 'disetujui' : 'pending',
                             'uploaded_at' => $jamKeluar,
                         ]);
                     }
