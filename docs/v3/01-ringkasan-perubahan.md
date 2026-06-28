@@ -101,20 +101,20 @@ Semua FK ke user pakai `user_id`. Untuk relasi multi-peran, dipakai nama semanti
 
 Tidak ada perubahan fitur fungsional. Semua perilaku V2.3 dipertahankan:
 
-| Fitur                                                   | Status                                               |
-| ------------------------------------------------------- | ---------------------------------------------------- |
-| Login 3 role (admin/supervisor/karyawan)                | ✅ Sama                                              |
-| RBAC supervisor (hanya Presensi/Laporan/Verifikasi)     | ✅ Sama                                              |
-| Presensi GPS Haversine + radius                         | ✅ Sama                                              |
-| Upload foto selfie check-in/check-out                   | ✅ Sama (field foto_masuk/foto_keluar dipertahankan) |
-| Foto masuk tampil setelah check-out                     | ✅ Sama                                              |
-| Aturan keterlambatan Rp 10.000 / 10 menit (tanpa cap)   | ✅ Sama                                              |
-| Workflow tugas pending → diterima/ditolak + alasan      | ✅ Sama                                              |
-| Upload bukti before/after + keterangan                  | ✅ Sama                                              |
-| Filter default hari ini untuk Jadwal & Detail Pekerjaan | ✅ Sama                                              |
-| Tipe Laporan dikunci Bulanan untuk rekap                | ✅ Sama                                              |
-| Header PDF tampilkan jenis laporan                      | ✅ Sama                                              |
-| Setting konfigurasi runtime via Filament                | ✅ Sama (tb_setting dipertahankan)                   |
+| Fitur                                                   | Status                                                                                                  |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Login 3 role (admin/supervisor/karyawan)                | ✅ Sama                                                                                                 |
+| RBAC supervisor (hanya Presensi/Laporan/Verifikasi)     | ✅ Sama                                                                                                 |
+| Presensi GPS Haversine + radius                         | ✅ Sama                                                                                                 |
+| Upload foto selfie check-in/check-out                   | ✅ Sama (field foto_masuk/foto_keluar dipertahankan)                                                    |
+| Foto masuk tampil setelah check-out                     | ✅ Sama                                                                                                 |
+| Aturan keterlambatan Rp 10.000 / 10 menit (tanpa cap)   | ✅ Sama                                                                                                 |
+| Workflow tugas pending → diterima/ditolak + alasan      | ✅ Sama                                                                                                 |
+| Upload bukti before/after + keterangan                  | ✅ Sama (saat migrasi; kini galeri multi-foto Sebelum/Sesudah — lihat [02 §2.5](02-database-schema.md)) |
+| Filter default hari ini untuk Jadwal & Detail Pekerjaan | ✅ Sama                                                                                                 |
+| Tipe Laporan dikunci Bulanan untuk rekap                | ✅ Sama                                                                                                 |
+| Header PDF tampilkan jenis laporan                      | ✅ Sama                                                                                                 |
+| Setting konfigurasi runtime via Filament                | ✅ Sama (tb_setting dipertahankan)                                                                      |
 
 ---
 

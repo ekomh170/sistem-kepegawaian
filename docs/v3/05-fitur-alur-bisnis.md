@@ -40,7 +40,7 @@ Akses via menu **Jadwal Pekerjaan**:
 
 ### 2.4 Generate Laporan
 
-Akses via menu **Laporan Presensi**:
+Akses via menu **Laporan** (resource `LaporanPresensiResource`):
 
 - Pilih **tipe**: Laporan Presensi / Laporan Jumlah Presensi Per Karyawan / Rekap Pekerjaan
 - Pilih **jenis**: Harian / Mingguan / Bulanan / Tahunan
@@ -114,7 +114,7 @@ Menu supervisor di sidebar:
 
 1. **Verifikasi** (antrian presensi `pending` + aksi cepat Setujui/Tolak) — supervisor-only
 2. **Presensi** (view-only tabel; verifikasi juga bisa inline dari form Edit)
-3. **Laporan Presensi** (generate + export)
+3. **Laporan** (generate + export)
 4. **Pengaturan** (read-only — lihat konfigurasi, tidak bisa ubah)
 
 > **V3 Note (diperbarui):** Verifikasi kini punya **menu antrian khusus** (`VerifikasiResource`) berisi presensi `pending` yang sudah check-in, dengan tombol cepat Setujui/Tolak. Verifikasi inline di form Edit Presensi tetap tersedia sebagai alternatif. Menu **Pengaturan** tampil read-only untuk supervisor.

@@ -52,7 +52,7 @@ Skenario 1 = jalankan ERD V3 **persis sesuai gambar asli**, tanpa kompromi:
 - ✅ Foto masuk hanya tampil setelah check-out
 - ✅ Aturan keterlambatan Rp 10.000/10 menit tanpa cap
 - ✅ Workflow tugas terima/tolak + alasan
-- ✅ Upload bukti before/after
+- ✅ Upload bukti before/after _(kini galeri multi-foto Sebelum/Sesudah — lihat [02 §2.5](02-database-schema.md))_
 - ✅ Filter default hari ini di Jadwal & Detail Pekerjaan
 - ✅ Laporan PDF/Excel/CSV (tetap, tapi query-nya berubah)
 - ✅ RBAC 3 role + login redirect

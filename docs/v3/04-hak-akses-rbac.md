@@ -36,6 +36,8 @@ RBAC di V3 **secara konseptual sama dengan V2.3** — 3 role (admin, supervisor,
 | **Pengaturan (Setting)**                  |                    ✅ CRUD                     |        👁️ View Only        |    ❌    |
 | **Lokasi Kantor**                         |                    ✅ Edit                     |             ❌             |    ❌    |
 
+> **Catatan label:** menu sidebar untuk laporan kini bernama **"Laporan"** (sebelumnya "Laporan Presensi"). Resource & entitas tetap `LaporanPresensiResource` / laporan presensi; matriks di atas memakai nama lama agar jelas perannya.
+
 ### 2.2 Portal Karyawan (Mobile Web)
 
 | Halaman         | Karyawan | Admin | Supervisor |

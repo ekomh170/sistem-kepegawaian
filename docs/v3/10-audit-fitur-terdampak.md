@@ -166,7 +166,7 @@ Semua fitur lain di V2.3:
 - ✅ Aturan keterlambatan Rp 10.000/10 menit (V2.3)
 - ✅ Foto masuk hanya tampil setelah check-out (V2.3)
 - ✅ Workflow tugas (terima/tolak dengan alasan) — `alasan_tolak` dipertahankan
-- ✅ Upload bukti pekerjaan before/after + keterangan
+- ✅ Upload bukti pekerjaan before/after + keterangan _(kini galeri multi-foto Sebelum/Sesudah — lihat [02 §2.5](02-database-schema.md))_
 - ✅ Default filter hari ini di Jadwal & Detail Pekerjaan (V2.3)
 - ✅ Tipe Laporan dikunci Bulanan untuk rekap (V2.3)
 - ✅ PDF tampilkan jenis di header (V2.3)
